@@ -48,3 +48,7 @@ MANIFEST
 
 # Per-project virtualenvs
 .venv*/
+.vs/data-trimmer/v16/.suo
+.vs/ProjectSettings.json
+.vs/slnx.sqlite
+.vs/VSWorkspaceState.json
