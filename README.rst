@@ -1,7 +1,7 @@
 ============
 data-trimmer
 ============
-
+[![BCH compliance](https://bettercodehub.com/edge/badge/harveybc/data-trimmer?branch=master)](https://bettercodehub.com/)
 
 Dataset Trimmer
 
