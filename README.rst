@@ -2,7 +2,7 @@
 data-trimmer
 ============
 [![BCH compliance](https://bettercodehub.com/edge/badge/harveybc/data-trimmer?branch=master)](https://bettercodehub.com/)
-[![license](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000)](https://github.com/keras-team/keras/blob/master/LICENSE)
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000)](https://github.com/harveybc/data-trimmer/blob/master/LICENSE)
 
 Dataset Trimmer
 
