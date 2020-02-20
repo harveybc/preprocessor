@@ -1,8 +1,8 @@
 ============
-data-trimmer
+preprocessor
 ============
 
-This is the documentation of **data-trimmer**.
+This is the documentation of **preprocessor**.
 
 .. note::
 
