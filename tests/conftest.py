@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    Dummy conftest.py for data_trimmer.
+    Dummy conftest.py for pretrainer.
 
     If you don't know what this is for, just leave it empty.
     Read more about conftest.py under:

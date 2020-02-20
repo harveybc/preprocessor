@@ -81,7 +81,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'data-trimmer'
+project = u'preprocessor'
 copyright = u'2020, Harvey Bastidas'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -235,7 +235,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'user_guide.tex', u'data-trimmer Documentation',
+  ('index', 'user_guide.tex', u'preprocessor Documentation',
    u'Harvey Bastidas', 'manual'),
 ]
 

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-This is a skeleton file that can serve as a starting point for a Python
-console script. To run this script uncomment the following lines in the
+ To run this script uncomment the following lines in the
 [options.entry_points] section in setup.cfg:
 
     console_scripts =
@@ -12,7 +11,6 @@ inside your current environment.
 Besides console scripts, the header (i.e. until _logger...) of this file can
 also be used as template for Python modules.
 
-Note: This skeleton file can be safely removed if not needed!
 """
 
 import argparse
@@ -27,6 +25,15 @@ __license__ = "mit"
 
 _logger = logging.getLogger(__name__)
 
+
+class  DataTrimmer(Preprocessor):
+    """ Component Tests
+    """
+    
+    def __init__(self):
+    """ Component Tests Constructor
+    """
+      super().__init__()
 
 def fib(n):
     """Fibonacci example function
@@ -58,7 +65,7 @@ def parse_args(args):
     parser.add_argument(
         "--version",
         action="version",
-        version="data-trimmer {ver}".format(ver=__version__))
+        version="preprocessor {ver}".format(ver=__version__))
     parser.add_argument(
         dest="n",
         help="n-th Fibonacci number",
