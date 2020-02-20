@@ -32,6 +32,7 @@ class  TestDataTrimmer(TestPreprocessor):
         Returns:
         (int,int): number of rows, number of columns
         """
+
         # perform trimming using the function trim_data(test_file, out_file, auto_trim=true, column_trim=true, from_start=0, from_end=0)
         rows _t, cols_t = self.dt.trim_data(false, false, 10, 10)
         # get the number of rows and cols from out_file
@@ -48,6 +49,7 @@ class  TestDataTrimmer(TestPreprocessor):
         Returns:
         (int,int): number of rows, number of columns
         """
+
         # perform trimming using the function trim_data(test_file, out_file, auto_trim=true, column_trim=true, from_start=0, from_end=0)
         rows_t, cols_t = trim_data(test_file, out_file, false, true)
         # get the number of rows and cols from out_file
@@ -64,6 +66,7 @@ class  TestDataTrimmer(TestPreprocessor):
         Returns:
         (int,int): number of rows, number of columns
         """
+        
         # perform trimming using the function trim_data(test_file, out_file, auto_trim=true, column_trim=true, from_start=0, from_end=0)
         rows_t, cols_t = trim_data(test_file, out_file)
         # get the number of rows and cols from out_file
