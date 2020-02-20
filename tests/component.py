@@ -35,8 +35,6 @@ class  TestComponent:
         """
         rows = list( csv.reader(open(csv_file)) )
         return len(rows), len(rows[0])
-    
-
 
     def test_C02T01_trim_rows(self):
         """ Trims a configurable number of rows from the start or end of the output dataset. Execute trimmer with 10 from start and 10 from end.
