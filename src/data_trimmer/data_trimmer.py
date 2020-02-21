@@ -34,16 +34,7 @@ class  DataTrimmer(Preprocessor):
     def __init__(self):
     """ Constructor using same parameters as base class """
       super().__init__()
-
-      self.from_start = 0
-      """ number of rows to remove from start (ignored if auto_trim) """
-      self.from_end = 0
-      """ number of rows to remove from end (ignored if auto_trim) """
-      self.remove_columns = False
-      """ removes constant columns """
-      self.auto_trim = True      
-      """ trims the constant columns and trims all rows with consecutive zeroes from start and end.  """
-        
+       
   def parse_args(args):
       """ Parse command line parameters
 
@@ -84,14 +75,58 @@ class  DataTrimmer(Preprocessor):
           const=logging.INFO)
       parser.add_argument(
           "-vv",
-          "--very-verbose",
+          "--very_verbose",
           dest="loglevel",
           help="set loglevel to DEBUG",
           action="store_const",
           const=logging.DEBUG)
       return parser.parse_args(args)
 
-  
+  def core(self, args)
+      """ Core preprocessor task after starting the instance with the main method.
+          Decide from the arguments, what trimming method to call.
+
+      Args:
+      args (obj): command line parameters as objects
+      """
+      if (args.auto_trim):
+        self.trim_auto()
+      elif (args.remove_columns):
+        self.trim_columns()
+      elif (args.from_start>0) and (args.from_end>0):
+        self.trim_fixed_rows(args.from_start, args.from_end)
+      else:
+        _logger.info("Error in command-line parameter...")
+
+  def trim_fixed_rows(self, from_start, from_end):
+      """ Trims a configurable number of rows from the start or end of the input dataset
+
+      Args:
+        from_start (int): number of rows to remove from start (ignored if auto_trim)
+        from_end (int): number of rows to remove from end (ignored if auto_trim)
+
+      Returns:
+        rows_t, cols_t (int,int): number of rows and columns trimmed
+      """
+      pass
+
+  def trim_columns(self):
+      """ Trims all the constant columns from the input dataset
+
+      Returns:
+        rows_t, cols_t (int,int): number of rows and columns trimmed
+      """
+      pass
+
+def trim_auto(self):
+      """ Trims all the constant columns and trims all rows with consecutive zeroes from start and end of the input dataset
+
+      Returns:
+        rows_t, cols_t (int,int): number of rows and columns trimmed
+      """
+      rows_t, cols_t = self.trim_columns()
+      
+      pass
 
 def run():
     """ Entry point for console_scripts """

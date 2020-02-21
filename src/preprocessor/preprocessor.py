@@ -19,17 +19,23 @@ class  Preprocessor:
     def __init__(self):
     """ Constructor """
         self.input_file = ""
-        """ Path of the test dataset """    
+        """ Path of the input dataset """    
         self.output_file = ""
         """ Path of the output dataset """    
-        self.input_config = ""
+        self.input_config_file = ""
         """ Path of the input configuration """    
-        self.output_config = ""
+        self.output_config_file = ""
         """ Path of the output configuration """   
         self.args = None
-        self.rows_d, self.cols_d = self.get_size_csv(test_file)
+        self.rows_d, self.cols_d = self.get_size_csv(input_file)
         """ Number of rows and columns in the test dataset """
-
+        self.input_ds = None
+        """ Input dataset """ 
+        self.output_ds = None
+        """ Output dataset """ 
+        self.output_config = None
+        """ Output configuration """ 
+        
     def get_size_csv(self, csv_file):
         """ Get the number of rows and columns of a test dataset, used in all tests.
         
@@ -61,10 +67,17 @@ class  Preprocessor:
         """
         args = self.parse_args(args)
         self.setup_logging(args.loglevel)
-        _logger.debug("Starting preprocessor...")
+        _logger.info("Starting preprocessor...")
         # Start core function
         self.core(args)
+        _logger.debug("Saving results...")
+        # Save results and output configuration
+        self.store(args)
         _logger.info("Script end.")
+
+    def store(self)
+        """ Save preprocessed data and the configuration of the preprocessor. """
+        pass
 
     def core(self, args)
         """ Core preprocessor task after starting the instance with the main method.
