@@ -62,16 +62,18 @@ class  Preprocessor:
         args = self.parse_args(args)
         self.setup_logging(args.loglevel)
         _logger.debug("Starting preprocessor...")
-        print("With parameters: {}-th Fibonacci number is {}".format(args.n, core(args)))
-        _logger.info("Script ends here")
+        # Start core function
+        self.core(args)
+        _logger.info("Script end.")
 
     def core(self, args)
         """ Core preprocessor task after starting the instance with the main method.
             To be overriden by child classes depending on their preprocessor task.
 
         Args:
-        args ([str]): command line parameters as list of strings
+        args (obj): command line parameters as objects
         """
+        pass
 
     def parse_args(self, args):
         """Parse command line parameters, to be overriden by child classes depending on their command line parameters if they are console scripts.
