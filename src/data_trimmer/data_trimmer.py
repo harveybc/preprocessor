@@ -11,6 +11,8 @@ inside your current environment.
 Besides console scripts, the header (i.e. until _logger...) of this file can
 also be used as template for Python modules.
 
+TODO: VERIFICAR
+
 """
 
 import argparse
@@ -33,6 +35,15 @@ class  DataTrimmer(Preprocessor):
     """ Constructor using same parameters as base class """
       super().__init__()
 
+      self.from_start = 0
+      """ number of rows to remove from start (ignored if auto_trim) """
+      self.from_end = 0
+      """ number of rows to remove from end (ignored if auto_trim) """
+      self.remove_columns = False
+      """ removes constant columns """
+      self.auto_trim = True      
+      """ trims the constant columns and trims all rows with consecutive zeroes from start and end.  """
+        
   def parse_args(args):
       """ Parse command line parameters
 
@@ -43,14 +54,14 @@ class  DataTrimmer(Preprocessor):
         :obj:`argparse.Namespace`: command line parameters namespace
       """
       parser = argparse.ArgumentParser(
-          description="Dataset Trimmer: trims constant columns and consecutive zero rows from end and start of a dataset.")
+          description="Dataset Trimmer: trims constant columns and consecutive zero rows from the end and the start of a dataset.")
       parser.add_argument(
           "--version",
           action="version",
           version="preprocessor {ver}".format(ver=__version__))
       parser.add_argument(
-          dest="n",
-          help="n-th Fibonacci number",
+          "--from_start",
+          help="number of rows to remove from start (ignored if auto_trim)",
           type=int,
           metavar="INT")
       parser.add_argument(

@@ -37,7 +37,7 @@ class  TestDataTrimmer(TestPreprocessor):
         assert (rows_o + cols_o) == (rows_d + cols_d) - (rows_t + cols_t)
 
     def test_C02T03_trim_auto(self):
-        """ Trims all the constant columns by using the trim_auto method. Trim all rows with consecutive zeroes from start and end. Execute trimmer with auto_trim = true. """
+        """ Trims all the constant columns and trims all rows with consecutive zeroes from start and end by using the trim_auto method. Execute trimmer with auto_trim = true.  """
         rows_t, cols_t = self.dt.trim_auto()
         # get the number of rows and cols from out_file
         rows_o, cols_o = self.get_size_csv(out_file)
