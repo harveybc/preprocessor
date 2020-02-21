@@ -1,17 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
- To run this script uncomment the following lines in the
-[options.entry_points] section in setup.cfg:
-
-    console_scripts =
-         fibonacci = data_trimmer.skeleton:run
-
-Then run `python setup.py install` which will install the command `fibonacci`
-inside your current environment.
-Besides console scripts, the header (i.e. until _logger...) of this file can
-also be used as template for Python modules.
-
-"""
+""" This File contains the Preprocessor class, it is the base class for DataTrimmer, FeatureSelector, Standarizer, MSSADecomposer. """
 
 import argparse
 import sys
@@ -26,12 +14,10 @@ __license__ = "mit"
 _logger = logging.getLogger(__name__)
 
 class  Preprocessor:
-    """ Component Tests
-    """
+    """ Base class for DataTrimmer, FeatureSelector, Standarizer, MSSADecomposer. """
     
     def __init__(self):
-    """ Component Tests Constructor
-    """
+    """ Constructor """
         self.input_file = ""
         """ Path of the test dataset """    
         self.output_file = ""
@@ -56,7 +42,7 @@ class  Preprocessor:
         return len(rows), len(rows[0])
 
     def setup_logging(self, loglevel):
-        """Setup basic logging
+        """Setup basic logging.
 
         Args:
         loglevel (int): minimum loglevel for emitting messages
@@ -66,7 +52,7 @@ class  Preprocessor:
                             format=logformat, datefmt="%Y-%m-%d %H:%M:%S")
 
     def main(self, args):
-        """Main entry point allowing external calls
+        """ Starts an instance. Main entry point allowing external calls.
 
         Args:
         args ([str]): command line parameter list
@@ -77,14 +63,19 @@ class  Preprocessor:
         print("The {}-th Fibonacci number is {}".format(args.n, fib(args.n)))
         _logger.info("Script ends here")
 
+    def core(self)
+        """ Core preprocessor task after starting the instance with the main method.
+            To be overriden by child classes depending on their preprocessing task.
+        """
+
     def parse_args(self, args):
         """Parse command line parameters, to be overriden by child classes depending on their command line parameters if they are console scripts.
 
-    Args:
-      args ([str]): command line parameters as list of strings
+        Args:
+        args ([str]): command line parameters as list of strings
 
-    Returns:
-      :obj:`argparse.Namespace`: command line parameters namespace
-    """
-    pass 
+        Returns:
+        :obj:`argparse.Namespace`: command line parameters namespace
+        """
+        pass 
 
