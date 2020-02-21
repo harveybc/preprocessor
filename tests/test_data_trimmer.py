@@ -14,59 +14,31 @@ class  TestDataTrimmer(TestPreprocessor):
     """
     
     def __init__(self):
-    """ Component Tests Constructor
-    """
-        super().__init__("test_dataset.csv", "test_output.csv")
-        """ Use parent class attributes  
-        """
+    """ Component Tests Constructor """
+        super().__init__("test_dataset.csv", "test_output.csv", "out_config.csv")
+        """ Use parent class attributes and test data as parameters for parent class constructor """
         self.dt = DataTrimmer(self.test_file, self.out_file)
-        """ Data trimmer object
-        """
+        """ Data trimmer object """
 
     def test_C02T01_trim_fixed_rows(self):
-        """ Trims a configurable number of rows from the start or end of the output dataset using the trim_fixed_rows method. Execute trimmer with from_start=10, from_end=10.
-        
-        Args:
-        csv_file (string): Path and filename of a test dataset
-
-        Returns:
-        (int,int): number of rows, number of columns
-        """
-        rows _t, cols_t = self.dt.trim_fixed_rows(10, 10)
+        """ Trims a configurable number of rows from the start or end of the output dataset by using the trim_fixed_rows method. Execute trimmer with from_start=10, from_end=10. """
+        rows_t, cols_t = self.dt.trim_fixed_rows(10, 10)
         # get the number of rows and cols from out_file
         rows_o, cols_o = self.get_size_csv(out_file)
         # assert if the new == old - trimmed
         assert (rows_o + cols_o) == (rows_d + cols_d) - (rows_t + cols_t)
         
     def test_C02T02_trim_columns(self):
-        """ Trims all the constant columns. Execute trimmer with remove_colums = true.
-        
-        Args:
-        csv_file (string): Path and filename of a test dataset
-
-        Returns:
-        (int,int): number of rows, number of columns
-        """
-
-        # perform trimming using the function trim_data(test_file, out_file, auto_trim=true, column_trim=true, from_start=0, from_end=0)
-        rows_t, cols_t = trim_data(test_file, out_file, false, true)
+        """ Trims all the constant columns by using the trim_columns method. Execute trimmer with remove_colums = true. """
+        rows_t, cols_t = self.dt.trim_columns()
         # get the number of rows and cols from out_file
         rows_o, cols_o = self.get_size_csv(out_file)
         # assert if the new == old - trimmed
         assert (rows_o + cols_o) == (rows_d + cols_d) - (rows_t + cols_t)
 
-    def test_C02T03_trim_automatic(self):
-        """ Must trim all the constant columns. Trim all consecutive zeroes from start and end.
-        
-        Args:
-        csv_file (string): Path and filename of a test dataset
-
-        Returns:
-        (int,int): number of rows, number of columns
-        """
-
-        # perform trimming using the function trim_data(test_file, out_file, auto_trim=true, column_trim=true, from_start=0, from_end=0)
-        rows_t, cols_t = trim_data(test_file, out_file)
+    def test_C02T03_trim_auto(self):
+        """ Trims all the constant columns by using the trim_auto method. Trim all rows with consecutive zeroes from start and end. Execute trimmer with auto_trim = true. """
+        rows_t, cols_t = self.dt.trim_auto()
         # get the number of rows and cols from out_file
         rows_o, cols_o = self.get_size_csv(out_file)
         # assert if the new == old - trimmed

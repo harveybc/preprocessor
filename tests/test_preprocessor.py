@@ -15,15 +15,13 @@ class  TestPreprocessor:
     """ Component Tests Constructor
     """
         self.test_file = test_file 
-        """ Test dataset filename 
-        """
+        """ Test dataset filename """
         self.out_file = out_file
-        """ Test dataset filename 
-        """
-        # get the number of rows and columns of the test dataset
+        """ Output dataset filename """
+        self.out_config = out_config
+        """ Output configuration of the proprocessor """
         self.rows_d, self.cols_d = self.get_size_csv(test_file)
-        """ Number of rows and columns of the test dataset
-        """
+        """ Number of rows and columns of the test dataset """
 
     def get_size_csv(self, csv_file):
         """ Get the number of rows and columns of a test dataset, used in all tests.
