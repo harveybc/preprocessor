@@ -55,7 +55,7 @@ class  Preprocessor:
         rows = list( csv.reader(open(csv_file)) )
         return len(rows), len(rows[0])
 
-    def setup_logging(loglevel):
+    def setup_logging(self, loglevel):
         """Setup basic logging
 
         Args:
@@ -65,19 +65,19 @@ class  Preprocessor:
         logging.basicConfig(level=loglevel, stream=sys.stdout,
                             format=logformat, datefmt="%Y-%m-%d %H:%M:%S")
 
-    def main(args):
+    def main(self, args):
         """Main entry point allowing external calls
 
         Args:
         args ([str]): command line parameter list
         """
-        args = parse_args(args)
-        setup_logging(args.loglevel)
+        args = self.parse_args(args)
+        self.setup_logging(args.loglevel)
         _logger.debug("Starting crazy calculations...")
         print("The {}-th Fibonacci number is {}".format(args.n, fib(args.n)))
         _logger.info("Script ends here")
 
-    def parse_args(args):
+    def parse_args(self, args):
         """Parse command line parameters, to be overriden by child classes depending on their command line parameters if they are console scripts.
 
     Args:
