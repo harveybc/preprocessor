@@ -62,8 +62,19 @@ class  DataTrimmer(Preprocessor):
       parser.add_argument(
           "--from_start",
           help="number of rows to remove from start (ignored if auto_trim)",
-          type=int,
-          metavar="INT")
+          type=int, default = 0)
+      parser.add_argument(
+          "--from_end",
+          help="number of rows to remove from end (ignored if auto_trim)",
+          type=int, default = 0)
+      parser.add_argument(
+          "--remove_columns",
+          help="removes constant columns",
+          action='store_true')
+      parser.add_argument(
+          "--auto_trim",
+          help="trims the constant columns and trims all rows with consecutive zeroes from start and end",
+          action='store_true')
       parser.add_argument(
           "-v",
           "--verbose",
@@ -79,6 +90,8 @@ class  DataTrimmer(Preprocessor):
           action="store_const",
           const=logging.DEBUG)
       return parser.parse_args(args)
+
+  
 
 def run():
     """ Entry point for console_scripts """

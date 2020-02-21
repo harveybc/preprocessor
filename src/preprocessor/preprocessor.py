@@ -25,7 +25,8 @@ class  Preprocessor:
         self.input_config = ""
         """ Path of the input configuration """    
         self.output_config = ""
-        """ Path of the output configuration """    
+        """ Path of the output configuration """   
+        self.args = None
         self.rows_d, self.cols_d = self.get_size_csv(test_file)
         """ Number of rows and columns in the test dataset """
 
@@ -53,19 +54,23 @@ class  Preprocessor:
 
     def main(self, args):
         """ Starts an instance. Main entry point allowing external calls.
+            Starts logging, parse command line arguments and start core.
 
         Args:
         args ([str]): command line parameter list
         """
         args = self.parse_args(args)
         self.setup_logging(args.loglevel)
-        _logger.debug("Starting crazy calculations...")
-        print("The {}-th Fibonacci number is {}".format(args.n, fib(args.n)))
+        _logger.debug("Starting preprocessor...")
+        print("With parameters: {}-th Fibonacci number is {}".format(args.n, core(args)))
         _logger.info("Script ends here")
 
-    def core(self)
+    def core(self, args)
         """ Core preprocessor task after starting the instance with the main method.
             To be overriden by child classes depending on their preprocessor task.
+
+        Args:
+        args ([str]): command line parameters as list of strings
         """
 
     def parse_args(self, args):
