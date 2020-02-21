@@ -66,8 +66,11 @@ class  Preprocessor:
         args ([str]): command line parameter list
         """
         args = self.parse_args(args)
+        # Start logging
         self.setup_logging(args.loglevel)
         _logger.info("Starting preprocessor...")
+        # Load input dataset
+        self.input_ds = list( csv.reader( open(csv_file) ) )
         # Start core function
         self.core(args)
         _logger.debug("Saving results...")

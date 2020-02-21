@@ -108,8 +108,11 @@ class  DataTrimmer(Preprocessor):
       Returns:
         rows_t, cols_t (int,int): number of rows and columns trimmed
       """
-      pass
-
+      # remove from start
+      self.output_ds = self.input_ds[from_start:len(self.input_ds)]
+      # remove from end
+      self.output_ds = self.output_ds[:len(self.output_ds)-from_end]
+ 
   def trim_columns(self):
       """ Trims all the constant columns from the input dataset
 
