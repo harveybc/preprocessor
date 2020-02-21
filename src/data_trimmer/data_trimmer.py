@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-This File contains the DataTrimmer class. To run this script uncomment the following lines in the
+This File contains the DataTrimmer class. To run this script uncomment or add the following lines in the
 [options.entry_points] section in setup.cfg:
 
     console_scripts =
@@ -27,7 +27,7 @@ _logger = logging.getLogger(__name__)
 
 
 class  DataTrimmer(Preprocessor):
-    """ The Data Trimmer preprocessing class """
+    """ The Data Trimmer preprocessor class """
     
     def __init__(self):
     """ Constructor using same parameters as base class """

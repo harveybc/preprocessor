@@ -65,7 +65,7 @@ class  Preprocessor:
 
     def core(self)
         """ Core preprocessor task after starting the instance with the main method.
-            To be overriden by child classes depending on their preprocessing task.
+            To be overriden by child classes depending on their preprocessor task.
         """
 
     def parse_args(self, args):
