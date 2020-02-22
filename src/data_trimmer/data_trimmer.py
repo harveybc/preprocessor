@@ -119,6 +119,11 @@ class  DataTrimmer(Preprocessor):
         Returns:
             rows_t, cols_t (int,int): number of rows and columns trimmed
         """
+        # initialize unchanged_array as true with size num_columns
+        un_array = [True] * 20
+        # in two consecutive rows, search the unchanged values
+        for i in range()
+        # for each unchanged_array that is true, if the values changed, set it to false
 
 
     def trim_auto(self):

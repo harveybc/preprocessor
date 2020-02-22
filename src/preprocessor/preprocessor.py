@@ -17,25 +17,24 @@ _logger = logging.getLogger(__name__)
 class  Preprocessor:
     """ Base class for DataTrimmer, FeatureSelector, Standarizer, MSSADecomposer. """
     
-    def __init__(self):
+    def __init__(self, conf):
     """ Constructor """
-        self.input_file = ""
+        self.input_file = conf.input_file
         """ Path of the input dataset """    
-        self.output_file = ""
+        self.output_file = conf.output_file
         """ Path of the output dataset """    
-        self.input_config_file = ""
+        self.input_config_file = conf.input_config_file
         """ Path of the input configuration """    
-        self.output_config_file = ""
+        self.output_config_file = conf.output_config_file
         """ Path of the output configuration """   
-        self.args = None
-        self.rows_d, self.cols_d = self.get_size_csv(input_file)
-        """ Number of rows and columns in the test dataset """
         self.input_ds = None
         """ Input dataset """ 
         self.output_ds = None
         """ Output dataset """ 
         self.output_config = None
         """ Output configuration """ 
+        self.rows_d, self.cols_d = self.get_size_csv(input_file)
+        """ Number of rows and columns in the test dataset """
         
     def get_size_csv(self, csv_file):
         """ Get the number of rows and columns of a test dataset, used in all tests.
