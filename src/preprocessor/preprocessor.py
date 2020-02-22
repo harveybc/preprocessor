@@ -4,6 +4,7 @@
 import argparse
 import sys
 import logging
+import numpy as np
 
 from data_trimmer import __version__
 
@@ -57,7 +58,7 @@ class  Preprocessor:
         logformat = "[%(asctime)s] %(levelname)s:%(name)s:%(message)s"
         logging.basicConfig(level=loglevel, stream=sys.stdout,
                             format=logformat, datefmt="%Y-%m-%d %H:%M:%S")
-
+ 
     def main(self, args):
         """ Starts an instance. Main entry point allowing external calls.
             Starts logging, parse command line arguments and start core.
@@ -70,7 +71,7 @@ class  Preprocessor:
         self.setup_logging(args.loglevel)
         _logger.info("Starting preprocessor...")
         # Load input dataset
-        self.input_ds = list( csv.reader( open(csv_file) ) )
+        self.input_ds = np.array( list( csv.reader( open(csv_file) ) ))
         # Start core function
         self.core(args)
         _logger.debug("Saving results...")

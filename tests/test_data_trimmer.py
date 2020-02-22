@@ -21,7 +21,7 @@ class  TestDataTrimmer(TestPreprocessor):
         """ Data trimmer object """
 
     def test_C02T01_trim_fixed_rows(self):
-        """ Trims a configurable number of rows from the start or end of the output dataset by using the trim_fixed_rows method. Execute trimmer with from_start=10, from_end=10. """
+        """ Trims a configurable number of rows from the start or end of the input dataset by using the trim_fixed_rows method. Execute trimmer with from_start=10, from_end=10. """
         rows_t, cols_t = self.dt.trim_fixed_rows(10, 10)
         # get the number of rows and cols from out_file
         rows_o, cols_o = self.get_size_csv(out_file)
