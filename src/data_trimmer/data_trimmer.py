@@ -124,19 +124,23 @@ class  DataTrimmer(Preprocessor):
         un_array_prev = [True] * self.cols_d
         # in two consecutive rows, search the unchanged values
         for i in range(self.rows_d-1):
-            un_array = (self.input_ds[i, :] == self.input_ds[i+1, :]).all()
-            # for each unchanged_array that is true, if the values changed, set it to false
-             
+            unchanged = (self.input_ds[i, :] == self.input_ds[i+1, :]).all()
+            # for each un_array that is true, if the values changed, set it to false
+            un_array = not (un_array and unchanged)
 
     def trim_auto(self):
         """ Trims all the constant columns and trims all rows with consecutive zeroes from start and end of the input dataset
-
+ 
         Returns:
         rows_t, cols_t (int,int): number of rows and columns trimmed
         """
         rows_t, cols_t = self.trim_columns()
-        
-        pass
+        # from start
+        for i in range(self.rows_d-1):
+            unchanged = (self.input_ds[i, :] == self.input_ds[i+1, :]).all()
+            # for each un_array that is true, if the values changed, set it to false
+            un_array = not (un_array and unchanged)
+    
 
 def run():
     """ Entry point for console_scripts """
