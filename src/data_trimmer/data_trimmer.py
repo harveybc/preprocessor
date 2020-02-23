@@ -120,11 +120,13 @@ class  DataTrimmer(Preprocessor):
             rows_t, cols_t (int,int): number of rows and columns trimmed
         """
         # initialize unchanged_array as true with size num_columns
-        un_array = [True] * 20
+        un_array = [True] * self.cols_d
+        un_array_prev = [True] * self.cols_d
         # in two consecutive rows, search the unchanged values
-        for i in range()
-        # for each unchanged_array that is true, if the values changed, set it to false
-
+        for i in range(self.rows_d-1):
+            un_array = (self.input_ds[i, :] == self.input_ds[i+1, :]).all()
+            # for each unchanged_array that is true, if the values changed, set it to false
+             
 
     def trim_auto(self):
         """ Trims all the constant columns and trims all rows with consecutive zeroes from start and end of the input dataset
