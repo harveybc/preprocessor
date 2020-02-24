@@ -8,20 +8,20 @@ __copyright__ = "Harvey Bastidas"
 __license__ = "mit"
 
 class  TestPreprocessor:
-    """ Base class for testing the preprocessors
-    """
+    """ Base class for testing the preprocessors """
     
-    def __init__(self, test_file, out_file):
-    """ Component Tests Constructor
-    """
-        self.test_file = test_file 
+    def __init__(self, conf):
+        """ Component Tests Constructor """
+        self.input_file = conf.input_file 
         """ Test dataset filename """
-        self.out_file = out_file
+        self.output_file = conf.output_file
         """ Output dataset filename """
-        self.out_config = out_config
+        self.input_config = conf.input_config_file
+        """ Output dataset filename """
+        self.output_config = conf.output_config_file
         """ Output configuration of the proprocessor """
-        self.rows_d, self.cols_d = self.get_size_csv(test_file)
-        """ Number of rows and columns of the test dataset """
+        self.rows_d, self.cols_d = self.get_size_csv(self.input_file)
+        """ Get the number of rows and columns of the test dataset """
 
     def get_size_csv(self, csv_file):
         """ Get the number of rows and columns of a test dataset, used in all tests.

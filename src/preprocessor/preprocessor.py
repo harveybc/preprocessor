@@ -20,22 +20,23 @@ class  Preprocessor:
     
     def __init__(self, conf):
         """ Constructor """
-        self.input_file = conf.input_file
-        """ Path of the input dataset """    
-        self.output_file = conf.output_file
-        """ Path of the output dataset """    
-        self.input_config_file = conf.input_config_file
-        """ Path of the input configuration """    
-        self.output_config_file = conf.output_config_file
-        """ Path of the output configuration """   
+        # if conf =  None, loads the configuration from the command line arguments
+        if conf != None:
+            self.input_file = conf.input_file
+            """ Path of the input dataset """    
+            self.output_file = conf.output_file
+            """ Path of the output dataset """    
+            self.input_config_file = conf.input_config_file
+            """ Path of the input configuration """    
+            self.output_config_file = conf.output_config_file
+            """ Path of the output configuration """   
         self.input_ds = None
         """ Input dataset """ 
         self.output_ds = None
         """ Output dataset """ 
         self.output_config = None
         """ Output configuration """ 
-        self.rows_d, self.cols_d = self.get_size_csv(conf.input_file)
-        """ Number of rows and columns in the test dataset """
+            
         
     def get_size_csv(self, csv_file):
         """ Get the number of rows and columns of a test dataset, used in all tests.
@@ -72,6 +73,8 @@ class  Preprocessor:
         _logger.info("Starting preprocessor...")
         # Load input dataset
         self.input_ds = np.array( list( csv.reader( open(self.input_file) ) ))
+        # Initialize input number of rows and columns
+        self.rows_d, self.cols_d = self.input_ds.shape
         # Start core function
         self.core(args)
         _logger.debug("Saving results...")

@@ -33,9 +33,9 @@ _logger = logging.getLogger(__name__)
 class  DataTrimmer(Preprocessor):
     """ The Data Trimmer preprocessor class """
     
-    def __init__(self):
+    def __init__(self, conf):
         """ Constructor using same parameters as base class """
-        super().__init__()
+        super().__init__(conf)
        
     def parse_args(self, args):
         """ Parse command line parameters
@@ -151,7 +151,7 @@ class  DataTrimmer(Preprocessor):
 
 def run():
     """ Entry point for console_scripts """
-    data_trimmer = DataTrimmer()
+    data_trimmer = DataTrimmer(None)
     data_trimmer.main(sys.argv[1:])
 
 
