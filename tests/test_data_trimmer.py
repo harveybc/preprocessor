@@ -15,7 +15,7 @@ class  TestDataTrimmer(TestPreprocessor):
     
     def __init__(self):
     """ Component Tests Constructor """
-        super().__init__("test_dataset.csv", "test_output.csv", "out_config.csv")
+        super().__init__("test_ds.csv", "test_output.csv", "out_config.csv")
         """ Use parent class attributes and test data as parameters for parent class constructor """
         self.dt = DataTrimmer(self.test_file, self.out_file)
         """ Data trimmer object """
