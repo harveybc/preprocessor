@@ -130,7 +130,7 @@ class  DataTrimmer(Preprocessor):
             un_array = not (un_array and unchanged)
         # remove all rows with true on the un_array
         self.output_ds[:,not(un_array)]
-        return
+        return 0, np.sum(un_array)
 
     def trim_auto(self):
         """ Trims all the constant columns and trims all rows with consecutive zeroes from start and end of the input dataset
@@ -139,13 +139,14 @@ class  DataTrimmer(Preprocessor):
         rows_t, cols_t (int,int): number of rows and columns trimmed
         """
         rows_t, cols_t = self.trim_columns()
-        un_array = self.input_ds==0
-        # from start
-        for i in range(self.rows_d-1):
-            unchanged = (self.input_ds[i, :] == self.input_ds[i+1, :]).all()
-            # for each un_array that is true, if the values changed, set it to false
-            un_array = not (un_array and unchanged)
-
+        # delete rows from start that contain zeroes from start
+        z_array = (self.output_ds[0]==0)
+        while (np.any(z_array)):
+            rows_t = rows_t + 1
+            # delete the first row of the output_ds and updates z_array
+            self.output_ds = np.delete(self.output_ds, [0], axis=0)
+            z_array = (self.output_ds[0]==0)
+        return rows_t, cols_t
 
 def run():
     """ Entry point for console_scripts """
