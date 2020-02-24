@@ -18,6 +18,8 @@ TODO: VERIFICAR
 import argparse
 import sys
 import logging
+import numpy as np
+from preprocessor.preprocessor import Preprocessor
 
 from data_trimmer import __version__
 
@@ -32,10 +34,10 @@ class  DataTrimmer(Preprocessor):
     """ The Data Trimmer preprocessor class """
     
     def __init__(self):
-    """ Constructor using same parameters as base class """
+        """ Constructor using same parameters as base class """
         super().__init__()
        
-    def parse_args(args):
+    def parse_args(self, args):
         """ Parse command line parameters
 
         Args:
@@ -82,7 +84,7 @@ class  DataTrimmer(Preprocessor):
             const=logging.DEBUG)
         return parser.parse_args(args)
 
-    def core(self, args)
+    def core(self, args):
         """ Core preprocessor task after starting the instance with the main method.
             Decide from the arguments, what trimming method to call.
 
@@ -122,7 +124,6 @@ class  DataTrimmer(Preprocessor):
         """
         # initialize unchanged_array as true with size num_columns
         un_array = [True] * self.cols_d
-        un_array_prev = [True] * self.cols_d
         # in two consecutive rows, search the unchanged values
         for i in range(self.rows_d-1):
             unchanged = (self.input_ds[i, :] == self.input_ds[i+1, :]).all()

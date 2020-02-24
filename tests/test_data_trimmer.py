@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import pytest
-import csv
-from preprocessor.data_trimmer import DataTrimmer
-from tests.test_preprocessor import TestPreprocessor
+import csv 
+from src.data_trimmer.data_trimmer import DataTrimmer
+from tests.test_data_trimmer import TestPreprocessor
 
 __author__ = "Harvey Bastidas"
 __copyright__ = "Harvey Bastidas"
@@ -14,7 +14,7 @@ class  TestDataTrimmer(TestPreprocessor):
     """
     
     def __init__(self):
-    """ Component Tests Constructor """
+        """ Component Tests Constructor """
         super().__init__("test_ds.csv", "test_output.csv", "out_config.csv")
         """ Use parent class attributes and test data as parameters for parent class constructor """
         self.dt = DataTrimmer(self.test_file, self.out_file)

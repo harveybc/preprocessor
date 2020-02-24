@@ -4,7 +4,8 @@
 import argparse
 import sys
 import logging
-import numpy as np
+import numpy as np 
+import csv
 
 from data_trimmer import __version__
 
@@ -18,7 +19,7 @@ class  Preprocessor:
     """ Base class for DataTrimmer, FeatureSelector, Standarizer, MSSADecomposer. """
     
     def __init__(self, conf):
-    """ Constructor """
+        """ Constructor """
         self.input_file = conf.input_file
         """ Path of the input dataset """    
         self.output_file = conf.output_file
@@ -33,7 +34,7 @@ class  Preprocessor:
         """ Output dataset """ 
         self.output_config = None
         """ Output configuration """ 
-        self.rows_d, self.cols_d = self.get_size_csv(input_file)
+        self.rows_d, self.cols_d = self.get_size_csv(conf.input_file)
         """ Number of rows and columns in the test dataset """
         
     def get_size_csv(self, csv_file):
@@ -66,23 +67,23 @@ class  Preprocessor:
         args ([str]): command line parameter list
         """
         args = self.parse_args(args)
-        # Start logging
-        self.setup_logging(args.loglevel)
+        # Start logging: TODO: Use args.loglevel en lugar de logging.DEBUG
+        self.setup_logging(logging.DEBUG)
         _logger.info("Starting preprocessor...")
         # Load input dataset
-        self.input_ds = np.array( list( csv.reader( open(csv_file) ) ))
+        self.input_ds = np.array( list( csv.reader( open(self.input_file) ) ))
         # Start core function
         self.core(args)
         _logger.debug("Saving results...")
         # Save results and output configuration
         self.store(args)
-        _logger.info("Script end.")
+        _logger.info("Script end.") 
 
-    def store(self)
+    def store(self,args):
         """ Save preprocessed data and the configuration of the preprocessor. """
         pass
 
-    def core(self, args)
+    def core(self, args):
         """ Core preprocessor task after starting the instance with the main method.
             To be overriden by child classes depending on their preprocessor task.
 
@@ -100,5 +101,6 @@ class  Preprocessor:
         Returns:
         :obj:`argparse.Namespace`: command line parameters namespace
         """
-        pass 
+        
+        return 0 
 
