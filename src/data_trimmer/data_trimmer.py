@@ -122,6 +122,7 @@ class  DataTrimmer(Preprocessor):
         Returns:
             rows_t, cols_t (int,int): number of rows and columns trimmed
         """
+        self.rows_d, self.cols_d = self.input_ds.shape
         # initialize unchanged_array as true with size num_columns
         un_array = [True] * self.cols_d
         # in two consecutive rows, search the unchanged values
@@ -130,7 +131,7 @@ class  DataTrimmer(Preprocessor):
             # for each un_array that is true, if the values changed, set it to false
             un_array = not (un_array and unchanged)
         # remove all rows with true on the un_array
-        self.output_ds[:,not(un_array)]
+        self.output_ds=self.input_ds[:,not(un_array)]
         return 0, np.sum(un_array)
 
     def trim_auto(self):
@@ -139,6 +140,7 @@ class  DataTrimmer(Preprocessor):
         Returns:
         rows_t, cols_t (int,int): number of rows and columns trimmed
         """
+        self.rows_d, self.cols_d = self.input_ds.shape
         rows_t, cols_t = self.trim_columns()
         # delete rows from start that contain zeroes from start
         z_array = (self.output_ds[0]==0)

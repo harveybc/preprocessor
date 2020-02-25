@@ -3,7 +3,7 @@
 import pytest
 import csv 
 import sys
-sys.path.append('c:\\Users\\HarveyD\\Dropbox\\preprocessor\\src\\')
+#sys.path.append('c:\\Users\\HarveyD\\Dropbox\\preprocessor\\src\\')
 from data_trimmer.data_trimmer import DataTrimmer 
 from test_preprocessor import TestPreprocessor 
 
@@ -12,21 +12,41 @@ __author__ = "Harvey Bastidas"
 __copyright__ = "Harvey Bastidas"
 __license__ = "mit"
 
-class  TestDataTrimmer(TestPreprocessor): 
+class Conf:
+    def __init__(self):
+        """ Component Tests Constructor """
+        self.input_file = "tests\\test_input.csv"
+        """ Test dataset filename """
+        self.output_file = "test_output.csv"
+        """ Output dataset filename """
+        self.input_config_file = "in_config.csv"
+        """ Output dataset filename """
+        self.output_config_file = "out_config.csv"
+        """ Output configuration of the proprocessor """
+
+class  TestDataTrimmer(): 
     """ Component Tests
     """
     
-    def __init__(self):
+    def setup_method(self, test_method):
         """ Component Tests Constructor """
-        conf=None
-        conf.input_file = "test_input.csv"
-        conf.output_file = "test_output.csv"
-        conf.input_config_file = "in_config.csv"
-        conf.output_config_file = "out_config.csv"
-        super().__init__(conf)
-        """ Use parent class attributes and test data as parameters for parent class constructor """
-        self.dt = DataTrimmer(conf)
+        self.conf = Conf()
+        self.dt = DataTrimmer(self.conf)
         """ Data trimmer object """
+        self.rows_d, self.cols_d = self.get_size_csv(self.conf.input_file)
+        """ Get the number of rows and columns of the test dataset """
+    
+    def get_size_csv(self, csv_file):
+        """ Get the number of rows and columns of a test dataset, used in all tests.
+        
+        Args:
+        csv_file (string): Path and filename of a test dataset
+
+        Returns:
+        (int,int): number of rows, number of columns
+        """
+        rows = list( csv.reader(open(csv_file)) )
+        return len(rows), len(rows[0])
 
     def test_C02T01_trim_fixed_rows(self):
         """ Trims a configurable number of rows from the start or end of the input dataset by using the trim_fixed_rows method. Execute trimmer with from_start=10, from_end=10. """
@@ -51,3 +71,5 @@ class  TestDataTrimmer(TestPreprocessor):
         rows_o, cols_o = self.get_size_csv(self.output_file)
         # assert if the new == old - trimmed
         assert (rows_o + cols_o) == (self.rows_d  + self.cols_d) - (rows_t + cols_t)
+
+    

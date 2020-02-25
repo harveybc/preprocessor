@@ -30,12 +30,14 @@ class  Preprocessor:
             """ Path of the input configuration """    
             self.output_config_file = conf.output_config_file
             """ Path of the output configuration """   
-        self.input_ds = None
+        self.input_ds = np.array( list( csv.reader( open(self.input_file) ) ))
         """ Input dataset """ 
         self.output_ds = None
         """ Output dataset """ 
         self.output_config = None
         """ Output configuration """ 
+        # Initialize input number of rows and columns
+        self.rows_d, self.cols_d = self.input_ds.shape
             
         
     def get_size_csv(self, csv_file):
@@ -71,10 +73,6 @@ class  Preprocessor:
         # Start logging: TODO: Use args.loglevel en lugar de logging.DEBUG
         self.setup_logging(logging.DEBUG)
         _logger.info("Starting preprocessor...")
-        # Load input dataset
-        self.input_ds = np.array( list( csv.reader( open(self.input_file) ) ))
-        # Initialize input number of rows and columns
-        self.rows_d, self.cols_d = self.input_ds.shape
         # Start core function
         self.core(args)
         _logger.debug("Saving results...")
