@@ -53,3 +53,4 @@ MANIFEST
 .vs/slnx.sqlite
 .vs/VSWorkspaceState.json
 .vs/data-trimmer/v16/.suo
+.vscode/settings.json

@@ -2,8 +2,11 @@
 
 import pytest
 import csv 
-from src.data_trimmer.data_trimmer import DataTrimmer
-from tests.test_data_trimmer import TestPreprocessor
+import sys
+sys.path.append('c:\\Users\\HarveyD\\Dropbox\\preprocessor\\src\\')
+from data_trimmer.data_trimmer import DataTrimmer 
+from test_preprocessor import TestPreprocessor 
+
 
 __author__ = "Harvey Bastidas"
 __copyright__ = "Harvey Bastidas"
