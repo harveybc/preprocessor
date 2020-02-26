@@ -46,42 +46,14 @@ class  DataTrimmer(Preprocessor):
         Returns:
             :obj:`argparse.Namespace`: command line parameters namespace
         """
-        parser = argparse.ArgumentParser(
-            description="Dataset Trimmer: trims constant columns and consecutive zero rows from the end and the start of a dataset.")
-        parser.add_argument(
-            "--version",
-            action="version",
-            version="preprocessor {ver}".format(ver=__version__))
-        parser.add_argument(
-            "--from_start",
-            help="number of rows to remove from start (ignored if auto_trim)",
-            type=int, default = 0)
-        parser.add_argument(
-            "--from_end",
-            help="number of rows to remove from end (ignored if auto_trim)",
-            type=int, default = 0)
-        parser.add_argument(
-            "--remove_columns",
-            help="removes constant columns",
-            action='store_true')
-        parser.add_argument(
-            "--auto_trim",
-            help="trims the constant columns and trims all rows with consecutive zeroes from start and end",
-            action='store_true')
-        parser.add_argument(
-            "-v",
-            "--verbose",
-            dest="loglevel",
-            help="set loglevel to INFO",
-            action="store_const",
-            const=logging.INFO)
-        parser.add_argument(
-            "-vv",
-            "--very_verbose",
-            dest="loglevel",
-            help="set loglevel to DEBUG",
-            action="store_const",
-            const=logging.DEBUG)
+        parser = argparse.ArgumentParser(description="Dataset Trimmer: trims constant columns and consecutive zero rows from the end and the start of a dataset.")
+        parser.add_argument("--version", action="version", version="preprocessor {ver}".format(ver=__version__))
+        parser.add_argument("--from_start", help="number of rows to remove from start (ignored if auto_trim)",type=int, default = 0)
+        parser.add_argument("--from_end",help="number of rows to remove from end (ignored if auto_trim)",type=int, default = 0)
+        parser.add_argument("--remove_columns",help="removes constant columns",action='store_true')
+        parser.add_argument("--auto_trim",help="trims the constant columns and trims all rows with consecutive zeroes from start and end",action='store_true')
+        parser.add_argument("-v","--verbose",dest="loglevel",help="set loglevel to INFO",action="store_const",const=logging.INFO)
+        parser.add_argument("-vv","--very_verbose",dest="loglevel",help="set loglevel to DEBUG",action="store_const",const=logging.DEBUG)
         return parser.parse_args(args)
 
     def core(self, args):
