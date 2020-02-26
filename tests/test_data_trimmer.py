@@ -28,6 +28,18 @@ class  TestDataTrimmer():
     """ Component Tests
     """
     
+    def get_size_csv(self, csv_file):
+        """ Get the number of rows and columns of a test dataset, used in all tests.
+        
+        Args:
+        csv_file (string): Path and filename of a test dataset
+
+        Returns:
+        (int,int): number of rows, number of columns
+        """
+        rows = list( csv.reader(open(csv_file)) )
+        return len(rows), len(rows[0])
+    
     def setup_method(self, test_method):
         """ Component Tests Constructor """
         self.conf = Conf()
