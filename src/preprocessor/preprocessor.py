@@ -64,7 +64,7 @@ class  Preprocessor:
         self.core(args)
         _logger.debug("Saving results...")
         # Save results and output configuration
-        self.store(args)
+        self.store()
         _logger.info("Script end.") 
 
     def store(self):

@@ -16,7 +16,7 @@ class Conf:
         """ Component Tests Constructor """
         self.input_file = "tests\\test_input.csv"
         """ Test dataset filename """
-        self.output_file = "test_output.csv"
+        self.output_file = "tests\\test_output.csv"
         """ Output dataset filename """
         self.input_config_file = "in_config.csv"
         """ Output dataset filename """
