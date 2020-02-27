@@ -3,7 +3,7 @@
 import pytest
 import csv 
 import sys
-#sys.path.append('c:\\Users\\HarveyD\\Dropbox\\preprocessor\\src\\')
+sys.path.append('c:\\Users\\HarveyD\\Dropbox\\preprocessor\\src\\')
 from data_trimmer.data_trimmer import DataTrimmer 
 from test_preprocessor import TestPreprocessor 
 
@@ -25,20 +25,7 @@ class Conf:
         """ Output configuration of the proprocessor """
 
 class  TestDataTrimmer(): 
-    """ Component Tests
-    """
-    
-    def get_size_csv(self, csv_file):
-        """ Get the number of rows and columns of a test dataset, used in all tests.
-        
-        Args:
-        csv_file (string): Path and filename of a test dataset
-
-        Returns:
-        (int,int): number of rows, number of columns
-        """
-        rows = list( csv.reader(open(csv_file)) )
-        return len(rows), len(rows[0])
+    """ Component Tests  """
     
     def setup_method(self, test_method):
         """ Component Tests Constructor """
