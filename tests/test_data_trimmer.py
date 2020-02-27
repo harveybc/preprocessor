@@ -50,7 +50,7 @@ class  TestDataTrimmer():
         """ Trims a configurable number of rows from the start or end of the input dataset by using the trim_fixed_rows method. Execute trimmer with from_start=10, from_end=10. """
         rows_t, cols_t = self.dt.trim_fixed_rows(10, 10)
         # save output to file
-        self.store()
+        self.dt.store()
         # get the number of rows and cols from out_file
         rows_o, cols_o = self.get_size_csv(self.conf.output_file)
         # assert if the new == old - trimmed
@@ -60,7 +60,7 @@ class  TestDataTrimmer():
         """ Trims all the constant columns by using the trim_columns method. Execute trimmer with remove_colums = true. """
         rows_t, cols_t = self.dt.trim_columns()
         # save output to file
-        self.store()
+        self.dt.store()
         # get the number of rows and cols from out_file
         rows_o, cols_o = self.get_size_csv(self.conf.output_file)
         # assert if the new == old - trimmed
@@ -70,7 +70,7 @@ class  TestDataTrimmer():
         """ Trims all the constant columns and trims all rows with consecutive zeroes from start and end by using the trim_auto method. Execute trimmer with auto_trim = true.  """
         rows_t, cols_t = self.dt.trim_auto()
         # save output to file
-        self.store()
+        self.dt.store()
         # get the number of rows and cols from out_file
         rows_o, cols_o = self.get_size_csv(self.conf.output_file)
         # assert if the new == old - trimmed
