@@ -123,6 +123,10 @@ class  DataTrimmer(Preprocessor):
             z_array = (self.output_ds[0]==0)
         return rows_t, cols_t
 
+    def store(self):
+        """ Save preprocessed data and the configuration of the preprocessor. """
+        np.savetxt(self.input_file, self.output_ds, delimiter=",")
+
 def run():
     """ Entry point for console_scripts """
     data_trimmer = DataTrimmer(None)

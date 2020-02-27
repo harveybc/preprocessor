@@ -67,7 +67,7 @@ class  Preprocessor:
         self.store(args)
         _logger.info("Script end.") 
 
-    def store(self,args):
+    def store(self):
         """ Save preprocessed data and the configuration of the preprocessor. """
         pass
 
