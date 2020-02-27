@@ -30,7 +30,7 @@ class  Preprocessor:
             """ Path of the input configuration """    
             self.output_config_file = conf.output_config_file
             """ Path of the output configuration """   
-        self.input_ds = np.array( list( csv.reader( open(self.input_file) ) ))
+        self.input_ds = np.genfromtxt(self.input_file, delimiter=',')
         """ Input dataset """ 
         self.output_ds = None
         """ Output dataset """ 
