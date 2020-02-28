@@ -20,7 +20,6 @@ import sys
 import logging
 import numpy as np
 from preprocessor.preprocessor import Preprocessor
-
 from data_trimmer import __version__
 
 __author__ = "Harvey Bastidas"

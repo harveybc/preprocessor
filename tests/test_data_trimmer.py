@@ -3,6 +3,7 @@
 import pytest
 import csv 
 import sys
+import os
 sys.path.append('..\\src\\')
 from data_trimmer.data_trimmer import DataTrimmer 
 from test_preprocessor import TestPreprocessor 
@@ -76,4 +77,13 @@ class  TestDataTrimmer():
         # assert if the new == old - trimmed
         assert (rows_o + cols_o) == (self.rows_d  + self.cols_d) - (rows_t + cols_t)
 
-    
+	def test_C02T04_cmdline(self):
+        """ Trims all the constant columns and 10  rows from start and end using command line arguments """
+        os.system('data-trimmer --from_start=10 --from_end=10 --remove_colums --file_input=test_input --file_output=file_output ')
+        # get the size of the original dataset
+        rows_d, cols_d = self.get_size_csv(self.conf.input_file)
+        # get the size of the output dataset
+        rows_o, cols_o = self.get_size_csv(self.conf.output_file)
+        # assert if the number of rows an colums is less than the input dataset and > 0
+        assert ((rows_d - rows_o) >0) and ((cols_d - cols_o) >0) and (cols_o>0) and (rows_o)
+

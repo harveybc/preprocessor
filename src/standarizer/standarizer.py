@@ -27,7 +27,6 @@ __license__ = "mit"
 
 _logger = logging.getLogger(__name__)
 
-
 class  Standarizer(Preprocessor):
     """ The Standarizer preprocessor class """
     
@@ -61,18 +60,13 @@ class  Standarizer(Preprocessor):
         Args:
         args (obj): command line parameters as objects
         """
-        if (args.auto_trim):
-            self.trim_auto()
-        elif (args.remove_columns):
-            self.trim_columns()
-        elif (args.from_start>0) and (args.from_end>0):
-            self.trim_fixed_rows(args.from_start, args.from_end)
-        else:
-            _logger.info("Error in command-line parameter...")
+        # Standarize dataset
+        
 
     def store(self):
         """ Save preprocessed data and the configuration of the preprocessor. """
         np.savetxt(self.input_file, self.output_ds, delimiter=",")
+        # TODO: GUARDAR OUTPUT_CONFIG
 
 def run():
     """ Entry point for console_scripts """
