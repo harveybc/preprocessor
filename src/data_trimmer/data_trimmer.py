@@ -48,10 +48,10 @@ class  DataTrimmer(Preprocessor):
         """
         parser = argparse.ArgumentParser(description="Dataset Trimmer: trims constant columns and consecutive zero rows from the end and the start of a dataset.")
         parser.add_argument("--version", action="version", version="preprocessor {ver}".format(ver=__version__))
-        parser.add_argument("--input_file", help="Input CSV filename ",type=string)
-        parser.add_argument("--output_file",help="Output CSV filename",type=string)
+        parser.add_argument("--input_file", help="Input CSV filename ")
+        parser.add_argument("--output_file",help="Output CSV filename")
         parser.add_argument("--input_config_file",help="Input configuration  filename")
-        parser.add_argument("--output_config_file",help="Output configuration  filename",type=string)
+        parser.add_argument("--output_config_file",help="Output configuration  filename")
         parser.add_argument("--from_start", help="number of rows to remove from start (ignored if auto_trim)",type=int, default = 0)
         parser.add_argument("--from_end",help="number of rows to remove from end (ignored if auto_trim)",type=int, default = 0)
         parser.add_argument("--remove_columns",help="removes constant columns",action='store_true')
@@ -129,6 +129,7 @@ class  DataTrimmer(Preprocessor):
 
     def store(self):
         """ Save preprocessed data and the configuration of the preprocessor. """
+        print("self.output_ds = ", self.output_ds.shape)
         np.savetxt(self.output_file, self.output_ds, delimiter=",")
 
 def run():
