@@ -129,7 +129,7 @@ class  DataTrimmer(Preprocessor):
 
     def store(self):
         """ Save preprocessed data and the configuration of the preprocessor. """
-        np.savetxt(self.input_file, self.output_ds, delimiter=",")
+        np.savetxt(self.output_file, self.output_ds, delimiter=",")
 
 def run():
     """ Entry point for console_scripts """

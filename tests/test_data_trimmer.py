@@ -44,7 +44,7 @@ class  TestDataTrimmer():
         (int,int): number of rows, number of columns
         """
         rows = list( csv.reader(open(csv_file)) )
-        return len(rows), len(rows[0])
+        return (len(rows), len(rows[0]))
 
     def test_C02T01_trim_fixed_rows(self):
         """ Trims a configurable number of rows from the start or end of the input dataset by using the trim_fixed_rows method. Execute trimmer with from_start=10, from_end=10. """
