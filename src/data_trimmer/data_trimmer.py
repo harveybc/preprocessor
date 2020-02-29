@@ -102,7 +102,7 @@ class  DataTrimmer(Preprocessor):
         un_array = [True] * self.cols_d
         # in two consecutive rows, search the unchanged values
         for i in range(self.rows_d-1):
-            unchanged = (self.input_ds[i, :] == self.input_ds[i+1, :])
+            unchanged = (self.input_ds[i, :] == self.input_ds[i+1, :]) 
             # for each un_array that is true, if the values changed, set it to false
             un_array = not (un_array and unchanged)
         # remove all rows with true on the un_array
