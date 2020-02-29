@@ -99,14 +99,14 @@ class  DataTrimmer(Preprocessor):
         """
         self.rows_d, self.cols_d = self.input_ds.shape
         # initialize unchanged_array as true with size num_columns
-        un_array = [True] * self.cols_d
+        un_array = np.array([True] * self.cols_d)
         # in two consecutive rows, search the unchanged values
         for i in range(self.rows_d-1):
-            unchanged = (self.input_ds[i, :] == self.input_ds[i+1, :]) 
+            unchanged = np.equal(self.input_ds[i, :], self.input_ds[i+1, :]) 
             # for each un_array that is true, if the values changed, set it to false
-            un_array = not (un_array and unchanged)
+            un_array = np.logical_not (np.logical_and(un_array,unchanged))
         # remove all rows with true on the un_array
-        self.output_ds=self.input_ds[:,not(un_array)]
+        self.output_ds=self.input_ds[:,np.logical_not(un_array)]
         return 0, np.sum(un_array)
 
     def trim_auto(self):
