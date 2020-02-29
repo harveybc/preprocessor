@@ -24,7 +24,7 @@ class Conf:
         self.output_config_file = "out_config.csv"
         """ Output configuration of the proprocessor """
 
-class  TestDataTrimmer(): 
+class  TestStandarizer(): 
     """ Component Tests  """
     
     def setup_method(self, test_method):
