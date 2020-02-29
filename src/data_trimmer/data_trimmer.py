@@ -104,7 +104,7 @@ class  DataTrimmer(Preprocessor):
         for i in range(self.rows_d-1):
             unchanged = np.equal(self.input_ds[i, :], self.input_ds[i+1, :]) 
             # for each un_array that is true, if the values changed, set it to false
-            un_array = np.logical_not (np.logical_and(un_array,unchanged))
+            un_array = np.logical_and(un_array,unchanged)
         # remove all rows with true on the un_array
         self.output_ds=self.input_ds[:,np.logical_not(un_array)]
         return 0, np.sum(un_array)
