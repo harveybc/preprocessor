@@ -60,7 +60,7 @@ class TestDataTrimmer():
         assert (rows_o + cols_o) == (self.rows_d +
                                      self.cols_d) - (rows_t + cols_t)
 
-    def atest_C02T02_trim_columns(self):
+    def test_C02T02_trim_columns(self):
         """ Trims all the constant columns by using the trim_columns method. Execute trimmer with remove_colums = true. """
         rows_t, cols_t = self.dt.trim_columns()
         # save output to file
@@ -71,7 +71,7 @@ class TestDataTrimmer():
         assert (rows_o + cols_o) == (self.rows_d +
                                      self.cols_d) - (rows_t + cols_t)
 
-    def atest_C02T03_trim_auto(self):
+    def test_C02T03_trim_auto(self):
         """ Trims all the constant columns and trims all rows with consecutive zeroes from start and end by using the trim_auto method. Execute trimmer with auto_trim = true.  """
         rows_t, cols_t = self.dt.trim_auto()
         # save output to file
