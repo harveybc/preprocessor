@@ -32,8 +32,6 @@ class  TestDataTrimmer():
         self.conf = Conf()
         self.st = Standarizer(self.conf)
         """ Data trimmer object """
-        self.rows_d, self.cols_d = self.get_size_csv(self.conf.input_file)
-        """ Get the number of rows and columns of the test dataset """
     
     def test_C02T01_standarize(self):
         """ Standarize a dataset """
