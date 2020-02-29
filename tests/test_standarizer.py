@@ -35,7 +35,7 @@ class  TestDataTrimmer():
     
     def test_C02T01_standarize(self):
         """ Standarize a dataset """
-        rows_t, cols_t = self.st.standarize()
+        self.st.standarize()
         # save the output dataset
         self.st.store()
         # read the standarized dataset 
