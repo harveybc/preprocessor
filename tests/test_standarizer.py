@@ -3,10 +3,10 @@
 import pytest
 import csv 
 import sys
-sys.path.append('..\\src\\')
 import numpy as np
-from data_trimmer.data_trimmer import DataTrimmer 
-from test_preprocessor import TestPreprocessor 
+sys.path.append('..\\src\\')
+from standarizer.standarizer import Standarizer
+
 
 __author__ = "Harvey Bastidas"
 __copyright__ = "Harvey Bastidas"
@@ -35,7 +35,7 @@ class  TestDataTrimmer():
         self.rows_d, self.cols_d = self.get_size_csv(self.conf.input_file)
         """ Get the number of rows and columns of the test dataset """
     
-    def test_C02T01_trim_standarize(self):
+    def test_C02T01_standarize(self):
         """ Standarize a dataset """
         rows_t, cols_t = self.st.standarize()
         # save the output dataset
