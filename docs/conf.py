@@ -12,6 +12,8 @@ import os
 import sys
 import inspect
 import shutil
+import sphinx_rtd_theme
+
 
 __location__ = os.path.join(os.getcwd(), os.path.dirname(
     inspect.getfile(inspect.currentframe())))
@@ -28,6 +30,9 @@ sys.path.insert(0, os.path.join(__location__, '../src'))
 # DON'T FORGET: Check the box "Install your project inside a virtualenv using
 # setup.py install" in the RTD Advanced Settings.
 # Additionally it helps us to avoid running apidoc manually
+
+
+
 
 try:  # for Sphinx >= 1.7
     from sphinx.ext import apidoc
@@ -66,7 +71,7 @@ except Exception as e:
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx', 'sphinx.ext.todo',
               'sphinx.ext.autosummary', 'sphinx.ext.viewcode', 'sphinx.ext.coverage',
               'sphinx.ext.doctest', 'sphinx.ext.ifconfig', 'sphinx.ext.mathjax',
-              'sphinx.ext.napoleon']
+              "sphinx_rtd_theme",'sphinx.ext.napoleon']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
