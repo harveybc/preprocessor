@@ -11,6 +11,7 @@ import sys
 
 from pkg_resources import VersionConflict, require
 from setuptools import setup
+from data_trimmer.data_trimmer import DataTrimmer
 
 try:
     require('setuptools>=38.3')
