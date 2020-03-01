@@ -4,7 +4,7 @@ This File contains the DataTrimmer class. To run this script uncomment or add th
 [options.entry_points] section in setup.cfg:
 
     console_scripts =
-        data-trimmer = data_trimmer.data_trimmer:run
+        data-trimmer = data_trimmer.__main__:main
 
 Then run `python setup.py install` which will install the command `data-trimmer`
 inside your current environment.
@@ -131,10 +131,10 @@ class  DataTrimmer(Preprocessor):
         print("self.output_ds = ", self.output_ds.shape)
         np.savetxt(self.output_file, self.output_ds, delimiter=",")
 
-def run():
+def run(args):
     """ Entry point for console_scripts """
     data_trimmer = DataTrimmer(None)
-    data_trimmer.main(sys.argv[1:])
+    data_trimmer.main(args)
 
 
 if __name__ == "__main__":
