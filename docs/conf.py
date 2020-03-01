@@ -31,7 +31,7 @@ sys.path.insert(0, os.path.join(__location__, '../src'))
 # setup.py install" in the RTD Advanced Settings.
 # Additionally it helps us to avoid running apidoc manually
 
-
+ 
 
 
 try:  # for Sphinx >= 1.7
