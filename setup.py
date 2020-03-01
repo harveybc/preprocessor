@@ -11,6 +11,7 @@ import sys
 
 from pkg_resources import VersionConflict, require
 from setuptools import setup
+sys.path.append('src\\')
 from data_trimmer.data_trimmer import DataTrimmer
 
 try:
