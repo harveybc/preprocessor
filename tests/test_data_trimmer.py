@@ -6,7 +6,7 @@ import csv
 import sys
 import os
 sys.path.append('..\\src\\')
-from data_trimmer.data_trimmer import DataTrimmer
+from src.data_trimmer.data_trimmer import DataTrimmer
 
 __author__ = "Harvey Bastidas"
 __copyright__ = "Harvey Bastidas"
