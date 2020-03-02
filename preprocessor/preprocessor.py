@@ -35,9 +35,7 @@ class  Preprocessor:
         """ Output dataset """ 
         self.output_config = None
         """ Output configuration """ 
-        # Initialize input number of rows and columns
-        self.rows_d, self.cols_d = self.input_ds.shape
-
+        
     def setup_logging(self, loglevel):
         """Setup basic logging.
 
@@ -61,6 +59,8 @@ class  Preprocessor:
         _logger.info("Starting preprocessor...")
         # Load input dataset
         self.input_ds = np.genfromtxt(self.input_file, delimiter=',')
+        # Initialize input number of rows and columns
+        self.rows_d, self.cols_d = self.input_ds.shape
         # Start core function
         self.core(args)
         _logger.debug("Saving results...")
