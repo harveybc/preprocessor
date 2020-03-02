@@ -46,7 +46,7 @@ class  DataTrimmer(Preprocessor):
             :obj:`argparse.Namespace`: command line parameters namespace
         """
         parser = argparse.ArgumentParser(description="Dataset Trimmer: trims constant columns and consecutive zero rows from the end and the start of a dataset.")
-        parser.add_argument("--version", action="version", version="preprocessor {ver}".format(ver=__version__))
+        parser.add_argument("--version", action="version", version="preprocessor")
         parser.add_argument("--input_file", help="Input CSV filename ")
         parser.add_argument("--output_file",help="Output CSV filename")
         parser.add_argument("--input_config_file",help="Input configuration  filename")

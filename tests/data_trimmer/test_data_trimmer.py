@@ -36,6 +36,10 @@ class TestDataTrimmer():
         """ Data trimmer object """
         self.rows_d, self.cols_d = self.get_size_csv(self.conf.input_file)
         """ Get the number of rows and columns of the test dataset """
+        try:
+            os.remove(self.conf.output_file)
+        except:
+            pass
 
     def get_size_csv(self, csv_file):
         """ Get the number of rows and columns of a test dataset, used in all tests.

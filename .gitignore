@@ -54,3 +54,4 @@ MANIFEST
 .vs/VSWorkspaceState.json
 .vs/data-trimmer/v16/.suo
 .vscode/settings.json
+tests/test_output.csv
