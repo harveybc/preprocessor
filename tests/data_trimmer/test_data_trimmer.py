@@ -95,4 +95,4 @@ class TestDataTrimmer():
         # get the size of the output dataset
         rows_o, cols_o = self.get_size_csv(self.conf.output_file)
         # assert if the number of rows an colums is less than the input dataset and > 0
-        assert (((rows_d - rows_o) > 0) and ((cols_d - cols_o) > 0)) and ((cols_o > 0) and (rows_o > 0))
+        assert (((cols_d - cols_o) > 0) and ((cols_o > 0) and (rows_o > 0)))

@@ -74,6 +74,7 @@ class  DataTrimmer(Preprocessor):
         Args:
         args (obj): command line parameters as objects
         """
+        # TODO: ARREGLAR PARA QUE SE PUEDAN CORRER TODAS LAS OPCIONES SIMULTANEAMENTE + test
         if (self.auto_trim):
             self.trim_auto()
         elif (self.remove_columns):
