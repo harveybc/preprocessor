@@ -6,7 +6,7 @@ source = data_trimmer
 
 [paths]
 source =
-    src/
+    preprocessor/
     */site-packages/
 
 [report]
