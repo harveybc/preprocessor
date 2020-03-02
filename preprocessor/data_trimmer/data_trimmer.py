@@ -73,12 +73,12 @@ class  DataTrimmer(Preprocessor):
         Args:
         args (obj): command line parameters as objects
         """
-        if (args.auto_trim):
+        if (self.auto_trim):
             self.trim_auto()
-        elif (args.remove_columns):
+        elif (self.remove_columns):
             self.trim_columns()
-        elif (args.from_start>0) and (args.from_end>0):
-            self.trim_fixed_rows(args.from_start, args.from_end)
+        elif (self.from_start>0) and (self.from_end>0):
+            self.trim_fixed_rows(self.from_start, self.from_end)
         else:
             _logger.info("Error in command-line parameter...")
 

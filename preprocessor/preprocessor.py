@@ -51,7 +51,7 @@ class  Preprocessor:
         Args:
         args ([str]): command line parameter list
         """
-        args = self.parse_args(args)
+        self.parse_args(args)
         # Start logging: TODO: Use args.loglevel en lugar de logging.DEBUG
         self.setup_logging(logging.DEBUG)
         _logger.info("Starting preprocessor...")
@@ -59,7 +59,8 @@ class  Preprocessor:
         if self.input_ds == None: 
             self.load_ds()
         # Start core function
-        self.core(args)
+        self.core()
+        # Start logger
         _logger.debug("Saving results...")
         # Save results and output configuration
         self.store()
@@ -71,19 +72,14 @@ class  Preprocessor:
         self.input_ds = np.genfromtxt(self.input_file, delimiter=',')
         # Initialize input number of rows and columns
         self.rows_d, self.cols_d = self.input_ds.shape
-        
-
 
     def store(self):
         """ Save preprocessed data and the configuration of the preprocessor. """
         pass
 
-    def core(self, args):
+    def core(self):
         """ Core preprocessor task after starting the instance with the main method.
             To be overriden by child classes depending on their preprocessor task.
-
-        Args:
-        args (obj): command line parameters as objects
         """
         pass
 
