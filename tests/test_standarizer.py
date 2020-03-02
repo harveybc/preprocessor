@@ -4,8 +4,8 @@ import pytest
 import csv 
 import sys
 import numpy as np
-sys.path.append('..\\src\\')
-from standarizer.standarizer import Standarizer
+#sys.path.append('..\\src\\')
+from preprocessor.standarizer import Standarizer
 
 
 __author__ = "Harvey Bastidas"

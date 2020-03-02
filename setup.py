@@ -11,8 +11,8 @@ import sys
 
 from pkg_resources import VersionConflict, require
 from setuptools import setup
-sys.path.append('src\\')
-from src.data_trimmer.data_trimmer import DataTrimmer
+#sys.path.append('preprocessor\\')
+from preprocessor.data_trimmer.data_trimmer import DataTrimmer
 
 try:
     require('setuptools>=38.3')

@@ -6,8 +6,7 @@ import sys
 import logging
 import numpy as np 
 import csv
-
-from data_trimmer import __version__
+#from preprocessor import __version__
 
 __author__ = "Harvey Bastidas"
 __copyright__ = "Harvey Bastidas"

@@ -20,7 +20,7 @@ import sys
 import logging
 import numpy as np
 from preprocessor.preprocessor import Preprocessor
-from data_trimmer import __version__
+#from data_trimmer import __version__
 
 __author__ = "Harvey Bastidas"
 __copyright__ = "Harvey Bastidas"
@@ -138,4 +138,4 @@ def run(args):
 
 
 if __name__ == "__main__":
-    run()
+    run(sys.argv)
