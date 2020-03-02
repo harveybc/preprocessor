@@ -5,7 +5,7 @@ import csv
 import sys
 import numpy as np
 #sys.path.append('..\\src\\')
-from preprocessor.Standardizer import Standardizer
+from preprocessor.standardizer.standardizer import Standardizer
 
 
 __author__ = "Harvey Bastidas"
