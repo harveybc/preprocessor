@@ -29,12 +29,6 @@ class  Preprocessor:
             """ Path of the input configuration """    
             self.output_config_file = conf.output_config_file
             """ Path of the output configuration """   
-        self.input_ds = None
-        """ Input dataset """ 
-        self.output_ds = None
-        """ Output dataset """ 
-        self.output_config = None
-        """ Output configuration """ 
         
     def setup_logging(self, loglevel):
         """Setup basic logging.
