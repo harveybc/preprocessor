@@ -58,13 +58,13 @@ class  DataTrimmer(Preprocessor):
         parser.add_argument("-v","--verbose",dest="loglevel",help="set loglevel to INFO",action="store_const",const=logging.INFO)
         parser.add_argument("-vv","--very_verbose",dest="loglevel",help="set loglevel to DEBUG",action="store_const",const=logging.DEBUG)
         pargs = parser.parse_args(args)
-        if (hasattr(pargs), 'input_file'): self.input_file = pargs.input_file
-        if (hasattr(pargs), 'output_file'): self.input_file = pargs.output_file
-        if (hasattr(pargs), 'input_config_file'): self.input_config_file = pargs.input_config_file
-        if (hasattr(pargs), 'output_config_file'): self.input_config_file = pargs.output_config_file
-        if (hasattr(pargs), 'from_start'): self.from_start = pargs.from_start
-        if (hasattr(pargs), 'from_end'): self.from_end = pargs.from_end
-        if (hasattr(pargs), 'remove_columns'): self.remove_columns = pargs.remove_columns
+        if (hasattr(pargs, 'input_file')): self.input_file = pargs.input_file
+        if (hasattr(pargs, 'output_file')): self.input_file = pargs.output_file
+        if (hasattr(pargs, 'input_config_file')): self.input_config_file = pargs.input_config_file
+        if (hasattr(pargs, 'output_config_file')): self.input_config_file = pargs.output_config_file
+        if (hasattr(pargs, 'from_start')): self.from_start = pargs.from_start
+        if (hasattr(pargs, 'from_end')): self.from_end = pargs.from_end
+        if (hasattr(pargs, 'remove_columns')): self.remove_columns = pargs.remove_columns
 
     def core(self, args):
         """ Core preprocessor task after starting the instance with the main method.
