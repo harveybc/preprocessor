@@ -29,7 +29,11 @@ class  Preprocessor:
             """ Path of the input configuration """    
             self.output_config_file = conf.output_config_file
             """ Path of the output configuration """   
-        
+            # Load input dataset
+            self.load_ds()
+        else:
+            self.input_ds = None
+
     def setup_logging(self, loglevel):
         """Setup basic logging.
 
@@ -52,15 +56,23 @@ class  Preprocessor:
         self.setup_logging(logging.DEBUG)
         _logger.info("Starting preprocessor...")
         # Load input dataset
-        self.input_ds = np.genfromtxt(self.input_file, delimiter=',')
-        # Initialize input number of rows and columns
-        self.rows_d, self.cols_d = self.input_ds.shape
+        if self.input_ds == None: 
+            self.load_ds()
         # Start core function
         self.core(args)
         _logger.debug("Saving results...")
         # Save results and output configuration
         self.store()
         _logger.info("Script end.") 
+
+    def load_ds(self):
+        """ Save preprocessed data and the configuration of the preprocessor. """
+        # Load input dataset
+        self.input_ds = np.genfromtxt(self.input_file, delimiter=',')
+        # Initialize input number of rows and columns
+        self.rows_d, self.cols_d = self.input_ds.shape
+        
+
 
     def store(self):
         """ Save preprocessed data and the configuration of the preprocessor. """
