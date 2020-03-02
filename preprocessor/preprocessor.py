@@ -29,7 +29,7 @@ class  Preprocessor:
             """ Path of the input configuration """    
             self.output_config_file = conf.output_config_file
             """ Path of the output configuration """   
-        self.input_ds = np.genfromtxt(self.input_file, delimiter=',')
+        self.input_ds = None
         """ Input dataset """ 
         self.output_ds = None
         """ Output dataset """ 
@@ -59,6 +59,8 @@ class  Preprocessor:
         # Start logging: TODO: Use args.loglevel en lugar de logging.DEBUG
         self.setup_logging(logging.DEBUG)
         _logger.info("Starting preprocessor...")
+        # Load input dataset
+        self.input_ds = np.genfromtxt(self.input_file, delimiter=',')
         # Start core function
         self.core(args)
         _logger.debug("Saving results...")
