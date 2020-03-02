@@ -66,7 +66,7 @@ class  DataTrimmer(Preprocessor):
         if (hasattr(pargs, 'from_end')): self.from_end = pargs.from_end
         if (hasattr(pargs, 'remove_columns')): self.remove_columns = pargs.remove_columns
 
-    def core(self, args):
+    def core(self):
         """ Core preprocessor task after starting the instance with the main method.
             Decide from the arguments, what trimming method to call.
 
