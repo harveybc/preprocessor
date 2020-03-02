@@ -89,7 +89,7 @@ class TestDataTrimmer():
     def test_C02T04_cmdline(self):
         """ Trims all the constant columns and 10  rows from start and end using command line arguments """
         os.system(
-            'data-trimmer --from_start 10 --from_end 10 --remove_colums --file_input test_input.csv --file_output test_output.csv')
+            'data-trimmer --from_start 10 --from_end 10 --remove_columns --input_file tests\test_input.csv --output_file tests\test_output.csv')
         # get the size of the original dataset
         rows_d, cols_d = self.get_size_csv(self.conf.input_file)
         # get the size of the output dataset
