@@ -11,6 +11,7 @@ import sys
 
 from pkg_resources import VersionConflict, require
 from setuptools import setup
+from setuptools import find_packages
 #sys.path.append('preprocessor\\')
 from preprocessor.data_trimmer.data_trimmer import DataTrimmer
 
@@ -22,4 +23,4 @@ except VersionConflict:
 
 
 if __name__ == "__main__":
-    setup(use_pyscaffold=True)
+    setup(packages=find_packages(),use_pyscaffold=True)
