@@ -1,5 +1,5 @@
 import sys
-import src.data_trimmer.data_trimmer  as dt
+import preprocessor.data_trimmer.data_trimmer  as dt
 
 def main(args=None):
     """The main routine."""
