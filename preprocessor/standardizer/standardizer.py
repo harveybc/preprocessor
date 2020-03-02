@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-This File contains the Standarizer class. To run this script uncomment or add the following lines in the
+This File contains the Standardizer class. To run this script uncomment or add the following lines in the
 [options.entry_points] section in setup.cfg:
 
     console_scripts =
-        standarizer = standarizer.standarizer
+        Standardizer = Standardizer.Standardizer
 
-Then run `python setup.py install` which will install the command `standarizer`
+Then run `python setup.py install` which will install the command `Standardizer`
 inside your current environment.
 
 TODO: VERIFICAR
@@ -27,8 +27,8 @@ __license__ = "mit"
 
 _logger = logging.getLogger(__name__)
 
-class  Standarizer(Preprocessor):
-    """ The Standarizer preprocessor class """
+class  Standardizer(Preprocessor):
+    """ The Standardizer preprocessor class """
     
     def __init__(self, conf):
         """ Constructor using same parameters as base class """
@@ -43,7 +43,7 @@ class  Standarizer(Preprocessor):
         Returns:
             :obj:`argparse.Namespace`: command line parameters namespace
         """
-        parser = argparse.ArgumentParser(description="Standarizer: standarize a dataset, exports or imports a configuration file for standarization.")
+        parser = argparse.ArgumentParser(description="Standardizer: standarize a dataset, exports or imports a configuration file for standarization.")
         parser.add_argument("--version", action="version", version="preprocessor {ver}".format(ver=__version__))
         parser.add_argument("--input_file", help="Input CSV filename ",type=string)
         parser.add_argument("--output_file",help="Output CSV filename",type=string)

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-""" This File contains the Preprocessor class, it is the base class for DataTrimmer, FeatureSelector, Standarizer, MSSADecomposer. """
+""" This File contains the Preprocessor class, it is the base class for DataTrimmer, FeatureSelector, Standardizer, MSSADecomposer. """
 
 import argparse
 import sys
@@ -15,7 +15,7 @@ __license__ = "mit"
 _logger = logging.getLogger(__name__)
 
 class  Preprocessor:
-    """ Base class for DataTrimmer, FeatureSelector, Standarizer, MSSADecomposer. """
+    """ Base class for DataTrimmer, FeatureSelector, Standardizer, MSSADecomposer. """
     
     def __init__(self, conf):
         """ Constructor """

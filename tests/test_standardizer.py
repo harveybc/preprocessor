@@ -5,7 +5,7 @@ import csv
 import sys
 import numpy as np
 #sys.path.append('..\\src\\')
-from preprocessor.standarizer import Standarizer
+from preprocessor.Standardizer import Standardizer
 
 
 __author__ = "Harvey Bastidas"
@@ -24,13 +24,13 @@ class Conf:
         self.output_config_file = "out_config.csv"
         """ Output configuration of the proprocessor """
 
-class  TestStandarizer(): 
+class  TestStandardizer(): 
     """ Component Tests  """
     
     def setup_method(self, test_method):
         """ Component Tests Constructor """
         self.conf = Conf()
-        self.st = Standarizer(self.conf)
+        self.st = Standardizer(self.conf)
         """ Data trimmer object """
     
     def test_C02T01_standarize(self):
