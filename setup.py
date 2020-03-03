@@ -23,4 +23,4 @@ except VersionConflict:
 
 
 if __name__ == "__main__":
-    setup(packages=find_packages(),use_pyscaffold=True)
+    setup(packages=find_packages(exclude=['contrib', 'docs', 'tests']),use_pyscaffold=True)
