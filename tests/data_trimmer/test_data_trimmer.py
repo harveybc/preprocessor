@@ -16,13 +16,17 @@ __license__ = "mit"
 class Conf:
     def __init__(self):
         """ Component Tests Constructor """
-        self.input_file = "tests\\test_input.csv"
+        fname = os.path.join(os.path.dirname(__file__), '../data/test_input.csv')
+        self.input_file = fname
         """ Test dataset filename """
-        self.output_file = "tests\\test_output.csv"
+        fname = os.path.join(os.path.dirname(__file__), '../data/test_output.csv')
+        self.output_file = fname
         """ Output dataset filename """
-        self.input_config_file = "in_config.csv"
+        fname = os.path.join(os.path.dirname(__file__), '../data/in_config.csv')
+        self.input_config_file = fname
         """ Output dataset filename """
-        self.output_config_file = "out_config.csv"
+        fname = os.path.join(os.path.dirname(__file__), '../data/out_config.csv')
+        self.output_config_file = fname
         """ Output configuration of the proprocessor """
 
 
@@ -89,7 +93,7 @@ class TestDataTrimmer():
     def test_C02T04_cmdline(self):
         """ Trims all the constant columns and 10  rows from start and end using command line arguments """
         os.system(
-            'data-trimmer --from_start 10 --from_end 10 --remove_columns --input_file tests\\test_input.csv --output_file tests\\test_output.csv')
+            'data-trimmer --from_start 10 --from_end 10 --remove_columns --input_file ' + self.conf.input_file + ' --output_file ' + self.conf.output_file)
         # get the size of the original dataset
         rows_d, cols_d = self.get_size_csv(self.conf.input_file)
         # get the size of the output dataset
