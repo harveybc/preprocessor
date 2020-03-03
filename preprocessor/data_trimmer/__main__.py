@@ -1,5 +1,6 @@
 import sys
-import preprocessor.data_trimmer.data_trimmer  as dt
+import preprocessor.data_trimmer.data_trimmer as dt
+
 
 def main(args=None):
     """The main routine."""
@@ -8,5 +9,6 @@ def main(args=None):
     # you want your project to do.
     dt.run(args)
 
+
 if __name__ == "__main__":
-    main() 
+    main()

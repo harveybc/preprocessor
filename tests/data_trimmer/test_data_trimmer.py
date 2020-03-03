@@ -5,8 +5,9 @@ import pytest
 import csv
 import sys
 import os
-#sys.path.append('..\\src\\')
-from preprocessor.data_trimmer.data_trimmer import DataTrimmer 
+
+# sys.path.append('..\\src\\')
+from preprocessor.data_trimmer.data_trimmer import DataTrimmer
 
 __author__ = "Harvey Bastidas"
 __copyright__ = "Harvey Bastidas"
@@ -16,21 +17,21 @@ __license__ = "mit"
 class Conf:
     def __init__(self):
         """ Component Tests Constructor """
-        fname = os.path.join(os.path.dirname(__file__), '../data/test_input.csv')
+        fname = os.path.join(os.path.dirname(__file__), "../data/test_input.csv")
         self.input_file = fname
         """ Test dataset filename """
-        fname = os.path.join(os.path.dirname(__file__), '../data/test_output.csv')
+        fname = os.path.join(os.path.dirname(__file__), "../data/test_output.csv")
         self.output_file = fname
         """ Output dataset filename """
-        fname = os.path.join(os.path.dirname(__file__), '../data/in_config.csv')
+        fname = os.path.join(os.path.dirname(__file__), "../data/in_config.csv")
         self.input_config_file = fname
         """ Output dataset filename """
-        fname = os.path.join(os.path.dirname(__file__), '../data/out_config.csv')
+        fname = os.path.join(os.path.dirname(__file__), "../data/out_config.csv")
         self.output_config_file = fname
         """ Output configuration of the proprocessor """
 
 
-class TestDataTrimmer():
+class TestDataTrimmer:
     """ Component Tests  """
 
     def setup_method(self, test_method):
@@ -65,8 +66,7 @@ class TestDataTrimmer():
         # get the number of rows and cols from out_file
         rows_o, cols_o = self.get_size_csv(self.conf.output_file)
         # assert if the new == old - trimmed
-        assert (rows_o + cols_o) == (self.rows_d +
-                                     self.cols_d) - (rows_t + cols_t)
+        assert (rows_o + cols_o) == (self.rows_d + self.cols_d) - (rows_t + cols_t)
 
     def test_C02T02_trim_columns(self):
         """ Trims all the constant columns by using the trim_columns method. Execute trimmer with remove_colums = true. """
@@ -76,8 +76,7 @@ class TestDataTrimmer():
         # get the number of rows and cols from out_file
         rows_o, cols_o = self.get_size_csv(self.conf.output_file)
         # assert if the new == old - trimmed
-        assert (rows_o + cols_o) == (self.rows_d +
-                                     self.cols_d) - (rows_t + cols_t)
+        assert (rows_o + cols_o) == (self.rows_d + self.cols_d) - (rows_t + cols_t)
 
     def test_C02T03_trim_auto(self):
         """ Trims all the constant columns and trims all rows with consecutive zeroes from start and end by using the trim_auto method. Execute trimmer with auto_trim = true.  """
@@ -87,16 +86,19 @@ class TestDataTrimmer():
         # get the number of rows and cols from out_file
         rows_o, cols_o = self.get_size_csv(self.conf.output_file)
         # assert if the new == old - trimmed
-        assert (rows_o + cols_o) == (self.rows_d +
-                                     self.cols_d) - (rows_t + cols_t)
+        assert (rows_o + cols_o) == (self.rows_d + self.cols_d) - (rows_t + cols_t)
 
     def test_C02T04_cmdline(self):
         """ Trims all the constant columns and 10  rows from start and end using command line arguments """
         os.system(
-            'data-trimmer --from_start 10 --from_end 10 --remove_columns --input_file ' + self.conf.input_file + ' --output_file ' + self.conf.output_file)
+            "data-trimmer --from_start 10 --from_end 10 --remove_columns --input_file "
+            + self.conf.input_file
+            + " --output_file "
+            + self.conf.output_file
+        )
         # get the size of the original dataset
         rows_d, cols_d = self.get_size_csv(self.conf.input_file)
         # get the size of the output dataset
         rows_o, cols_o = self.get_size_csv(self.conf.output_file)
         # assert if the number of rows an colums is less than the input dataset and > 0
-        assert (((cols_d - cols_o) > 0) and ((cols_o > 0) and (rows_o > 0)))
+        assert ((cols_d - cols_o) > 0) and ((cols_o > 0) and (rows_o > 0))
