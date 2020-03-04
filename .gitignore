@@ -56,3 +56,4 @@ MANIFEST
 .vscode/settings.json
 tests/test_output.csv
 .pypirc
+tests/data/test_output.csv
