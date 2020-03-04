@@ -87,15 +87,13 @@ class DataTrimmer(Preprocessor):
         Args:
         args (obj): command line parameters as objects
         """
+        if (self.from_start >= 0) and (self.from_end >= 0):
+            self.trim_fixed_rows(self.from_start, self.from_end)
+        if self.remove_columns:
+            self.trim_columns()
         if self.auto_trim:
             self.trim_auto()
-        elif self.remove_columns:
-            self.trim_columns()
-        elif (self.from_start > 0) and (self.from_end > 0):
-            self.trim_fixed_rows(self.from_start, self.from_end)
-        else:
-            _logger.info("Error in command-line parameter...")
-
+        
     def trim_fixed_rows(self, from_start, from_end):
         """ Trims a configurable number of rows from the start or end of the input dataset
 
@@ -110,6 +108,10 @@ class DataTrimmer(Preprocessor):
         self.output_ds = self.input_ds[from_start : len(self.input_ds), :]
         # remove from end
         self.output_ds = self.output_ds[: len(self.output_ds) - from_end, :]
+        # assign output as new input for performing consecutive trimming of columns
+        if hasattr(self, "remove_columns"):
+            if self.remove_columns:
+                self.input_ds = np.copy(self.output_ds)
         return from_end + from_start, 0
 
     def trim_columns(self):
@@ -128,6 +130,10 @@ class DataTrimmer(Preprocessor):
             un_array = np.logical_and(un_array, unchanged)
         # remove all rows with true on the un_array
         self.output_ds = self.input_ds[:, np.logical_not(un_array)]
+        # assign output as new input for performing consecutive auto trimming 
+        if hasattr(self, "auto_trim"):
+            if self.auto_trim:
+                self.input_ds = np.copy(self.output_ds)
         return 0, np.sum(un_array)
 
     def trim_auto(self):
