@@ -44,6 +44,7 @@ class TestDataTrimmer:
         try:
             os.remove(self.conf.output_file)
         except:
+            print("No test output file found.")
             pass
 
     def get_size_csv(self, csv_file):
