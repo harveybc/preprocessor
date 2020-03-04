@@ -6,6 +6,7 @@ import sys
 import logging
 import numpy as np
 import csv
+from preprocessor.preprocessor_base import PreprocessorBase
 
 # from preprocessor import __version__
 
@@ -16,39 +17,8 @@ __license__ = "mit"
 _logger = logging.getLogger(__name__)
 
 
-class Preprocessor:
+class Preprocessor(PreprocessorBase):
     """ Base class for DataTrimmer, FeatureSelector, Standardizer, MSSADecomposer. """
-
-    def __init__(self, conf):
-        """ Constructor """
-        # if conf =  None, loads the configuration from the command line arguments
-        if conf != None:
-            self.input_file = conf.input_file
-            """ Path of the input dataset """
-            self.output_file = conf.output_file
-            """ Path of the output dataset """
-            self.input_config_file = conf.input_config_file
-            """ Path of the input configuration """
-            self.output_config_file = conf.output_config_file
-            """ Path of the output configuration """
-            # Load input dataset
-            self.load_ds()
-        else:
-            self.input_ds = None
-
-    def setup_logging(self, loglevel):
-        """Setup basic logging.
-
-        Args:
-        loglevel (int): minimum loglevel for emitting messages
-        """
-        logformat = "[%(asctime)s] %(levelname)s:%(name)s:%(message)s"
-        logging.basicConfig(
-            level=loglevel,
-            stream=sys.stdout,
-            format=logformat,
-            datefmt="%Y-%m-%d %H:%M:%S",
-        )
 
     def main(self, args):
         """ Starts an instance. Main entry point allowing external calls.
@@ -72,13 +42,16 @@ class Preprocessor:
         self.store()
         _logger.info("Script end.")
 
-    def load_ds(self):
-        """ Save preprocessed data and the configuration of the preprocessor. """
-        # Load input dataset
-        self.input_ds = np.genfromtxt(self.input_file, delimiter=",")
-        # Initialize input number of rows and columns
-        self.rows_d, self.cols_d = self.input_ds.shape
-
+    def parse_cmd(self, parser):
+        parser.add_argument("--version", action="version", version="preprocessor")
+        parser.add_argument("--input_file", help="Input CSV filename ")
+        parser.add_argument("--output_file", help="Output CSV filename")
+        parser.add_argument("--input_config_file", help="Input configuration  filename")
+        parser.add_argument("--output_config_file", help="Output configuration  filename")
+        parser.add_argument("-v","--verbose",dest="loglevel",help="set loglevel to INFO",action="store_const",const=logging.INFO)
+        parser.add_argument("-vv","--very_verbose",dest="loglevel",help="set loglevel to DEBUG",action="store_const",const=logging.DEBUG)
+        return parser
+    
     def store(self):
         """ Save preprocessed data and the configuration of the preprocessor. """
         pass
@@ -100,23 +73,3 @@ class Preprocessor:
         """
     pass
 
-    def parse_cmd(self, parser):
-        parser.add_argument("--version", action="version", version="preprocessor")
-        parser.add_argument("--input_file", help="Input CSV filename ")
-        parser.add_argument("--output_file", help="Output CSV filename")
-        parser.add_argument("--input_config_file", help="Input configuration  filename")
-        parser.add_argument("--output_config_file", help="Output configuration  filename")
-        parser.add_argument("-v","--verbose",dest="loglevel",help="set loglevel to INFO",action="store_const",const=logging.INFO)
-        parser.add_argument("-vv","--very_verbose",dest="loglevel",help="set loglevel to DEBUG",action="store_const",const=logging.DEBUG)
-        return parser
-    
-    def assign_arguments(self,pargs):
-        if hasattr(pargs, "input_file"):
-            self.input_file = pargs.input_file
-        if hasattr(pargs, "output_file"):
-            self.output_file = pargs.output_file
-        if hasattr(pargs, "input_config_file"):
-            self.input_config_file = pargs.input_config_file
-        if hasattr(pargs, "output_config_file"):
-            self.output_config_file = pargs.output_config_file
-        
