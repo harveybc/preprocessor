@@ -49,13 +49,6 @@ class DataTrimmer(Preprocessor):
         parser = argparse.ArgumentParser(
             description="Dataset Trimmer: trims constant columns and consecutive zero rows from the end and the start of a dataset."
         )
-        parser.add_argument("--version", action="version", version="preprocessor")
-        parser.add_argument("--input_file", help="Input CSV filename ")
-        parser.add_argument("--output_file", help="Output CSV filename")
-        parser.add_argument("--input_config_file", help="Input configuration  filename")
-        parser.add_argument(
-            "--output_config_file", help="Output configuration  filename"
-        )
         parser.add_argument(
             "--from_start",
             help="number of rows to remove from start (ignored if auto_trim)",
@@ -76,22 +69,7 @@ class DataTrimmer(Preprocessor):
             help="trims the constant columns and trims all rows with consecutive zeroes from start and end",
             action="store_true",
         )
-        parser.add_argument(
-            "-v",
-            "--verbose",
-            dest="loglevel",
-            help="set loglevel to INFO",
-            action="store_const",
-            const=logging.INFO,
-        )
-        parser.add_argument(
-            "-vv",
-            "--very_verbose",
-            dest="loglevel",
-            help="set loglevel to DEBUG",
-            action="store_const",
-            const=logging.DEBUG,
-        )
+        parser = self.parse_cmd(parser)
         pargs = parser.parse_args(args)
         if hasattr(pargs, "input_file"):
             self.input_file = pargs.input_file
@@ -117,7 +95,6 @@ class DataTrimmer(Preprocessor):
         Args:
         args (obj): command line parameters as objects
         """
-        # TODO: ARREGLAR PARA QUE SE PUEDAN CORRER TODAS LAS OPCIONES SIMULTANEAMENTE + test
         if self.auto_trim:
             self.trim_auto()
         elif self.remove_columns:

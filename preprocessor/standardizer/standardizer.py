@@ -47,33 +47,7 @@ class Standardizer(Preprocessor):
         parser = argparse.ArgumentParser(
             description="Standardizer: standarize a dataset, exports or imports a configuration file for standarization."
         )
-        parser.add_argument(
-            "--version",
-            action="version",
-            version="preprocessor {ver}".format(ver=__version__),
-        )
-        parser.add_argument("--input_file", help="Input CSV filename ", type=string)
-        parser.add_argument("--output_file", help="Output CSV filename", type=string)
-        parser.add_argument("--input_config_file", help="Input configuration  filename")
-        parser.add_argument(
-            "--output_config_file", help="Output configuration  filename", type=string
-        )
-        parser.add_argument(
-            "-v",
-            "--verbose",
-            dest="loglevel",
-            help="set loglevel to INFO",
-            action="store_const",
-            const=logging.INFO,
-        )
-        parser.add_argument(
-            "-vv",
-            "--very_verbose",
-            dest="loglevel",
-            help="set loglevel to DEBUG",
-            action="store_const",
-            const=logging.DEBUG,
-        )
+        parser = self.parse_cmd(parser)
         return parser.parse_args(args)
 
     def core(self, args):
@@ -88,8 +62,6 @@ class Standardizer(Preprocessor):
     def store(self):
         """ Save preprocessed data and the configuration of the preprocessor. """
         np.savetxt(self.input_file, self.output_ds, delimiter=",")
-        # TODO: GUARDAR OUTPUT_CONFIG
-
 
 def run():
     """ Entry point for console_scripts """

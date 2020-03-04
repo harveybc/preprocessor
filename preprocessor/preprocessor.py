@@ -98,5 +98,14 @@ class Preprocessor:
         Returns:
         :obj:`argparse.Namespace`: command line parameters namespace
         """
+    pass
 
-        return 0
+    def parse_cmd(self, parser):
+        parser.add_argument("--version", action="version", version="preprocessor")
+        parser.add_argument("--input_file", help="Input CSV filename ")
+        parser.add_argument("--output_file", help="Output CSV filename")
+        parser.add_argument("--input_config_file", help="Input configuration  filename")
+        parser.add_argument("--output_config_file", help="Output configuration  filename")
+        parser.add_argument("-v","--verbose",dest="loglevel",help="set loglevel to INFO",action="store_const",const=logging.INFO)
+        parser.add_argument("-vv","--very_verbose",dest="loglevel",help="set loglevel to DEBUG",action="store_const",const=logging.DEBUG)
+        return parser
