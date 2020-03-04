@@ -134,24 +134,7 @@ class TestDataTrimmer:
         # assert if the number of rows an colums is less than the input dataset and > 0
         assert ((cols_d - cols_o) > 0) and ((rows_d - rows_o) > 0) and ((cols_o > 0) and (rows_o > 0))
 
-    def test_C02T07_config_load(self):
-        """ Load a configuration file and uses it to trim a dataset. """
-        os.system(
-            "data-trimmer --input_file "
-            + self.conf.input_file
-            + " --output_file "
-            + self.conf.output_file
-            + " --input_config_file"
-            + self.conf.input_config_file 
-        )
-        # get the size of the original dataset
-        rows_d, cols_d = self.get_size_csv(self.conf.input_file)
-        # get the size of the output dataset
-        rows_o, cols_o = self.get_size_csv(self.conf.output_file)
-        # assert if the number of rows an colums is less than the input dataset and > 0
-        assert ((cols_d - cols_o) > 0) and ((rows_d - rows_o) > 0) and ((cols_o > 0) and (rows_o > 0))
-
-    def test_C02T06_config_save(self):
+    def test_C02T07_config_save(self):
         """ Save a configuration file and uses it to trim a dataset. Verify that output_config can be loaded and the output_config(loaded) == output_config(saved)"""
         os.system(
             "data-trimmer --auto --input_file "
@@ -164,7 +147,7 @@ class TestDataTrimmer:
         # TODO
         assert ((cols_d - cols_o) > 0) and ((rows_d - rows_o) > 0) and ((cols_o > 0) and (rows_o > 0))
 
-    def test_C02T07_config_load(self):
+    def test_C02T08_config_load(self):
         """ Load a configuration file and uses it to trim a dataset. Verify that output_config == input_config"""
         os.system(
             "data-trimmer --input_file "
