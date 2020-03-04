@@ -53,32 +53,24 @@ class DataTrimmer(Preprocessor):
             "--from_start",
             help="number of rows to remove from start (ignored if auto_trim)",
             type=int,
-            default=0,
+            default=0
         )
-        parser.add_argument(
-            "--from_end",
+        parser.add_argument("--from_end",
             help="number of rows to remove from end (ignored if auto_trim)",
             type=int,
-            default=0,
+            default=0
         )
-        parser.add_argument(
-            "--remove_columns", help="removes constant columns", action="store_true"
+        parser.add_argument("--remove_columns", 
+            help="removes constant columns", 
+            action="store_true"
         )
-        parser.add_argument(
-            "--auto_trim",
+        parser.add_argument("--auto_trim",
             help="trims the constant columns and trims all rows with consecutive zeroes from start and end",
-            action="store_true",
+            action="store_true"
         )
         parser = self.parse_cmd(parser)
         pargs = parser.parse_args(args)
-        if hasattr(pargs, "input_file"):
-            self.input_file = pargs.input_file
-        if hasattr(pargs, "output_file"):
-            self.output_file = pargs.output_file
-        if hasattr(pargs, "input_config_file"):
-            self.input_config_file = pargs.input_config_file
-        if hasattr(pargs, "output_config_file"):
-            self.output_config_file = pargs.output_config_file
+        self.assign_arguments(pargs)
         if hasattr(pargs, "from_start"):
             self.from_start = pargs.from_start
         if hasattr(pargs, "from_end"):

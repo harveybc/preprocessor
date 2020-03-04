@@ -109,3 +109,14 @@ class Preprocessor:
         parser.add_argument("-v","--verbose",dest="loglevel",help="set loglevel to INFO",action="store_const",const=logging.INFO)
         parser.add_argument("-vv","--very_verbose",dest="loglevel",help="set loglevel to DEBUG",action="store_const",const=logging.DEBUG)
         return parser
+    
+    def assign_arguments(self,pargs):
+        if hasattr(pargs, "input_file"):
+            self.input_file = pargs.input_file
+        if hasattr(pargs, "output_file"):
+            self.output_file = pargs.output_file
+        if hasattr(pargs, "input_config_file"):
+            self.input_config_file = pargs.input_config_file
+        if hasattr(pargs, "output_config_file"):
+            self.output_config_file = pargs.output_config_file
+        
