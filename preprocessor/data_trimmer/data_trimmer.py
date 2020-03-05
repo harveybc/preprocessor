@@ -95,7 +95,7 @@ class DataTrimmer(Preprocessor):
             self.trim_fixed_rows(self.from_start, self.from_end)
         if self.remove_columns:
             self.trim_columns()
-        if not(self.auto_trim):
+        if self.auto_trim:
             self.trim_auto()
         
     def trim_fixed_rows(self, from_start, from_end):
@@ -161,7 +161,6 @@ class DataTrimmer(Preprocessor):
         """ Save preprocessed data and the configuration of the preprocessor. """
         print("self.output_ds = ", self.output_ds.shape)
         np.savetxt(self.output_file, self.output_ds, delimiter=",")
-
 
 def run(args):
     """ Entry point for console_scripts """
