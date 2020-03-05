@@ -62,11 +62,13 @@ class DataTrimmer(Preprocessor):
         )
         parser.add_argument("--remove_columns", 
             help="removes constant columns", 
-            action="store_true"
+            action="store_true",
+            default=False
         )
-        parser.add_argument("--auto_trim",
+        parser.add_argument("--no_auto_trim",
             help="trims the constant columns and trims all rows with consecutive zeroes from start and end",
-            action="store_true"
+            action="store_true",
+            default=False
         )
         parser = self.parse_cmd(parser)
         pargs = parser.parse_args(args)
@@ -77,8 +79,10 @@ class DataTrimmer(Preprocessor):
             self.from_end = pargs.from_end
         if hasattr(pargs, "remove_columns"):
             self.remove_columns = pargs.remove_columns
-        if hasattr(pargs, "auto_trim"):
-            self.auto_trim = pargs.auto_trim
+        if hasattr(pargs, "no_auto_trim"):
+            self.auto_trim = not(pargs.no_auto_trim)
+        else:
+            self.auto_trim = True
 
     def core(self):
         """ Core preprocessor task after starting the instance with the main method.
@@ -91,7 +95,7 @@ class DataTrimmer(Preprocessor):
             self.trim_fixed_rows(self.from_start, self.from_end)
         if self.remove_columns:
             self.trim_columns()
-        if self.auto_trim:
+        if not(self.auto_trim):
             self.trim_auto()
         
     def trim_fixed_rows(self, from_start, from_end):

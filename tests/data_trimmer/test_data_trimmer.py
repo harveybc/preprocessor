@@ -93,7 +93,7 @@ class TestDataTrimmer:
     def test_C02T04_cmdline_remove_columns(self):
         """ Trims all the constant columns using command line arguments """
         os.system(
-            "data-trimmer --remove_columns --input_file "
+            "data-trimmer --remove_columns --no_auto_trim --input_file "
             + self.conf.input_file
             + " --output_file "
             + self.conf.output_file
@@ -108,7 +108,7 @@ class TestDataTrimmer:
     def test_C02T05_cmdline_remove_columns_rows(self):
         """ Trims all the constant columns and 10  rows from start and end using command line arguments """
         os.system(
-            "data-trimmer --from_start 10 --from_end 10 --remove_columns --input_file "
+            "data-trimmer --from_start 10 --from_end 10 --remove_columns --no_auto_trim --input_file "
             + self.conf.input_file
             + " --output_file "
             + self.conf.output_file
@@ -123,7 +123,7 @@ class TestDataTrimmer:
     def test_C02T06_cmdline_remove_columns_rows_auto(self):
         """ Trims all the constant columns and 0 rows from start and end (for pipeline) and auto trimming  using command line arguments """
         os.system(
-            "data-trimmer --from_start 0 --from_end 0 --remove_columns --auto_trim --input_file "
+            "data-trimmer --from_start 0 --from_end 0 --remove_columns --input_file "
             + self.conf.input_file
             + " --output_file "
             + self.conf.output_file
@@ -138,7 +138,7 @@ class TestDataTrimmer:
     def test_C02T07_config_save(self):
         """ Save a configuration file and uses it to trim a dataset. Assert that output_config can be loaded and the output_config(loaded) == output_config(saved)"""
         os.system(
-            "data-trimmer --auto --input_file "
+            "data-trimmer --input_file "
             + self.conf.input_file
             + " --output_file "
             + self.conf.output_file

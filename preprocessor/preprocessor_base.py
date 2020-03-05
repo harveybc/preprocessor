@@ -61,10 +61,18 @@ class PreprocessorBase:
     def assign_arguments(self,pargs):
         if hasattr(pargs, "input_file"):
             self.input_file = pargs.input_file
+        else:
+            print("Error: No input file parameter provided.")
         if hasattr(pargs, "output_file"):
             self.output_file = pargs.output_file
+        else:
+            self.output_file = self.input_file = ".output"
         if hasattr(pargs, "input_config_file"):
             self.input_config_file = pargs.input_config_file
+        else:
+            self.input_config_file = None
         if hasattr(pargs, "output_config_file"):
             self.output_config_file = pargs.output_config_file
+        else:
+            self.output_config_file = self.input_file = ".config"
         
