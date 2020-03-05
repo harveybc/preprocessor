@@ -5,6 +5,7 @@ import pytest
 import csv
 import sys
 import os
+from filecmp import cmp
 
 # sys.path.append('..\\src\\')
 from preprocessor.data_trimmer.data_trimmer import DataTrimmer
@@ -135,7 +136,7 @@ class TestDataTrimmer:
         assert ((cols_d - cols_o) > 0) and ((rows_d - rows_o) > 0) and ((cols_o > 0) and (rows_o > 0))
 
     def test_C02T07_config_save(self):
-        """ Save a configuration file and uses it to trim a dataset. Verify that output_config can be loaded and the output_config(loaded) == output_config(saved)"""
+        """ Save a configuration file and uses it to trim a dataset. Assert that output_config can be loaded and the output_config(loaded) == output_config(saved)"""
         os.system(
             "data-trimmer --auto --input_file "
             + self.conf.input_file
@@ -144,8 +145,19 @@ class TestDataTrimmer:
             + " --output_config_file"
             + self.conf.output_config_file 
         )
-        # TODO
-        assert ((cols_d - cols_o) > 0) and ((rows_d - rows_o) > 0) and ((cols_o > 0) and (rows_o > 0))
+        # Uses the output as input for another dataset and compare with desired output.
+        os.system(
+            "data-trimmer --input_file "
+            + self.conf.input_file
+            + " --input_config_file "
+            + self.conf.output_config_file
+            + " --output_file "
+            + self.conf.output_file
+            + " --output_config_file"
+            + self.conf.output_config_file  + ".c02t07"
+        )
+        # Assert that output_config can be loaded and the output_config(loaded) == output_config(saved)
+        assert cmp(self.conf.output_config_file, self.conf.output_config_file  + ".c02t07", shallow=True)
 
     def test_C02T08_config_load(self):
         """ Load a configuration file and uses it to trim a dataset. Verify that output_config == input_config"""
