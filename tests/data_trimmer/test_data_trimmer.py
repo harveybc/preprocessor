@@ -142,7 +142,7 @@ class TestDataTrimmer:
             + self.conf.input_file
             + " --output_file "
             + self.conf.output_file
-            + " --output_config_file"
+            + " --output_config_file "
             + self.conf.output_config_file 
         )
         # Uses the output as input for another dataset and compare with desired output.
@@ -153,7 +153,7 @@ class TestDataTrimmer:
             + self.conf.output_config_file
             + " --output_file "
             + self.conf.output_file
-            + " --output_config_file"
+            + " --output_config_file "
             + self.conf.output_config_file  + ".c02t07"
         )
         # Assert that output_config can be loaded and the output_config(loaded) == output_config(saved)
@@ -164,10 +164,12 @@ class TestDataTrimmer:
         os.system(
             "data-trimmer --input_file "
             + self.conf.input_file
+            + " --input_config_file "
+            + self.conf.input_config_file
             + " --output_file "
             + self.conf.output_file
-            + " --input_config_file"
-            + self.conf.input_config_file 
+            + " --output_config_file "
+            + self.conf.output_config_file
         )
-        # TODO
-        assert ((cols_d - cols_o) > 0) and ((rows_d - rows_o) > 0) and ((cols_o > 0) and (rows_o > 0))
+        # Assert that output_config can be loaded and the output_config == input_config(saved)
+        assert cmp(self.conf.input_config_file, self.conf.output_config_file, shallow=True)
