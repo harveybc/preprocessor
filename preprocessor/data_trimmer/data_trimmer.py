@@ -20,7 +20,7 @@ import sys
 import logging
 import numpy as np
 from preprocessor.preprocessor import Preprocessor
-from itertools import izip_longest 
+from itertools import zip_longest 
 
 # from data_trimmer import __version__
 
@@ -111,8 +111,10 @@ class DataTrimmer(Preprocessor):
         """
         # remove from start
         self.output_ds = self.input_ds[from_start : len(self.input_ds), :]
+        self.r_rows = range(1, from_start + 1)
         # remove from end
         self.output_ds = self.output_ds[: len(self.output_ds) - from_end, :]
+        self.r_rows = np.concatenate(self.r_rows, range(self.rows_d - from_end, self.rows_d))
         # assign output as new input for performing consecutive trimming of columns
         if hasattr(self, "remove_columns"):
             if self.remove_columns:
@@ -161,7 +163,7 @@ class DataTrimmer(Preprocessor):
     def store(self):
         """ Save preprocessed data and the configuration of the preprocessor. """
         print("self.output_ds = ", self.output_ds.shape)
-        config_rows = izip_longest(r_rows, r_cols, fillvalue='')
+        config_rows = zip_longest(self.r_rows, self.r_cols, fillvalue='')
         np.savetxt(self.output_config_file, config_rows, delimiter=",")
         np.savetxt(self.output_file, self.output_ds, delimiter=",")
 
