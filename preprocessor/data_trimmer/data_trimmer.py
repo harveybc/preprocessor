@@ -20,6 +20,7 @@ import sys
 import logging
 import numpy as np
 from preprocessor.preprocessor import Preprocessor
+from itertools import izip_longest 
 
 # from data_trimmer import __version__
 
@@ -160,6 +161,8 @@ class DataTrimmer(Preprocessor):
     def store(self):
         """ Save preprocessed data and the configuration of the preprocessor. """
         print("self.output_ds = ", self.output_ds.shape)
+        config_rows = izip_longest(r_rows, r_cols, fillvalue='')
+        np.savetxt(self.output_config_file, config_rows, delimiter=",")
         np.savetxt(self.output_file, self.output_ds, delimiter=",")
 
 def run(args):

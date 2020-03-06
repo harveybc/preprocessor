@@ -33,8 +33,10 @@ class PreprocessorBase:
             """ Path of the output configuration """
             # Load input dataset
             self.load_ds()
-        else:
+        else :
             self.input_ds = None
+        self.r_rows = 0
+        self.r_cols = 0
 
     def setup_logging(self, loglevel):
         """Setup basic logging.
