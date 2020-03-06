@@ -111,10 +111,10 @@ class DataTrimmer(Preprocessor):
         """
         # remove from start
         self.output_ds = self.input_ds[from_start : len(self.input_ds), :]
-        self.r_rows = range(1, from_start + 1)
+        self.r_rows = range(0, from_start)
         # remove from end
         self.output_ds = self.output_ds[: len(self.output_ds) - from_end, :]
-        self.r_rows = np.concatenate(self.r_rows, range(self.rows_d - from_end, self.rows_d))
+        self.r_rows = np.concatenate((self.r_rows, range(self.rows_d - from_end, self.rows_d)))
         # assign output as new input for performing consecutive trimming of columns
         if hasattr(self, "remove_columns"):
             if self.remove_columns:
@@ -137,6 +137,8 @@ class DataTrimmer(Preprocessor):
             un_array = np.logical_and(un_array, unchanged)
         # remove all rows with true on the un_array
         self.output_ds = self.input_ds[:, np.logical_not(un_array)]
+        # generate an array with the indexes of the rows marked with true in un_array
+        self.r_cols = np.nonzero(un_array)
         # assign output as new input for performing consecutive auto trimming 
         if hasattr(self, "auto_trim"):
             if self.auto_trim:
@@ -153,16 +155,19 @@ class DataTrimmer(Preprocessor):
         rows_t, cols_t = self.trim_columns()
         # delete rows from start that contain zeroes from start
         z_array = self.output_ds[0] == 0
+        c_add = 0
         while np.any(z_array):
+            c_add = c_add + 1
             rows_t = rows_t + 1
             # delete the first row of the output_ds and updates z_array
             self.output_ds = np.delete(self.output_ds, [0], axis=0)
             z_array = self.output_ds[0] == 0
+        self.r_rows = np.concatenate(self.r_rows,range(0,c_add))
         return rows_t, cols_t
 
     def store(self):
         """ Save preprocessed data and the configuration of the preprocessor. """
-        print("self.output_ds = ", self.output_ds.shape)
+        print("self.output_ds.shape = ", self.output_ds.shape)
         config_rows = zip_longest(self.r_rows, self.r_cols, fillvalue='')
         np.savetxt(self.output_config_file, config_rows, delimiter=",")
         np.savetxt(self.output_file, self.output_ds, delimiter=",")

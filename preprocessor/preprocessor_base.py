@@ -35,8 +35,8 @@ class PreprocessorBase:
             self.load_ds()
         else :
             self.input_ds = None
-        self.r_rows = 0
-        self.r_cols = 0
+        self.r_rows = np.empty(1)
+        self.r_cols = np.empty(1)
 
     def setup_logging(self, loglevel):
         """Setup basic logging.
