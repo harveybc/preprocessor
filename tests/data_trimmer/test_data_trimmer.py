@@ -7,7 +7,6 @@ import sys
 import os
 from filecmp import cmp
 
-# sys.path.append('..\\src\\')
 from preprocessor.data_trimmer.data_trimmer import DataTrimmer
 
 __author__ = "Harvey Bastidas"
@@ -138,7 +137,7 @@ class TestDataTrimmer:
     def test_C02T07_config_save(self):
         """ Save a configuration file and uses it to trim a dataset. Assert that output_config can be loaded and the output_config(loaded) == output_config(saved)"""
         os.system(
-            "data-trimmer --input_file "
+            "data-trimmer --input_file --from_start 20"
             + self.conf.input_file
             + " --output_file "
             + self.conf.output_file

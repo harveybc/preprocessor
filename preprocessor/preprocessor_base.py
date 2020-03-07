@@ -35,8 +35,8 @@ class PreprocessorBase:
             self.load_ds()
         else :
             self.input_ds = None
-        self.r_rows = np.empty(1)
-        self.r_cols = np.empty(1)
+        self.r_rows = []
+        self.r_cols = []
 
     def setup_logging(self, loglevel):
         """Setup basic logging.
@@ -68,7 +68,7 @@ class PreprocessorBase:
         if hasattr(pargs, "output_file"):
             self.output_file = pargs.output_file
         else:
-            self.output_file = self.input_file = ".output"
+            self.output_file = self.input_file + ".output"
         if hasattr(pargs, "input_config_file"):
             self.input_config_file = pargs.input_config_file
         else:
@@ -76,5 +76,5 @@ class PreprocessorBase:
         if hasattr(pargs, "output_config_file"):
             self.output_config_file = pargs.output_config_file
         else:
-            self.output_config_file = self.input_file = ".config"
+            self.output_config_file = self.input_file + ".config"
         

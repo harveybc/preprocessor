@@ -111,10 +111,10 @@ class DataTrimmer(Preprocessor):
         """
         # remove from start
         self.output_ds = self.input_ds[from_start : len(self.input_ds), :]
-        self.r_rows = range(0, from_start)
+        self.r_rows = list(range(0, from_start))
         # remove from end
         self.output_ds = self.output_ds[: len(self.output_ds) - from_end, :]
-        self.r_rows = np.concatenate((self.r_rows, range(self.rows_d - from_end, self.rows_d)))
+        self.r_rows = self.r_rows + list(range(self.rows_d - from_end, self.rows_d))
         # assign output as new input for performing consecutive trimming of columns
         if hasattr(self, "remove_columns"):
             if self.remove_columns:
@@ -138,7 +138,8 @@ class DataTrimmer(Preprocessor):
         # remove all rows with true on the un_array
         self.output_ds = self.input_ds[:, np.logical_not(un_array)]
         # generate an array with the indexes of the rows marked with true in un_array
-        self.r_cols = np.nonzero(un_array)
+        cols = np.nonzero(un_array)
+        self.r_cols = cols[0]
         # assign output as new input for performing consecutive auto trimming 
         if hasattr(self, "auto_trim"):
             if self.auto_trim:
@@ -162,14 +163,18 @@ class DataTrimmer(Preprocessor):
             # delete the first row of the output_ds and updates z_array
             self.output_ds = np.delete(self.output_ds, [0], axis=0)
             z_array = self.output_ds[0] == 0
-        self.r_rows = np.concatenate(self.r_rows,range(0,c_add))
+        self.r_rows = self.r_rows + list(range(0,c_add))
         return rows_t, cols_t
 
     def store(self):
         """ Save preprocessed data and the configuration of the preprocessor. """
         print("self.output_ds.shape = ", self.output_ds.shape)
-        config_rows = zip_longest(self.r_rows, self.r_cols, fillvalue='')
+        config_rows = list(zip_longest(self.r_rows, self.r_cols, fillvalue=-1))
+        if (self.output_config_file == None):
+            self.output_config_file = self.input_file + ".config"
+        _logger.debug("ocf = "+ self.output_config_file)
         np.savetxt(self.output_config_file, config_rows, delimiter=",")
+        _logger.debug("of = "+ self.output_file)
         np.savetxt(self.output_file, self.output_ds, delimiter=",")
 
 def run(args):
