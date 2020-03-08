@@ -71,5 +71,5 @@ class Preprocessor(PreprocessorBase):
         Returns:
         :obj:`argparse.Namespace`: command line parameters namespace
         """
-    pass
+        pass
 

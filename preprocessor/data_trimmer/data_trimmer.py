@@ -98,6 +98,8 @@ class DataTrimmer(Preprocessor):
             self.trim_columns()
         if self.auto_trim:
             self.trim_auto()
+        if self.input_config_file:
+            self.load_from_config()
         
     def trim_fixed_rows(self, from_start, from_end):
         """ Trims a configurable number of rows from the start or end of the input dataset
@@ -165,6 +167,22 @@ class DataTrimmer(Preprocessor):
             z_array = self.output_ds[0] == 0
         self.r_rows = self.r_rows + list(range(0,c_add))
         return rows_t, cols_t
+
+    def load_from_config():
+        # get the number of rows in the config_ds
+        n_rows = len(self.config_ds)
+        # replace -1 in the config_ds with None
+        self.r_rows = [None if int(x)==-1 else int(x) for x in r_rows]
+        self.r_cols = [None if int(x)==-1 else int(x) for x in r_cols]
+        # convert each column to binary array
+        self.r_rows = np.zeros(n_rows) 
+        self.r_cols = np.zeros(n_cols) 
+        self.r_rows[self.config_ds[:, 0]] = 1
+        self.r_cols[self.config_ds[:, 1]] = 1
+        # remove the rows marked with true from the input_ds in the first array from the config file
+        self.input_ds[:, ] = 
+        # remove the columns marked with true in the second array from the config file
+
 
     def store(self):
         """ Save preprocessed data and the configuration of the preprocessor. """

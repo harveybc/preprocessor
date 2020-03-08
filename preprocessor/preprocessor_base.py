@@ -15,7 +15,6 @@ __license__ = "mit"
 
 _logger = logging.getLogger(__name__)
 
-
 class PreprocessorBase:
     """ Base class for Preprocessor. """
 
@@ -37,6 +36,7 @@ class PreprocessorBase:
             self.input_ds = None
         self.r_rows = []
         self.r_cols = []
+        self.config_ds = None
 
     def setup_logging(self, loglevel):
         """Setup basic logging.
@@ -56,9 +56,11 @@ class PreprocessorBase:
         """ Save preprocessed data and the configuration of the preprocessor. """
         # Load input dataset
         self.input_ds = np.genfromtxt(self.input_file, delimiter=",")
+        # load input config dataset if the parameter is available
+        if hasattr(self, "input_config_file"):
+            self.config_ds = np.genfromtxt(self.input_config_file, delimiter=",")
         # Initialize input number of rows and columns
         self.rows_d, self.cols_d = self.input_ds.shape
-
     
     def assign_arguments(self,pargs):
         if hasattr(pargs, "input_file"):
