@@ -98,7 +98,7 @@ class DataTrimmer(Preprocessor):
             self.trim_columns()
         if self.auto_trim:
             self.trim_auto()
-        if self.input_config_file:
+        if self.input_config_file != None:
             self.load_from_config()
         
     def trim_fixed_rows(self, from_start, from_end):
@@ -180,9 +180,10 @@ class DataTrimmer(Preprocessor):
         self.r_rows[self.config_ds[:, 0]] = 1
         self.r_cols[self.config_ds[:, 1]] = 1
         # remove the rows marked with true from the input_ds in the first array from the config file
-        self.input_ds = self.input_ds[:, np.logical_not(self.r_cols)] 
+        self.output_ds = self.input_ds[np.logical_not(self.r_rows), :] 
         # remove the columns marked with true in the second array from the config file
-
+        self.output_ds = self.output_ds[:, np.logical_not(self.r_cols)] 
+        
 
     def store(self):
         """ Save preprocessed data and the configuration of the preprocessor. """
