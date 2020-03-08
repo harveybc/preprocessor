@@ -168,7 +168,7 @@ class DataTrimmer(Preprocessor):
         self.r_rows = self.r_rows + list(range(0,c_add))
         return rows_t, cols_t
 
-    def load_from_config():
+    def load_from_config(self):
         # get the number of rows in the config_ds
         n_rows = len(self.config_ds)
         # replace -1 in the config_ds with None
@@ -180,7 +180,7 @@ class DataTrimmer(Preprocessor):
         self.r_rows[self.config_ds[:, 0]] = 1
         self.r_cols[self.config_ds[:, 1]] = 1
         # remove the rows marked with true from the input_ds in the first array from the config file
-        self.input_ds[:, ] = 
+        self.input_ds = self.input_ds[:, np.logical_not(self.r_cols)] 
         # remove the columns marked with true in the second array from the config file
 
 
