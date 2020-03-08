@@ -58,7 +58,8 @@ class PreprocessorBase:
         self.input_ds = np.genfromtxt(self.input_file, delimiter=",")
         # load input config dataset if the parameter is available
         if hasattr(self, "input_config_file"):
-            self.config_ds = np.genfromtxt(self.input_config_file, delimiter=",")
+            if self.input_config_file != None:
+                self.config_ds = np.genfromtxt(self.input_config_file, delimiter=",")
         # Initialize input number of rows and columns
         self.rows_d, self.cols_d = self.input_ds.shape
     

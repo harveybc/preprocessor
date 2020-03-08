@@ -184,17 +184,17 @@ class DataTrimmer(Preprocessor):
         # remove the columns marked with true in the second array from the config file
         self.output_ds = self.output_ds[:, np.logical_not(self.r_cols)] 
         
-
     def store(self):
         """ Save preprocessed data and the configuration of the preprocessor. """
         print("self.output_ds.shape = ", self.output_ds.shape)
         config_rows = list(zip_longest(self.r_rows, self.r_cols, fillvalue=-1))
-        if (self.output_config_file == None):
+        _logger.debug("output_file = "+ self.output_file)
+        np.savetxt(self.output_file, self.output_ds, delimiter=",")
+        if (self.output_config_file != None):
             self.output_config_file = self.input_file + ".config"
         _logger.debug("ocf = "+ self.output_config_file)
         np.savetxt(self.output_config_file, config_rows, delimiter=",")
-        _logger.debug("of = "+ self.output_file)
-        np.savetxt(self.output_file, self.output_ds, delimiter=",")
+        
 
 def run(args):
     """ Entry point for console_scripts """
