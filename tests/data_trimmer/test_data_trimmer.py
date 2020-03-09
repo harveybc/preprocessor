@@ -155,7 +155,6 @@ class TestDataTrimmer:
             + " --output_config_file "
             + self.conf.output_config_file  + ".c02t07"
         )
-        # Assert that output_config can be loaded and the output_config(loaded) == output_config(saved)
         assert cmp(self.conf.output_config_file, self.conf.output_config_file  + ".c02t07", shallow=True)
 
     def test_C02T08_config_load(self):
@@ -173,5 +172,4 @@ class TestDataTrimmer:
             + " --output_config_file "
             + self.conf.output_config_file
         )
-        # Assert that output_config can be loaded and the output_config == input_config(saved)
         assert cmp(input_config_file, self.conf.output_config_file, shallow=True)
