@@ -26,7 +26,9 @@ For now the installation is made by clonning the github repo and manually instal
 > pip install -r requirements.txt
 4. Install python package (also installs the console command data-trimmer)
 > python setup.py install
-5. Perform tests
+5. (Optional) Perform tests
+> python setup.py install
+6. (Optional) Generate Sphinx Documentation
 > python setup.py install
 
 ## Data-Trimmer
