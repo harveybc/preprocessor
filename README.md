@@ -11,7 +11,7 @@ Dataset Trimmer
 
 ## Description
 
-Trims the constant valued columns.  Also removes rows from the start and the end of a dataset with features with consecutive zeroes or a fixed number of rows. Save a CSV with removed files and columns for applying similar  trimming to another dataset. Usable both from command line and from class methods (see [tests folder](https://github.com/harveybc/preprocessor/tree/master/tests)).
+Trims the constant valued columns.  Also removes rows from the start and the end of a dataset with features with consecutive zeroes. Save a CSV with removed files and columns for applying similar  trimming to another dataset. Usable both from command line and from class methods (see [tests folder](https://github.com/harveybc/preprocessor/tree/master/tests)).
 
 ## Installation
 
@@ -54,7 +54,7 @@ The data-trimmer also is implemented as a console command:
 ## Examples of usage
 The following examples show both the class method and command line uses.
 
-### Use via Class Methods
+### Usage via Class Methods
 ```python
 from preprocessor.data_trimmer.data_trimmer import DataTrimmer
 # configure parameters (same vaiable names as command-line parameters)
@@ -70,7 +70,7 @@ rows_t, cols_t = self.dt.trim_fixed_rows(10, 10)
 self.dt.store()
 ```
 
-### Use via CLI
+### Usage via CLI
 
 > data-trimmer --input_file "tests/data/test_input.csv"
 
