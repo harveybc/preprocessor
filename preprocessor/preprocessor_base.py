@@ -26,7 +26,10 @@ class PreprocessorBase:
             """ Path of the input dataset """
             self.output_file = conf.output_file
             """ Path of the output dataset """
-            self.input_config_file = conf.input_config_file
+            if hasattr(conf, "input_config_file"):
+                self.input_config_file = conf.input_config_file
+            else:
+                self.input_config_file = None
             """ Path of the input configuration """
             self.output_config_file = conf.output_config_file
             """ Path of the output configuration """
