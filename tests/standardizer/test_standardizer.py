@@ -5,10 +5,6 @@ import csv
 import sys
 import numpy as np
 
-# sys.path.append('..\\src\\')
-from preprocessor.standardizer.standardizer import Standardizer
-
-
 __author__ = "Harvey Bastidas"
 __copyright__ = "Harvey Bastidas"
 __license__ = "mit"
