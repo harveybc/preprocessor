@@ -31,7 +31,7 @@ For now the installation is made by clonning the github repo and manually instal
 
 ## Data-Trimmer
 
-The data-trimmer is implemented in the DataTrimmer class, it has methods for loading a dataset trimming it an producing an  output, please see [test_data_trimmer], tests 1 to 3.
+The data-trimmer is implemented in the DataTrimmer class, it has methods for loading a dataset trimming it an producing an  output, please see [test_data_trimmer], tests 1 to 3. By default it performs auto-trimming, but it can be done manually by using the --no_auto_trim option.
 
 ### Command-Line Execution
 
@@ -40,5 +40,40 @@ The data-trimmer also is implemented as a console command:
 
 ### Command-Line Parameters
 
-* __--input_file__: The only mandatory parameter, is the filename for the input dataset to be trimmed.
+* __--input_file <filename>__: The only mandatory parameter, is the filename for the input dataset to be trimmed.
+* __--output_file <filename>__: (Optional) Filename for the output dataset. Defaults to the input dataset with the .output extension.
+* __--output_config_file <filename>__: (Optional) Filename for the output configuration containing rows trimmed in columns 0 and columns trimmed in column 1. Defaults to the input dataset with the .config extension.
+* __--input_config_file <filename>__: (Optional) Imports an existing configuration and trims a dataset with it.
+* __--from_start <val>__:(Optional) number of rows to remove from the start of the input dataset.
+* __--from_end <val>__: (Optional) number of rows to remove from the end of the input dataset.
+* __--remove_columns__: (Optional) Removes all constant columns.
+* __--no_auto_trim__: (Optional) Do not perform auto-trimming, useful if using the remove_columns, from_start or from_end options.
+
+## Examples of usage
+The following examples show both the class method and command line uses.
+
+### Use via Class Methods
+```python
+from preprocessor.data_trimmer.data_trimmer import DataTrimmer
+# configure parameters (same vaiable names as command-line parameters)
+class Conf:
+    def __init__(self):
+        self.input_file = "tests/data/test_input.csv"
+conf = Conf()
+# instance trimmer class loads dataset
+dt = DataTrimmer(conf)
+# do the trimming
+rows_t, cols_t = self.dt.trim_fixed_rows(10, 10)
+# save output to output file
+self.dt.store()
+```
+
+### Use via CLI
+
+> data-trimmer --input_file "tests/data/test_input.csv"
+
+
+
+
+
 
