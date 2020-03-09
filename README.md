@@ -15,10 +15,10 @@ Trims the constant valued columns.  Also removes rows from the start and the end
 
 ## Installation
 
-For now the installation is made by clonning the github repo and manually installing it, package based installation comming soon..
+For now the installation is made by clonning the github repo and manually installing it, package based installation coming soon..
 
 ### Steps
-1. Clone the GithHb repo:   
+1. Clone the GithHub repo:   
 > git clone https://github.com/harveybc/preprocessor
 2. Change to the repo folder:
 > cd preprocessor
