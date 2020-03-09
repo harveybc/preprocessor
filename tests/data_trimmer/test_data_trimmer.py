@@ -24,8 +24,8 @@ class Conf:
         self.output_file = fname
         """ Output dataset filename """
         # fname = os.path.join(os.path.dirname(__file__), "../data/in_config.csv")
-        self.input_config_file = fname
-        """ Output dataset filename """
+        # self.input_config_file = fname
+        #""" Input configuration of the proprocessor """
         fname = os.path.join(os.path.dirname(__file__), "../data/out_config.csv")
         self.output_config_file = fname
         """ Output configuration of the proprocessor """
@@ -160,11 +160,14 @@ class TestDataTrimmer:
 
     def atest_C02T08_config_load(self):
         """ Load a configuration file and uses it to trim a dataset. Verify that output_config == input_config"""
+        fname = os.path.join(os.path.dirname(__file__), "../data/in_config.csv")
+        input_config_file = fname
+        """ Input configuration of the proprocessor """
         os.system(
             "data-trimmer --input_file "
             + self.conf.input_file
             + " --input_config_file "
-            + self.conf.input_config_file
+            +  input_config_file
             + " --output_file "
             + self.conf.output_file
             + " --output_config_file "
