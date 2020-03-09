@@ -62,12 +62,12 @@ class Conf:
     def __init__(self):
         self.input_file = "tests/data/test_input.csv"
 conf = Conf()
-# instance trimmer class loads dataset
+# instance trimmer class and loads dataset
 dt = DataTrimmer(conf)
 # do the trimming
-rows_t, cols_t = self.dt.trim_fixed_rows(10, 10)
+rows_t, cols_t = dt.trim_auto()
 # save output to output file
-self.dt.store()
+dt.store()
 ```
 
 ### Usage via CLI
