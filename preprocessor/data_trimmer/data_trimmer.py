@@ -171,18 +171,22 @@ class DataTrimmer(Preprocessor):
     def load_from_config(self):
         # get the number of rows in the config_ds
         n_rows = len(self.config_ds)
+        # update rrows and rcols
+        self.r_rows=self.config_ds[:, 0]
+        self.r_cols=self.config_ds[:, 1]
         # replace -1 in the config_ds with None
-        self.r_rows = [None if int(x)==-1 else int(x) for x in r_rows]
-        self.r_cols = [None if int(x)==-1 else int(x) for x in r_cols]
+        self.cr_rows = [None if int(x)==-1 else int(x) for x in [self.config_ds[:, 0]]]
+        self.cr_cols = [None if int(x)==-1 else int(x) for x in [self.config_ds[:, 1]]]
         # convert each column to binary array
-        self.r_rows = np.zeros(n_rows) 
-        self.r_cols = np.zeros(n_cols) 
-        self.r_rows[self.config_ds[:, 0]] = 1
-        self.r_cols[self.config_ds[:, 1]] = 1
+        self.br_rows = np.zeros(n_rows) 
+        self.br_cols = np.zeros(n_rows) 
+        self.br_rows[self.cr_rows] = 1
+        self.br_cols[self.cr_cols] = 1
         # remove the rows marked with true from the input_ds in the first array from the config file
         self.output_ds = self.input_ds[np.logical_not(self.r_rows), :] 
         # remove the columns marked with true in the second array from the config file
         self.output_ds = self.output_ds[:, np.logical_not(self.r_cols)] 
+        
         
     def store(self):
         """ Save preprocessed data and the configuration of the preprocessor. """

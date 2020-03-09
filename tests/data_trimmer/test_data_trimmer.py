@@ -174,4 +174,4 @@ class TestDataTrimmer:
             + self.conf.output_config_file
         )
         # Assert that output_config can be loaded and the output_config == input_config(saved)
-        assert cmp(self.conf.input_config_file, self.conf.output_config_file, shallow=True)
+        assert cmp(input_config_file, self.conf.output_config_file, shallow=True)
