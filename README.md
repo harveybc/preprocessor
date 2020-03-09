@@ -31,12 +31,12 @@ For now the installation is made by clonning the github repo and manually instal
 
 ## Data-Trimmer
 
-The data-trimmer is implemented in the DataTrimmer class, it has methods for loading a dataset trimming it an producing an  output, please see [test_data_trimmer], tests 1 to 3. By default it performs auto-trimming, but it can be done manually by using the --no_auto_trim option.
+The data-trimmer is implemented in the DataTrimmer class, it has methods for loading a dataset trimming it an producing an  output, please see [test_data_trimmer], tests 1 to 3. It can also be used via command line, by default it performs auto-trimming, but it can be configured manually by using the --no_auto_trim option.
 
 ### Command-Line Execution
 
 The data-trimmer also is implemented as a console command:
-> data-trimmer -- input_file <input_dataset> <optoional_parameters>
+> data-trimmer -- input_file <input_dataset> <optional_parameters>
 
 ### Command-Line Parameters
 
