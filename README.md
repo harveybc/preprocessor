@@ -41,7 +41,7 @@ Detailed Sphinix documentation for all modules can be generated in HTML format w
 
 A simple data pre-processor that trims the constant valued columns.  Also removes rows from the start and the end of a dataset with features with consecutive zeroes. Usable both from command line and from class methods.
 
-See [Data-Trimmer Readme](../blob/master/README_data_trimmer.md) for detailed description and usage instructions.
+See [Data-Trimmer Readme](../master/README_data_trimmer.md) for detailed description and usage instructions.
 
 ## Standarizer
 
