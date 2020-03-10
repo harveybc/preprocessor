@@ -31,7 +31,7 @@ The module is installed with the preprocessor package, the instructions are desc
 5. (Optional) Perform tests
 > python setup.py install
 6. (Optional) Generate Sphinx Documentation
-> python setup.py install
+> python setup.py docs
 
 ### Command-Line Execution
 

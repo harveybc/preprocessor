@@ -27,7 +27,7 @@ The installation is made by clonning the github repo and manually installing it,
 5. (Optional) Perform tests
 > python setup.py install
 6. (Optional) Generate Sphinx Documentation
-> python setup.py install
+> python setup.py docs
 
 ## Modules
 
