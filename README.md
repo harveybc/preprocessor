@@ -31,7 +31,7 @@ The installation is made by clonning the github repo and manually installing it,
 
 ## Modules
 
-All the CLI commands and the class modules are installed with the preprocessor package, the following sections describe each module briefly and link to each module basic documentation. 
+All the CLI commands and the class modules are installed with the preprocessor package, the following sections describe each module briefly and link to each module's basic documentation. 
 
 Detailed Sphinix documentation for all modules can be generated in HTML format with the optional step 6 of the installation process, it contains documentation of the classes and methods of all modules in the preprocessor package. 
 
