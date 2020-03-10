@@ -1,6 +1,6 @@
 # Preprocessor
 
-A simple data pre-processor. Usable both from command line and from class methods. Work In Progress.
+A simple data pre-processor. Usable both from command line and from class methods. __Work In Progress__.
 
 [![Build Status](https://travis-ci.org/harveybc/preprocessor.svg?branch=master)](https://travis-ci.org/harveybc/preprocessor)
 [![Documentation Status](https://readthedocs.org/projects/docs/badge/?version=latest)](https://preprocessor.readthedocs.io/en/latest/)
