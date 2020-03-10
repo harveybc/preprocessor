@@ -1,6 +1,6 @@
 # Preprocessor
 
-A simple data pre-processor. Usable both from command line and from class methods. 
+A simple data pre-processor. Usable both from command line and from class methods. Work In Progress.
 
 [![Build Status](https://travis-ci.org/harveybc/preprocessor.svg?branch=master)](https://travis-ci.org/harveybc/preprocessor)
 [![Documentation Status](https://readthedocs.org/projects/docs/badge/?version=latest)](https://preprocessor.readthedocs.io/en/latest/)
@@ -9,11 +9,11 @@ A simple data pre-processor. Usable both from command line and from class method
 
 ## Description
 
-Implements a data-trimmer, a standarizer, Singular Spectrum Analysis (SSA) decomposition, a feature selector, and feature extractors such as:  Deep Convolutional Networks (DCN), Long-Short Term Memories(LSTM) and Autoencoder-based feature extractors.
+Implements modular components for dataset preprocessing: a data-trimmer, a standarizer, multi-feature Singular Spectrum Analysis (SSA) decomposer, a feature selector, and feature extractors such as:  Deep Convolutional Networks (DCN), Long-Short Term Memories(LSTM) and Autoencoder-based feature extractors.
 
 ## Installation
 
-For now the installation is made by clonning the github repo and manually installing it, package based installation coming soon..
+The installation is made by clonning the github repo and manually installing it, package based installation coming soon..
 
 ### Steps
 1. Clone the GithHub repo:   
@@ -43,9 +43,7 @@ See [Data-Trimmer Readme](../master/README_data_trimmer.md) for detailed descrip
 
 ## Standarizer
 
-TODO. 
-
-See [Data-Trimmer Readme](../blob/master/README_data_trimmer.md) for detailed description and usage instructions.
+Work In Progress. 
 
 ## Examples of usage
 
