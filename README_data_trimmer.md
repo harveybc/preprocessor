@@ -6,8 +6,6 @@ A simple data pre-processor that trims the constant valued columns.  Also remove
 [![Documentation Status](https://readthedocs.org/projects/docs/badge/?version=latest)](https://preprocessor.readthedocs.io/en/latest/)
 [![BCH compliance](https://bettercodehub.com/edge/badge/harveybc/preprocessor?branch=master)](https://bettercodehub.com/)
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000)](https://github.com/harveybc/preprocessor/blob/master/LICENSE)
-Dataset Trimmer
-
 
 ## Description
 
