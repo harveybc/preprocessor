@@ -1,6 +1,6 @@
 # Preprocessor
 
-A simple data pre-processor. Usable both from command line and from class methods.
+A simple data pre-processor. Usable both from command line and from class methods. 
 
 [![Build Status](https://travis-ci.org/harveybc/preprocessor.svg?branch=master)](https://travis-ci.org/harveybc/preprocessor)
 [![Documentation Status](https://readthedocs.org/projects/docs/badge/?version=latest)](https://preprocessor.readthedocs.io/en/latest/)
@@ -11,7 +11,7 @@ Dataset Trimmer
 
 ## Description
 
-Trims the constant valued columns.  Also removes rows from the start and the end of a dataset with features with consecutive zeroes. Save a CSV with removed files and columns for applying similar  trimming to another dataset. Usable both from command line and from class methods (see [tests folder](https://github.com/harveybc/preprocessor/tree/master/tests)).
+Implements a data-trimmer, a standarizer, a feature selector, and feature extractors such as: Singular Spectrum Analysis (SSA) decomposition, Deep Convolutional Networks (DCN), Long-Short Term Memories(LSTM) and Autoencoder-based feature extractors.
 
 ## Installation
 
@@ -31,30 +31,29 @@ For now the installation is made by clonning the github repo and manually instal
 6. (Optional) Generate Sphinx Documentation
 > python setup.py install
 
+## Modules
+
+All the CLI commands and the class modules are installed with the preprocessor package, the following sections describe each module briefly and link to each module basic documentation. 
+
+Detailed Sphinix documentation for all modules can be generated in HTML format with the optional step 6 of the installation process, it contains documentation of the classes and methods of all modules in the preprocessor package. 
+
 ## Data-Trimmer
 
-The data-trimmer is implemented in the DataTrimmer class, it has methods for loading a dataset trimming it an producing an  output, please see [test_data_trimmer], tests 1 to 3. It can also be used via command line, by default it performs auto-trimming, but it can be configured manually by using the --no_auto_trim option.
+A simple data pre-processor that trims the constant valued columns.  Also removes rows from the start and the end of a dataset with features with consecutive zeroes. Usable both from command line and from class methods.
 
-### Command-Line Execution
+See [Data-Trimmer Readme](../blob/master/README_data_trimmer.md) for detailed description and usage instructions.
 
-The data-trimmer also is implemented as a console command:
-> data-trimmer -- input_file <input_dataset> <optional_parameters>
+## Standarizer
 
-### Command-Line Parameters
+TODO. 
 
-* __--input_file <filename>__: The only mandatory parameter, is the filename for the input dataset to be trimmed.
-* __--output_file <filename>__: (Optional) Filename for the output dataset. Defaults to the input dataset with the .output extension.
-* __--output_config_file <filename>__: (Optional) Filename for the output configuration containing rows trimmed in columns 0 and columns trimmed in column 1. Defaults to the input dataset with the .config extension.
-* __--input_config_file <filename>__: (Optional) Imports an existing configuration and trims a dataset with it.
-* __--from_start <val>__:(Optional) number of rows to remove from the start of the input dataset.
-* __--from_end <val>__: (Optional) number of rows to remove from the end of the input dataset.
-* __--remove_columns__: (Optional) Removes all constant columns.
-* __--no_auto_trim__: (Optional) Do not perform auto-trimming, useful if using the remove_columns, from_start or from_end options.
+See [Data-Trimmer Readme](../blob/master/README_data_trimmer.md) for detailed description and usage instructions.
 
 ## Examples of usage
-The following examples show both the class method and command line uses.
 
-### Usage via Class Methods
+The following examples show both the class method and command line uses for the data-trimmer preprocessor module, please see the documentation for examples of other modules.
+
+### Example: Usage via Class Methods (DataTrimmer)
 ```python
 from preprocessor.data_trimmer.data_trimmer import DataTrimmer
 # configure parameters (same vaiable names as command-line parameters)
@@ -70,7 +69,7 @@ rows_t, cols_t = dt.trim_auto()
 dt.store()
 ```
 
-### Usage via CLI
+### Example: Usage via CLI (DataTrimmer)
 
 > data-trimmer --input_file "tests/data/test_input.csv"
 
