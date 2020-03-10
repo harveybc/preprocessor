@@ -9,7 +9,7 @@ A simple data pre-processor. Usable both from command line and from class method
 
 ## Description
 
-Implements a data-trimmer, a standarizer, a feature selector, and feature extractors such as: Singular Spectrum Analysis (SSA) decomposition, Deep Convolutional Networks (DCN), Long-Short Term Memories(LSTM) and Autoencoder-based feature extractors.
+Implements a data-trimmer, a standarizer, Singular Spectrum Analysis (SSA) decomposition, a feature selector, and feature extractors such as:  Deep Convolutional Networks (DCN), Long-Short Term Memories(LSTM) and Autoencoder-based feature extractors.
 
 ## Installation
 
