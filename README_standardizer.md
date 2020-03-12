@@ -35,8 +35,8 @@ The module is installed with the preprocessor package, the instructions are desc
 
 ### Command-Line Execution
 
-The data-trimmer also is implemented as a console command:
-> data-trimmer -- input_file <input_dataset> <optional_parameters>
+The standardizer also is implemented as a console command:
+> standardizer -- input_file <input_dataset> <optional_parameters>
 
 ### Command-Line Parameters
 
@@ -44,33 +44,29 @@ The data-trimmer also is implemented as a console command:
 * __--output_file <filename>__: (Optional) Filename for the output dataset. Defaults to the input dataset with the .output extension.
 * __--output_config_file <filename>__: (Optional) Filename for the output configuration containing rows trimmed in columns 0 and columns trimmed in column 1. Defaults to the input dataset with the .config extension.
 * __--input_config_file <filename>__: (Optional) Imports an existing configuration and trims a dataset with it.
-* __--from_start <val>__:(Optional) number of rows to remove from the start of the input dataset.
-* __--from_end <val>__: (Optional) number of rows to remove from the end of the input dataset.
-* __--remove_columns__: (Optional) Removes all constant columns.
-* __--no_auto_trim__: (Optional) Do not perform auto-trimming, useful if using the remove_columns, from_start or from_end options.
 
 ## Examples of usage
 The following examples show both the class method and command line uses.
 
 ### Usage via Class Methods
 ```python
-from preprocessor.data_trimmer.data_trimmer import DataTrimmer
+from preprocessor.standardizer.standardizer import Standardizer
 # configure parameters (same vaiable names as command-line parameters)
 class Conf:
     def __init__(self):
         self.input_file = "tests/data/test_input.csv"
 conf = Conf()
 # instance trimmer class and loads dataset
-dt = DataTrimmer(conf)
+st = Standardizer(conf)
 # do the trimming
-rows_t, cols_t = dt.trim_auto()
+st.standardize()
 # save output to output file
-dt.store()
+st.store()
 ```
 
 ### Usage via CLI
 
-> data-trimmer --input_file "tests/data/test_input.csv"
+> standardizer --input_file "tests/data/test_input.csv"
 
 
 
