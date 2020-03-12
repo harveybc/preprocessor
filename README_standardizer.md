@@ -9,11 +9,11 @@ A simple data pre-processor that standardize a dataset and exports the standariz
 
 ## Description
 
-Trims the constant valued columns. Also removes rows from the start and the end of a dataset with features with consecutive zeroes. 
+Uses sklearn.preprocessing.StandardScaler to standardize features by removing the mean and scaling to unit variance.
 
-The data-trimmer is implemented in the DataTrimmer class, it has methods for loading a dataset trimming it an producing an  output, please see [test_data_trimmer](https://github.com/harveybc/preprocessor/blob/master/tests/data_trimmer/test_data_trimmer.py), tests 1 to 3. It can also be used via command line, by default it performs auto-trimming, but it can be configured manually by using the --no_auto_trim option.
+Exports the standarization configuration for use on other datasets. Usable both from command line and from class methods.
 
-Save a CSV with removed files and columns for applying similar  trimming to another dataset. Usable both from command line and from class methods (see [tests folder](https://github.com/harveybc/preprocessor/tree/master/tests)).
+The standardizer is implemented in the Standardizer class, it has methods for loading a dataset, standardizing it and producing an output dataset and a configuration file that can be loaded and applied to another dataset, please see [test_standarizer](https://github.com/harveybc/preprocessor/blob/master/tests/standardizer/test_standardizer.py). It can also be used via command line.
 
 ## Installation
 
