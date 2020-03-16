@@ -31,7 +31,6 @@ class Conf:
         self.output_config_file = fname
         """ Output configuration of the proprocessor """
 
-
 class TestStandardizer:
     """ Component Tests  """
 

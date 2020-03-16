@@ -8,10 +8,6 @@ This File contains the DataTrimmer class. To run this script uncomment or add th
 
 Then run `python setup.py install` which will install the command `data-trimmer`
 inside your current environment.
-Besides console scripts, the header (i.e. until _logger...) of this file can
-also be used as template for Python modules.
-
-TODO: VERIFICAR
 
 """
 

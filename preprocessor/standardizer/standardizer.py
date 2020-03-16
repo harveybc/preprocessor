@@ -4,12 +4,10 @@ This File contains the Standardizer class. To run this script uncomment or add t
 [options.entry_points] section in setup.cfg:
 
     console_scripts =
-        Standardizer = Standardizer.Standardizer
+        standardizer = standardizer.__main__:main
 
-Then run `python setup.py install` which will install the command `Standardizer`
+Then run `python setup.py install` which will install the command `standardizer`
 inside your current environment.
-
-TODO: VERIFICAR
 
 """
 
@@ -17,9 +15,10 @@ import argparse
 import sys
 import logging
 import numpy as np
+from sklearn import preprocessing
 from preprocessor.preprocessor import Preprocessor
-
-# from data_trimmer import __version__
+from itertools import zip_longest 
+from joblib import dump, load
 
 __author__ = "Harvey Bastidas"
 __copyright__ = "Harvey Bastidas"
@@ -45,29 +44,56 @@ class Standardizer(Preprocessor):
             :obj:`argparse.Namespace`: command line parameters namespace
         """
         parser = argparse.ArgumentParser(
-            description="Standardizer: standarize a dataset, exports or imports a configuration file for standarization."
+            description="Dataset Standardizer: standarizes a dataset."
+        )
+        parser.add_argument("--no_config",
+            help="Do not generate an output configuration file.",
+            action="store_true",
+            default=False
         )
         parser = self.parse_cmd(parser)
-        return parser.parse_args(args)
+        pargs = parser.parse_args(args)
+        self.assign_arguments(pargs)
+        if hasattr(pargs, "no_config"):
+            self.no_config = pargs.no_config
+        else:
+            self.no_config = False
 
-    def core(self, args):
+    def core(self):
         """ Core preprocessor task after starting the instance with the main method.
             Decide from the arguments, what trimming method to call.
 
         Args:
         args (obj): command line parameters as objects
         """
-        # Standarize dataset
+        if self.input_config_file != None:
+            self.load_from_config()
+        else:
+            self.standardize()
+        
+    def standardize(self):
+        """ Standardize the dataset. """
+        pt = preprocessing.StandardScaler()
+        pt.fit(self.input_ds) 
+        self.output_ds = pt.transform(self.input_ds) 
+        dump(pt, self.output_config_file)
 
+    def load_from_config(self):
+        """ Standardize the dataset from a config file. """
+        pt = preprocessing.StandardScaler()
+        load(pt, self.input_config_file)
+        self.output_ds = pt.transform(self.input_ds)
+        
     def store(self):
         """ Save preprocessed data and the configuration of the preprocessor. """
-        np.savetxt(self.input_file, self.output_ds, delimiter=",")
+        _logger.debug("output_file = "+ self.output_file)
+        np.savetxt(self.output_file, self.output_ds, delimiter=",")
 
-def run():
+def run(args):
     """ Entry point for console_scripts """
-    data_trimmer = DataTrimmer(None)
-    data_trimmer.main(sys.argv[1:])
+    standardizer = Standardizer(None)
+    standardizer.main(args)
 
 
 if __name__ == "__main__":
-    run()
+    run(sys.argv)
