@@ -83,7 +83,7 @@ class PreprocessorBase:
             self.input_config_file = None
         if hasattr(pargs, "output_config_file"):
             if pargs.output_config_file != None: self.output_config_file = pargs.output_config_file
-            else: self.output_config_file = self.input_file + ".config" 
+            else: self.output_config_file = self.input_file + ".config1" 
         else:
-            self.output_config_file = self.input_file + ".config"
+            self.output_config_file = self.input_file + ".config2"
         

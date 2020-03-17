@@ -190,7 +190,7 @@ class DataTrimmer(Preprocessor):
         config_rows = list(zip_longest(self.r_rows, self.r_cols, fillvalue=-1))
         _logger.debug("output_file = "+ self.output_file)
         np.savetxt(self.output_file, self.output_ds, delimiter=",")
-        if (self.output_config_file != None):
+        if (self.output_config_file == None):
             self.output_config_file = self.input_file + ".config"
         _logger.debug("ocf = "+ self.output_config_file)
         np.savetxt(self.output_config_file, config_rows, delimiter=",")

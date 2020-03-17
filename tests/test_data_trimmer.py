@@ -157,7 +157,7 @@ class TestDataTrimmer:
         )
         assert cmp(self.conf.output_config_file, self.conf.output_config_file  + ".c02t07", shallow=True)
 
-    def atest_C02T08_config_load(self):
+    def test_C02T08_config_load(self):
         """ Load a configuration file and uses it to trim a dataset. Verify that output_config == input_config"""
         fname = os.path.join(os.path.dirname(__file__), "data/in_config.csv")
         input_config_file = fname
