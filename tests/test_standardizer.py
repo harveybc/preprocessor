@@ -52,6 +52,7 @@ class TestStandardizer:
         self.dt.store()
         mean_all = np.mean(self.dt.output_ds, dtype=np.float64)
         assert (mean_all>-1) and (mean_all<1)
+        
 
     def test_C03T02_cmdline_standarize(self):
         """ Standardizes all the columns using command line arguments """
