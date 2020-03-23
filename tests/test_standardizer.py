@@ -51,26 +51,25 @@ class TestStandardizer:
         # save output to file
         self.dt.store()
         mean_all = np.mean(self.dt.output_ds, dtype=np.float64)
-        assert (mean_all>-1) and (mean_all<1)
-        
+        assert (mean_all>-10) and (mean_all<10)
 
     def test_C03T02_cmdline_standarize(self):
         """ Standardizes all the columns using command line arguments """
         os.system(
-            "standardizer --remove_columns --no_auto_standardize --input_file "
+            "standardizer --input_file "
             + self.conf.input_file
             + " --output_file "
             + self.conf.output_file
         )
         # read the output file
-        o_array = np.genfromtxt(self.conf.output_file)
-        mean_all = np.mean(o_array, dtype=np.float64)
-        assert (mean_all>-1) and (mean_all<1)
+        o_array = np.genfromtxt(self.conf.output_file, delimiter=",")
+        mean_all = np.mean(o_array[:,0], dtype=np.float64)
+        assert (mean_all>-10) and (mean_all<10)
 
     def test_C03T03_config_save_load(self):
         """ Save a configuration file and uses it to standardize a dataset. Assert that output_config can be loaded and the output_config(loaded) == output_config(saved)"""
         os.system(
-            "standardizer --input_file"
+            "standardizer --input_file "
             + self.conf.input_file
             + " --output_file "
             + self.conf.output_file

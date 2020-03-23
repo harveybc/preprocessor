@@ -60,9 +60,6 @@ class PreprocessorBase:
         # Load input dataset
         self.input_ds = np.genfromtxt(self.input_file, delimiter=",")
         # load input config dataset if the parameter is available
-        if hasattr(self, "input_config_file"):
-            if self.input_config_file != None:
-                self.config_ds = np.genfromtxt(self.input_config_file, delimiter=",")
         # Initialize input number of rows and columns
         self.rows_d, self.cols_d = self.input_ds.shape
     
@@ -83,7 +80,7 @@ class PreprocessorBase:
             self.input_config_file = None
         if hasattr(pargs, "output_config_file"):
             if pargs.output_config_file != None: self.output_config_file = pargs.output_config_file
-            else: self.output_config_file = self.input_file + ".config1" 
+            else: self.output_config_file = self.input_file + ".config" 
         else:
-            self.output_config_file = self.input_file + ".config2"
+            self.output_config_file = self.input_file + ".config"
         

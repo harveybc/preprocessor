@@ -66,8 +66,11 @@ class Standardizer(Preprocessor):
         Args:
         args (obj): command line parameters as objects
         """
-        if self.input_config_file != None:
-            self.load_from_config()
+        if hasattr(self, "input_config_file"):
+            if self.input_config_file != None:
+                self.load_from_config()
+            else:
+                self.standardize()
         else:
             self.standardize()
         
@@ -81,13 +84,13 @@ class Standardizer(Preprocessor):
     def load_from_config(self):
         """ Standardize the dataset from a config file. """
         pt = preprocessing.StandardScaler()
-        load(pt, self.input_config_file)
+        pt = load(self.input_config_file)
         self.output_ds = pt.transform(self.input_ds)
         
     def store(self):
         """ Save preprocessed data and the configuration of the preprocessor. """
         _logger.debug("output_file = "+ self.output_file)
-        np.savetxt(self.output_file, self.output_ds, delimiter=",")
+        np.savetxt(self.output_file, self.output_ds, delimiter=",", fmt='%1.6f')
 
 def run(args):
     """ Entry point for console_scripts """

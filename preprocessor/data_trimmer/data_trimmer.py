@@ -94,8 +94,10 @@ class DataTrimmer(Preprocessor):
             self.trim_columns()
         if self.auto_trim:
             self.trim_auto()
-        if self.input_config_file != None:
-            self.load_from_config()
+        if hasattr(self, "input_config_file"):
+            if self.input_config_file != None:
+                self.config_ds = np.genfromtxt(self.input_config_file, delimiter=",")
+                self.load_from_config()
         
     def trim_fixed_rows(self, from_start, from_end):
         """ Trims a configurable number of rows from the start or end of the input dataset
@@ -150,6 +152,7 @@ class DataTrimmer(Preprocessor):
         Returns:
         rows_t, cols_t (int,int): number of rows and columns trimmed
         """
+        
         self.rows_d, self.cols_d = self.input_ds.shape
         rows_t, cols_t = self.trim_columns()
         # delete rows from start that contain zeroes from start
