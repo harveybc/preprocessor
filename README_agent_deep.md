@@ -10,13 +10,13 @@ Agent for an OpenAI Gym environment, implementing a Keras model as feature extra
 ## Description
 
 This agent loads an standardized observation dataset on a gym environment, 
-read observations from it and  execute actions based on the output 
+reads observations from it and executes actions based on the output 
 of a Keras model used as feature extractor, and a neat-python pre-optimized neural network 
-as action controller.
+used as action controller.
 
-Exports the standarization configuration for use on other datasets. 
+Exports a csv containing the agent state (balance, equity, orders status) and the trading history. 
 
-The standardizer is implemented in the Standardizer class, it has methods for loading a dataset, standardizing it and producing an output dataset and a configuration file that can be loaded and applied to another dataset, please see [test_standarizer](https://github.com/harveybc/preprocessor/blob/master/tests/standardizer/test_standardizer.py). It can also be used via command line.
+The agent is implemented in the AgentDeep class, it has methods for loading a dataset on a simulation environment, performing steps of the simulation and d it and producing an output dataset and a configuration file that can be loaded and applied to another dataset, please see [test_agent_deep](https://github.com/harveybc/agent/blob/master/tests/standardizer/test_standardizer.py). It can also be used via command line.
 
 ## Installation
 
