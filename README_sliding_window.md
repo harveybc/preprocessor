@@ -1,6 +1,6 @@
-# Agent: AgentDeep
+# Preprocessor: Sliding Window
 
-Agent for an OpenAI Gym environment, implementing a Keras model as feature extractor.
+A simple data pre-processor that standardize a dataset and exports the standarization configuration for use on other datasets. Usable both from command line and from class methods.
 
 [![Build Status](https://travis-ci.org/harveybc/preprocessor.svg?branch=master)](https://travis-ci.org/harveybc/preprocessor)
 [![Documentation Status](https://readthedocs.org/projects/docs/badge/?version=latest)](https://harveybc-preprocessor.readthedocs.io/en/latest/)
@@ -9,14 +9,11 @@ Agent for an OpenAI Gym environment, implementing a Keras model as feature extra
 
 ## Description
 
-This agent loads an standardized observation dataset on a gym environment, 
-reads observations from it and executes actions based on the output 
-of a Keras model used as feature extractor, and a neat-python pre-optimized neural network 
-used as action controller.
+Uses sklearn.preprocessing.StandardScaler to standardize features by removing the mean and scaling to unit variance.
 
-Exports a csv containing the agent state (balance, equity, orders status) and the trading history. 
+Exports the standarization configuration for use on other datasets. Usable both from command line and from class methods.
 
-The agent is implemented in the AgentDeep class, it has methods for loading a dataset on a simulation environment, performing steps of the simulation and d it and producing an output dataset and a configuration file that can be loaded and applied to another dataset, please see [test_agent_deep](https://github.com/harveybc/agent/blob/master/tests/standardizer/test_standardizer.py). It can also be used via command line.
+The standardizer is implemented in the Standardizer class, it has methods for loading a dataset, standardizing it and producing an output dataset and a configuration file that can be loaded and applied to another dataset, please see [test_standarizer](https://github.com/harveybc/preprocessor/blob/master/tests/standardizer/test_standardizer.py). It can also be used via command line.
 
 ## Installation
 
