@@ -14,7 +14,7 @@ of the input dataset.
 
 Usable both from command line and from class methods.
 
-The windower is implemented in the SlidingWindow class, it has methods for loading a dataset, performing sliding window via the windowize ()  method for producing an output dataset, please see [test_sliding_window](https://github.com/harveybc/preprocessor/blob/master/tests/windower/test_sliding_window.py). 
+The sliding_window is implemented in the SlidingWindow class, it has methods for loading a dataset, performing sliding window via the windowize ()  method for producing an output dataset, please see [test_sliding_window](https://github.com/harveybc/preprocessor/blob/master/tests/sliding_window/test_sliding_window.py). 
 
 ## Installation
 
