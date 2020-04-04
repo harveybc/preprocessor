@@ -40,7 +40,7 @@ The standardizer also is implemented as a console command:
 
 ### Command-Line Parameters
 
-* __--input_file <filename>__: The only mandatory parameter, is the filename for the input dataset to be trimmed.
+* __--input_file <filename>__: The only mandatory parameter, is the filename for the input dataset to be processed.
 * __--output_file <filename>__: (Optional) Filename for the output dataset. Defaults to the input dataset with the .output extension.
 * __--output_config_file <filename>__: (Optional) Filename for the output configuration containing rows trimmed in columns 0 and columns trimmed in column 1. Defaults to the input dataset with the .config extension.
 * __--input_config_file <filename>__: (Optional) Imports an existing configuration and trims a dataset with it.
