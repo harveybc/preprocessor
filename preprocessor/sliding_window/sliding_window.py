@@ -61,11 +61,18 @@ class SlidingWindow(Preprocessor):
         
     def window(self):
         """ Perform sliding window on the input the dataset. """
-        pt = preprocessing.StandardScaler()
-        pt.fit(self.input_ds) 
-        self.output_ds = pt.transform(self.input_ds) 
-        dump(pt, self.output_config_file)
-        
+        # initialize window and window_future para cada tick desde 0 hasta window_size-1
+        for i in range(1, self.window_size+1):
+            tick_data = self.input_ds[i, :].copy()
+            # fills the training window with past data
+            window.appendleft(tick_data.copy())
+        # para cada tick desde window_size hasta num_ticks - 1
+        for i in range(self.window_size, num_ticks-self.window_size):
+            # tick_data = my_data[i, :].copy()
+            tick_data = self.input_ds[i, :].copy()
+            # fills the training window with past data
+            window.appendleft(tick_data.copy())
+                
     def store(self):
         """ Save preprocessed data and the configuration of the preprocessor. """
         _logger.debug("output_file = "+ self.output_file)
