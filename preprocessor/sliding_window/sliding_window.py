@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-This File contains the Standardizer class. To run this script uncomment or add the following lines in the
+This File contains the SlidingWindow class. To run this script uncomment or add the following lines in the
 [options.entry_points] section in setup.cfg:
 
     console_scripts =
-        standardizer = standardizer.__main__:main
+        sliding_window = sliding_window.__main__:main
 
-Then run `python setup.py install` which will install the command `standardizer`
+Then run `python setup.py install` which will install the command `sliding_window`
 inside your current environment.
 
 """
@@ -27,8 +27,8 @@ __license__ = "mit"
 _logger = logging.getLogger(__name__)
 
 
-class Standardizer(Preprocessor):
-    """ The Standardizer preprocessor class """
+class SlidingWindow(Preprocessor):
+    """ The SlidingWindow preprocessor class """
 
     def __init__(self, conf):
         """ Constructor using same parameters as base class """
@@ -44,48 +44,27 @@ class Standardizer(Preprocessor):
             :obj:`argparse.Namespace`: command line parameters namespace
         """
         parser = argparse.ArgumentParser(
-            description="Dataset Standardizer: standarizes a dataset."
-        )
-        parser.add_argument("--no_config",
-            help="Do not generate an output configuration file.",
-            action="store_true",
-            default=False
+            description="SlidingWindow: performs the sliding window technique on the input dataset."
         )
         parser = self.parse_cmd(parser)
         pargs = parser.parse_args(args)
         self.assign_arguments(pargs)
-        if hasattr(pargs, "no_config"):
-            self.no_config = pargs.no_config
-        else:
-            self.no_config = False
-
+        
     def core(self):
         """ Core preprocessor task after starting the instance with the main method.
-            Decide from the arguments, what trimming method to call.
+            Decide from the arguments, what method to call.
 
         Args:
         args (obj): command line parameters as objects
         """
-        if hasattr(self, "input_config_file"):
-            if self.input_config_file != None:
-                self.load_from_config()
-            else:
-                self.standardize()
-        else:
-            self.standardize()
+        self.window()
         
-    def standardize(self):
-        """ Standardize the dataset. """
+    def window(self):
+        """ Perform sliding window on the input the dataset. """
         pt = preprocessing.StandardScaler()
         pt.fit(self.input_ds) 
         self.output_ds = pt.transform(self.input_ds) 
         dump(pt, self.output_config_file)
-
-    def load_from_config(self):
-        """ Standardize the dataset from a config file. """
-        pt = preprocessing.StandardScaler()
-        pt = load(self.input_config_file)
-        self.output_ds = pt.transform(self.input_ds)
         
     def store(self):
         """ Save preprocessed data and the configuration of the preprocessor. """
@@ -94,8 +73,8 @@ class Standardizer(Preprocessor):
 
 def run(args):
     """ Entry point for console_scripts """
-    standardizer = Standardizer(None)
-    standardizer.main(args)
+    sliding_window = SlidingWindow(None)
+    sliding_window.main(args)
 
 
 if __name__ == "__main__":

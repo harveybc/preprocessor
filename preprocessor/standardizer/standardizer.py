@@ -61,7 +61,7 @@ class Standardizer(Preprocessor):
 
     def core(self):
         """ Core preprocessor task after starting the instance with the main method.
-            Decide from the arguments, what trimming method to call.
+            Decide from the arguments, what method to call.
 
         Args:
         args (obj): command line parameters as objects
