@@ -68,7 +68,7 @@ st.store()
 
 > sliding_window --input_file "tests/data/test_input.csv"
 
-
+TODO: PACF analysis for optimal lag to be used as window_size/2?
 
 
 

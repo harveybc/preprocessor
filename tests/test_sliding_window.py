@@ -44,7 +44,11 @@ class TestSlidingWindow:
         self.dt.window()
         # save output to file
         self.dt.store()
-        #TODO: PROCESS BEFORE ASSERT
+        # read input and output files
+        rows_i = list(csv.reader(open(self.conf.input_file)))
+        rows_o = list(csv.reader(open(self.conf.output_file)))
+        input_columns = len(rows_i[0])
+        output_columns = len(rows_o[0])
         assert output_columns == (input_columns * (self.conf.window_size-1))
 
     def test_C03T02_cmdline_window(self):
@@ -55,5 +59,8 @@ class TestSlidingWindow:
             + " --output_file "
             + self.conf.output_file
         )
-        #TODO: PROCESS BEFORE ASSERT
+        rows_i = list(csv.reader(open(self.conf.input_file)))
+        rows_o = list(csv.reader(open(self.conf.output_file)))
+        input_columns = len(rows_i[0])
+        output_columns = len(rows_o[0])
         assert output_columns == (input_columns * (self.conf.window_size-1))
