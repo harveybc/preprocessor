@@ -9,7 +9,7 @@ A simple data pre-processor. Usable both from command line and from class method
 
 ## Description
 
-Implements modular components for dataset preprocessing: a data-trimmer, a standarizer, multi-feature Singular Spectrum Analysis (SSA) decomposer, a feature selector, and feature extractors such as:  Deep Convolutional Networks (DCN), Long-Short Term Memories(LSTM) and Autoencoder-based feature extractors.
+Implements modular components for dataset preprocessing: a data-trimmer, a standardizer, a feature selector and a sliding window data generator.
 
 ## Installation
 
