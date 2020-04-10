@@ -19,6 +19,7 @@ from sklearn import preprocessing
 from preprocessor.preprocessor import Preprocessor
 from itertools import zip_longest 
 from joblib import dump, load
+from collections import deque
 
 __author__ = "Harvey Bastidas"
 __copyright__ = "Harvey Bastidas"
@@ -66,12 +67,13 @@ class SlidingWindow(Preprocessor):
         Args:
         args (obj): command line parameters as objects
         """
-        self.window()
+        self.sl_window()
         
-    def window(self):
+    def sl_window(self):
         """ Perform sliding window technique on the input the dataset. """
         # initialize output dataset
         out_ds = []
+        window = deque(my_data[0:window_size-1, :], window_size)
         # initialize window and window_future para cada tick desde 0 hasta window_size-1
         for i in range(1, self.window_size+1):
             tick_data = self.input_ds[i, :].copy()

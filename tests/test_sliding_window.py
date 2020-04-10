@@ -42,7 +42,7 @@ class TestSlidingWindow:
     def test_C03T01_window(self):
         """ Perform sliding_window and assert if the output_columns == input_columns * (window_size-1) """        
         self.dt.window_size = self.conf.window_size
-        self.dt.window()
+        self.dt.sl_window()
         # save output to file
         self.dt.store()
         # read input and output files
