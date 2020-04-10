@@ -73,7 +73,7 @@ class SlidingWindow(Preprocessor):
         """ Perform sliding window technique on the input the dataset. """
         # initialize output dataset
         out_ds = []
-        window = deque(my_data[0:window_size-1, :], window_size)
+        window = deque(self.input_ds[0:self.window_size-1, :], self.window_size)
         # initialize window and window_future para cada tick desde 0 hasta window_size-1
         for i in range(1, self.window_size+1):
             tick_data = self.input_ds[i, :].copy()
