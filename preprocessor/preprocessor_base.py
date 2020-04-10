@@ -31,7 +31,10 @@ class PreprocessorBase:
             else:
                 self.input_config_file = None
             """ Path of the input configuration """
-            self.output_config_file = conf.output_config_file
+            if hasattr(conf, "output_config_file"):
+                self.output_config_file = conf.output_config_file
+            else:
+                self.output_config_file = None
             """ Path of the output configuration """
             # Load input dataset
             self.load_ds()
