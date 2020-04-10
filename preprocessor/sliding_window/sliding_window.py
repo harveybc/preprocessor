@@ -74,13 +74,14 @@ class SlidingWindow(Preprocessor):
         # initialize output dataset
         out_ds = []
         window = deque(self.input_ds[0:self.window_size-1, :], self.window_size)
+        num_ticks, num_colums = self.input_ds.shape
         # initialize window and window_future para cada tick desde 0 hasta window_size-1
         for i in range(1, self.window_size+1):
             tick_data = self.input_ds[i, :].copy()
             # fills the training window with past data
             window.appendleft(tick_data.copy())
         # para cada tick desde window_size hasta num_ticks - 1
-        for i in range(self.window_size, self.num_ticks-self.window_size):
+        for i in range(self.window_size, num_ticks-self.window_size):
             tick_data = self.input_ds[i, :].copy()
             # fills the training window with past data
             window.appendleft(tick_data.copy())
