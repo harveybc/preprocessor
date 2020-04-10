@@ -55,6 +55,8 @@ class SlidingWindow(Preprocessor):
         pargs = parser.parse_args(args)
         if hasattr(pargs, "window_size"):
             self.window_size = pargs.window_size
+        else:
+            self.window_size = 30
         self.assign_arguments(pargs)
         
     def core(self):

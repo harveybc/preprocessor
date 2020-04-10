@@ -27,7 +27,7 @@ class Conf:
         fname = os.path.join(os.path.dirname(__file__), "data/out_config.csv")
         self.output_config_file = fname
         """ Output configuration of the preprocessor """
-
+        
 class TestStandardizer:
     """ Component Tests  """
 
