@@ -35,7 +35,7 @@ class SlidingWindow(Preprocessor):
         super().__init__(conf)
 
     def parse_args(self, args):
-        """ Parse command line parameters
+        """ Parse command line parameters additional to the preprocessor class ones
 
         Args:
             args ([str]): command line parameters as list of strings
@@ -46,8 +46,15 @@ class SlidingWindow(Preprocessor):
         parser = argparse.ArgumentParser(
             description="SlidingWindow: performs the sliding window technique on the input dataset."
         )
+        parser.add_argument("--window_size",
+            help="Size of the window to be use for the sliding window technique. Default 30",
+            type=int,
+            default=30
+        )
         parser = self.parse_cmd(parser)
         pargs = parser.parse_args(args)
+        if hasattr(pargs, "window_size"):
+            self.window_size = pargs.window_size
         self.assign_arguments(pargs)
         
     def core(self):
@@ -60,19 +67,36 @@ class SlidingWindow(Preprocessor):
         self.window()
         
     def window(self):
-        """ Perform sliding window on the input the dataset. """
+        """ Perform sliding window technique on the input the dataset. """
+        # initialize output dataset
+        out_ds = []
         # initialize window and window_future para cada tick desde 0 hasta window_size-1
         for i in range(1, self.window_size+1):
             tick_data = self.input_ds[i, :].copy()
             # fills the training window with past data
             window.appendleft(tick_data.copy())
         # para cada tick desde window_size hasta num_ticks - 1
-        for i in range(self.window_size, num_ticks-self.window_size):
-            # tick_data = my_data[i, :].copy()
+        for i in range(self.window_size, self.num_ticks-self.window_size):
             tick_data = self.input_ds[i, :].copy()
             # fills the training window with past data
             window.appendleft(tick_data.copy())
-                
+            # expande usando los window tick anteriores (traspuesta de la columna del feature en la matriz window)
+            for it,v in enumerate(tick_data):
+                w_count = 0
+                for w in window:
+                    if (w_count == 0) and (it==0):
+                        window_column_t = [w[it]]
+                    else:
+                        window_column_t = np.concatenate((window_column_t, [w[it]]))
+                    w_count = w_count + 1
+                tick_data_r = window_column_t.copy()
+            out_ds.append(tick_data_r)
+            if i % 100 == 0.0:
+                progress = i*100/num_ticks
+                sys.stdout.write("Tick: %d/%d Progress: %d%%   \r" % (i, num_ticks, progress) )
+                sys.stdout.flush()
+        self.output_ds = np.array(out_ds)
+                    
     def store(self):
         """ Save preprocessed data and the configuration of the preprocessor. """
         _logger.debug("output_file = "+ self.output_file)
