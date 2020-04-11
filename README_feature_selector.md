@@ -18,21 +18,7 @@ The sliding_window is implemented in the SlidingWindow class, it has methods for
 
 ## Installation
 
-The module is installed with the preprocessor package, the instructions are described in the following section.
-
-### Steps
-1. Clone the GithHub repo:   
-> git clone https://github.com/harveybc/preprocessor
-2. Change to the repo folder:
-> cd preprocessor
-3. Install requirements.
-> pip install -r requirements.txt
-4. Install python package (also installs the console command data-trimmer)
-> python setup.py install
-5. (Optional) Perform tests
-> python setup.py install
-6. (Optional) Generate Sphinx Documentation
-> python setup.py docs
+The module is installed with the preprocessor package, the instructions are described in the [preprocessor README](../master/README.md).
 
 ### Command-Line Execution
 
