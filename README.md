@@ -1,6 +1,6 @@
 # Preprocessor
 
-A simple data pre-processor. Usable both from command line and from class methods. __Work In Progress__.
+A simple timeseries data pre-processor.
 
 [![Build Status](https://travis-ci.org/harveybc/preprocessor.svg?branch=master)](https://travis-ci.org/harveybc/preprocessor)
 [![Documentation Status](https://readthedocs.org/projects/docs/badge/?version=latest)](https://harveybc-preprocessor.readthedocs.io/en/latest/)
@@ -10,6 +10,8 @@ A simple data pre-processor. Usable both from command line and from class method
 ## Description
 
 Implements modular components for dataset preprocessing: a data-trimmer, a standardizer, a feature selector and a sliding window data generator.
+
+All modules are usable both from command line and from class methods.
 
 ## Installation
 
@@ -37,51 +39,51 @@ Detailed Sphinix documentation for all modules can be generated in HTML format w
 
 ## Data-Trimmer
 
-A simple data pre-processor that trims the constant valued columns.  Also removes rows from the start and the end of a dataset with features with consecutive zeroes. Usable both from command line and from class methods.
+A simple data pre-processor that trims the constant valued columns.  Also removes rows from the start and the end of a dataset with features with consecutive zeroes. 
 
 See [Data-Trimmer Readme](../master/README_data_trimmer.md) for detailed description and usage instructions.
 
 ## Standarizer
 
-Standardizes a dataset and exports the standarization configuration for use on other datasets. Usable both from command line and from class methods.
+Standardizes a dataset and exports the standarization configuration for use on other datasets. 
 
 See [Standardizer Readme](../master/README_standardizer.md) for detailed description and usage instructions.
 
 ## Sliding Window
 
-Performs the sliding window technique. Usable both from command line and from class methods.
+Performs the sliding window technique and exports an expanded dataset with configurable window_size.
 
 See [Sliding Window Readme](../master/README_sliding_window.md) for detailed description and usage instructions.
 
 ## Feature Selector
 
-Performs the feature selection based on a classification or regression training signal and a threeshold. Usable both from command line and from class methods.
+Performs the feature selection based on a classification or regression training signal and a threeshold. 
 
 See [Feature Selector Readme](../master/README_feature_selector.md) for detailed description and usage instructions.
 
 ## Examples of usage
 
-The following examples show both the class method and command line uses for the data-trimmer preprocessor module, please see the documentation for examples of other modules.
+The following examples show both the class method and command line uses for one module, for examples of other modules, please see the specific module´s documentation.
 
-### Example: Usage via Class Methods (DataTrimmer)
+### Example: Usage via Class Methods (data_trimmer module)
 ```python
 from preprocessor.data_trimmer.data_trimmer import DataTrimmer
-# configure parameters (same vaiable names as command-line parameters)
+# configure parameters (same variable names as command-line parameters)
 class Conf:
     def __init__(self):
         self.input_file = "tests/data/test_input.csv"
 conf = Conf()
 # instance trimmer class and loads dataset
 dt = DataTrimmer(conf)
-# do the trimming
-rows_t, cols_t = dt.trim_auto()
+# perform the module's core method
+dt.core()
 # save output to output file
 dt.store()
 ```
 
-### Example: Usage via CLI (DataTrimmer)
+### Example: Usage via CLI (data_trimmer module)
 
-> data-trimmer --input_file "tests/data/test_input.csv"
+> data_trimmer --input_file "tests/data/test_input.csv"
 
 
 
