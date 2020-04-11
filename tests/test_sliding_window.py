@@ -50,7 +50,7 @@ class TestSlidingWindow:
         rows_o = list(csv.reader(open(self.conf.output_file)))
         input_columns = len(rows_i[0])
         output_columns = len(rows_o[0])
-        assert output_columns == (input_columns * (self.conf.window_size-1))
+        assert output_columns == (input_columns * (self.conf.window_size))
 
     def test_C03T02_cmdline_window(self):
         """ Perform the same C03T01_window assertion but using command line arguments """
@@ -59,9 +59,11 @@ class TestSlidingWindow:
             + self.conf.input_file
             + " --output_file "
             + self.conf.output_file
+            + " --window_size "
+            + str(self.conf.window_size)
         )
         rows_i = list(csv.reader(open(self.conf.input_file)))
         rows_o = list(csv.reader(open(self.conf.output_file)))
         input_columns = len(rows_i[0])
         output_columns = len(rows_o[0])
-        assert output_columns == (input_columns * (self.conf.window_size-1))
+        assert output_columns == (input_columns * (self.conf.window_size))
