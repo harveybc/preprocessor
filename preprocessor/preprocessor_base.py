@@ -31,7 +31,10 @@ class PreprocessorBase:
             else:
                 self.input_config_file = None
             """ Path of the input configuration """
-            self.output_config_file = conf.output_config_file
+            if hasattr(conf, "output_config_file"):
+                self.output_config_file = conf.output_config_file
+            else:
+                self.output_config_file = None
             """ Path of the output configuration """
             # Load input dataset
             self.load_ds()
@@ -60,30 +63,31 @@ class PreprocessorBase:
         # Load input dataset
         self.input_ds = np.genfromtxt(self.input_file, delimiter=",")
         # load input config dataset if the parameter is available
-        if hasattr(self, "input_config_file"):
-            if self.input_config_file != None:
-                self.config_ds = np.genfromtxt(self.input_config_file, delimiter=",")
         # Initialize input number of rows and columns
         self.rows_d, self.cols_d = self.input_ds.shape
     
     def assign_arguments(self,pargs):
         if hasattr(pargs, "input_file"):
-            if pargs.input_file != None: self.input_file = pargs.input_file
+            if pargs.input_file != None: 
+                self.input_file = pargs.input_file
+                if hasattr(pargs, "output_file"):
+                    if pargs.output_file != None: self.output_file = pargs.output_file
+                    else: self.output_file = self.input_file + ".output"
+                else:
+                    self.output_file = self.input_file + ".output"
+                if hasattr(pargs, "input_config_file"):
+                    if pargs.input_config_file != None: self.input_config_file = pargs.input_config_file
+                    else: self.input_config_file = None
+                else:
+                    self.input_config_file = None
+                if hasattr(pargs, "output_config_file"):
+                    if pargs.output_config_file != None: self.output_config_file = pargs.output_config_file
+                    else: self.output_config_file = self.input_file + ".config" 
+                else:
+                    self.output_config_file = self.input_file + ".config"
+            else:
+                print("Error: No input file parameter provided. Use option -h to show help.")
+                sys.exit()
         else:
-            print("Error: No input file parameter provided.")
-        if hasattr(pargs, "output_file"):
-            if pargs.output_file != None: self.output_file = pargs.output_file
-            else: self.output_file = self.input_file + ".output"
-        else:
-            self.output_file = self.input_file + ".output"
-        if hasattr(pargs, "input_config_file"):
-            if pargs.input_config_file != None: self.input_config_file = pargs.input_config_file
-            else: self.input_config_file = None
-        else:
-            self.input_config_file = None
-        if hasattr(pargs, "output_config_file"):
-            if pargs.output_config_file != None: self.output_config_file = pargs.output_config_file
-            else: self.output_config_file = self.input_file + ".config" 
-        else:
-            self.output_config_file = self.input_file + ".config"
-        
+            print("Error: No input file parameter provided. Use option -h to show help.")
+            sys.exit()
