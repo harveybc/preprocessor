@@ -43,7 +43,21 @@ See [Data-Trimmer Readme](../master/README_data_trimmer.md) for detailed descrip
 
 ## Standarizer
 
-Work In Progress. 
+Standardizes a dataset and exports the standarization configuration for use on other datasets. Usable both from command line and from class methods.
+
+See [Standardizer Readme](../master/README_standardizer.md) for detailed description and usage instructions.
+
+## Sliding Window
+
+Performs the sliding window technique. Usable both from command line and from class methods.
+
+See [Sliding Window Readme](../master/README_sliding_window.md) for detailed description and usage instructions.
+
+## Feature Selector
+
+Performs the feature selection based on a classification or regression training signal and a threeshold. Usable both from command line and from class methods.
+
+See [Feature Selector Readme](../master/README_feature_selector.md) for detailed description and usage instructions.
 
 ## Examples of usage
 
