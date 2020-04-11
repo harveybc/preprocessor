@@ -58,3 +58,4 @@ tests/test_output.csv
 .pypirc
 tests/data/test_output.csv
 test_output.csv
+*.462506
