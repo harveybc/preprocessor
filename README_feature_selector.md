@@ -28,7 +28,8 @@ The feature selection is also implemented as a console command:
 
 * __--input_file <filename>__: The only mandatory parameter, is the filename for the input dataset to be processed.
 * __--output_file <filename>__: (Optional) Filename for the output dataset. Defaults to the input dataset with the .output extension.
-* __--window_size <filename>__: (Optional) Size of the feature selection, defaults to 21.
+* __--training_file <filename>__: (Optional) Size of the feature selection, defaults to 21.
+* __--threshold <filename>__: (Optional) Size of the feature selection, defaults to 21.
 
 ## Examples of usage
 The following examples show both the class method and command line uses.
