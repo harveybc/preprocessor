@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-This File contains the Standardizer class. To run this script uncomment or add the following lines in the
+This File contains the FeatureSelector class. To run this script uncomment or add the following lines in the
 [options.entry_points] section in setup.cfg:
 
     console_scripts =
-        standardizer = standardizer.__main__:main
+        feature_selector = feature_selector.__main__:main
 
-Then run `python setup.py install` which will install the command `standardizer`
+Then run `python setup.py install` which will install the command `feature_selector`
 inside your current environment.
 
 """
@@ -27,8 +27,8 @@ __license__ = "mit"
 _logger = logging.getLogger(__name__)
 
 
-class Standardizer(Preprocessor):
-    """ The Standardizer preprocessor class """
+class FeatureSelector(Preprocessor):
+    """ The FeatureSelector preprocessor class """
 
     def __init__(self, conf):
         """ Constructor using same parameters as base class """
@@ -44,7 +44,15 @@ class Standardizer(Preprocessor):
             :obj:`argparse.Namespace`: command line parameters namespace
         """
         parser = argparse.ArgumentParser(
-            description="Dataset Standardizer: standarizes a dataset."
+            description="Dataset FeatureSelector: standarizes a dataset."
+        )
+        parser.add_argument("--training_file",
+            help="number of rows to remove from end (ignored if auto_trim)"
+        )
+        parser.add_argument("--threshold",
+            help="number of rows to remove from end (ignored if auto_trim)",
+            type=float,
+            default=0
         )
         parser.add_argument("--no_config",
             help="Do not generate an output configuration file.",
@@ -70,12 +78,12 @@ class Standardizer(Preprocessor):
             if self.input_config_file != None:
                 self.load_from_config()
             else:
-                self.standardize()
+                self.feature_selection()
         else:
-            self.standardize()
+            self.feature_selection()
         
-    def standardize(self):
-        """ Standardize the dataset. """
+    def feature_selection(self):
+        """ Process the dataset. """
         pt = preprocessing.StandardScaler()
         pt.fit(self.input_ds) 
         self.output_ds = pt.transform(self.input_ds) 
@@ -83,7 +91,7 @@ class Standardizer(Preprocessor):
             dump(pt, self.output_config_file)
 
     def load_from_config(self):
-        """ Standardize the dataset from a config file. """
+        """ Process the dataset from a config file. """
         pt = preprocessing.StandardScaler()
         pt = load(self.input_config_file)
         self.output_ds = pt.transform(self.input_ds)
@@ -95,8 +103,8 @@ class Standardizer(Preprocessor):
 
 def run(args):
     """ Entry point for console_scripts """
-    standardizer = Standardizer(None)
-    standardizer.main(args)
+    feature_selector = FeatureSelector(None)
+    feature_selector.main(args)
 
 
 if __name__ == "__main__":

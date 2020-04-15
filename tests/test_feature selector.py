@@ -42,29 +42,34 @@ class TestFeatureSelector:
             print("No test output file found.")
             pass
 
-    def test_C02T01_standardize(self):
-        """ Standardizes all the columns and assert if the average is near zero """        
-        self.dt.standardize()
+    def test_C04T01_feature_selection(self):
+        """ Assert if the output has less columns than the input """        
+        self.dt.feature_selection()
         # save output to file
         self.dt.store()
-        mean_all = np.mean(self.dt.output_ds, dtype=np.float64)
-        assert (mean_all>-10) and (mean_all<10)
+        # read the input and output files
+        rows_i = list(csv.reader(open(self.dt.input_file)))
+        rows_o = list(csv.reader(open(self.dt.output_file)))
+        # perform the assertion 
+        assert (len(rows_i[0]) > len(rows_o[0]))
+    
 
-    def test_C02T02_cmdline_standarize(self):
-        """ Standardizes all the columns using command line arguments """
+    def test_C04T02_cmdline_feature_selection(self):
+        """ Assert if the output has less columns than the input using command line arguments """
         os.system(
             "feature_selector --input_file "
             + self.conf.input_file
             + " --output_file "
             + self.conf.output_file
         )
-        # read the output file
-        o_array = np.genfromtxt(self.conf.output_file, delimiter=",")
-        mean_all = np.mean(o_array[:,0], dtype=np.float64)
-        assert (mean_all>-10) and (mean_all<10)
-
-    def test_C02T03_config_save_load(self):
-        """ Save a configuration file and uses it to standardize a dataset. Assert that output_config can be loaded and the output_config(loaded) == output_config(saved)"""
+        # read the input and output files
+        rows_i = list(csv.reader(open(self.dt.input_file)))
+        rows_o = list(csv.reader(open(self.dt.output_file)))
+        # perform the assertion 
+        assert (len(rows_i[0]) > len(rows_o[0]))
+    
+    def test_C04T03_config_save_load(self):
+        """ Save a configuration file and uses it to feature_selection. Assert that output_config can be loaded and the output_config(loaded) == output_config(saved)"""
         os.system(
             "feature_selector --input_file "
             + self.conf.input_file
@@ -80,8 +85,6 @@ class TestFeatureSelector:
             + " --input_config_file "
             + self.conf.output_config_file
             + " --output_file "
-            + self.conf.output_file + ".c03t03"
-            + " --output_config_file "
-            + self.conf.output_config_file 
+            + self.conf.output_file + ".c04t03"
         )
-        assert filecmp.cmp(self.conf.output_file, self.conf.output_file  + ".c03t03", shallow=True)
+        assert filecmp.cmp(self.conf.output_file, self.conf.output_file  + ".c04t03", shallow=True)
