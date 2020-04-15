@@ -26,10 +26,10 @@ The feature selection is also implemented as a console command:
 
 ### Command-Line Parameters
 
-* __--input_file <filename>__: The only mandatory parameter, is the filename for the input dataset to be processed.
+* __--input_file <filename>__: Mandatory parameter, is the filename for the input dataset to be processed.
+* __--training_file <filename>__: (Optional) Mandatory parameter, is the filename for the training dataset.
 * __--output_file <filename>__: (Optional) Filename for the output dataset. Defaults to the input dataset with the .output extension.
-* __--training_file <filename>__: (Optional) Size of the feature selection, defaults to 21.
-* __--threshold <filename>__: (Optional) Size of the feature selection, defaults to 21.
+* __--threshold <float>__: (Optional) Feature selection threshold. 1 allows all,  0 none .
 
 ## Examples of usage
 The following examples show both the class method and command line uses.
@@ -41,18 +41,19 @@ from preprocessor.feature_selector.feature_selector import FeatureSelector
 class Conf:
     def __init__(self):
         self.input_file = "tests/data/test_input.csv"
+        self.training_file = "tests/data/test_training.csv"
 conf = Conf()
 # instance trimmer class and loads dataset
 st = FeatureSelector(conf)
-# do the trimming
-st.windowize()
+# perform the core method
+st.core()
 # save output to output file
 st.store()
 ```
 
 ### Usage via CLI
 
-> feature_selector --input_file "tests/data/test_input.csv"
+> feature_selector --input_file "tests/data/test_input.csv" --training_file "tests/data/test_training.csv"
 
 
 
