@@ -35,6 +35,8 @@ class TestFeatureSelector:
         """ Component Tests Constructor """
         self.conf = Conf()
         self.dt = FeatureSelector(self.conf)
+        # setup training_file for feature selection
+        self.dt.training_file = os.path.join(os.path.dirname(__file__), "data/training.csv")
         """ Data feature_selector object """
         try:
             os.remove(self.conf.output_file)
