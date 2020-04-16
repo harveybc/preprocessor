@@ -53,10 +53,10 @@ class FeatureSelector(Preprocessor):
             :obj:`argparse.Namespace`: command line parameters namespace
         """
         parser = argparse.ArgumentParser(
-            description="Dataset FeatureSelector: standarizes a dataset."
+            description="Dataset FeatureSelector: select the best scoring features according to a mutual information scoring algorithm."
         )
         parser.add_argument("--training_file",
-            help="number of rows to remove from end (ignored if auto_trim)"
+            help="filename of the training dataset"
         )
         parser.add_argument("--percentile",
             help="percentile of features to keep",
