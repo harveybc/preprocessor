@@ -128,6 +128,8 @@ class FeatureSelector(Preprocessor):
         mask = featureSelector.get_support()
         self.output_ds = self.input_ds[:, mask]    
         # saves configuration file
+        if not(hasattr(self, "no_config")):
+            self.no_config = False
         if not(self.no_config):
             np.savetxt(self.output_config_file, mask, delimiter=",")
 
