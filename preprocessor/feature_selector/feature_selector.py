@@ -117,9 +117,9 @@ class FeatureSelector(Preprocessor):
         if not(hasattr(self, "classification")):
             self.classification = False
         if self.classification:
-            featureSelector = SelectKBest(score_func = score_func_classification, k=50)
+            featureSelector = SelectKBest(score_func = score_func_classification, k=all)
         else:
-            featureSelector = SelectKBest(score_func= score_func_regression, k=50)
+            featureSelector = SelectKBest(score_func= score_func_regression, k=all)
         # fit feature selector using the training signal
         featureSelector.fit(self.input_ds, self.training_ds)
         # applies feature selection mask to the input dataset
