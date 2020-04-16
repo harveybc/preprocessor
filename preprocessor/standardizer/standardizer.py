@@ -79,7 +79,11 @@ class Standardizer(Preprocessor):
         pt = preprocessing.StandardScaler()
         pt.fit(self.input_ds) 
         self.output_ds = pt.transform(self.input_ds) 
-        dump(pt, self.output_config_file)
+        if hasattr(self, "no_config"):
+            if self.no_config == False:
+                dump(pt, self.output_config_file)
+        else:
+            dump(pt, self.output_config_file)
 
     def load_from_config(self):
         """ Standardize the dataset from a config file. """

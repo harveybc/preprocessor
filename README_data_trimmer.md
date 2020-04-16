@@ -1,6 +1,6 @@
 # Preprocessor: Data-Trimmer
 
-A simple data pre-processor that trims the constant valued columns.  Also removes rows from the start and the end of a dataset with features with consecutive zeroes. Usable both from command line and from class methods.
+Trims the constant valued columns, also removes rows from the start and the end of a dataset with features with consecutive zeroes. Usable both from command line and from class methods.
 
 [![Build Status](https://travis-ci.org/harveybc/preprocessor.svg?branch=master)](https://travis-ci.org/harveybc/preprocessor)
 [![Documentation Status](https://readthedocs.org/projects/docs/badge/?version=latest)](https://harveybc-preprocessor.readthedocs.io/en/latest/)
@@ -30,8 +30,8 @@ The data-trimmer also is implemented as a console command:
 * __--output_file <filename>__: (Optional) Filename for the output dataset. Defaults to the input dataset with the .output extension.
 * __--output_config_file <filename>__: (Optional) Filename for the output configuration containing rows trimmed in columns 0 and columns trimmed in column 1. Defaults to the input dataset with the .config extension.
 * __--input_config_file <filename>__: (Optional) Imports an existing configuration and trims a dataset with it.
-* __--from_start <val>__:(Optional) number of rows to remove from the start of the input dataset.
-* __--from_end <val>__: (Optional) number of rows to remove from the end of the input dataset.
+* __--from_start <int>__:(Optional) number of rows to remove from the start of the input dataset.
+* __--from_end <int>__: (Optional) number of rows to remove from the end of the input dataset.
 * __--remove_columns__: (Optional) Removes all constant columns.
 * __--no_auto_trim__: (Optional) Do not perform auto-trimming, useful if using the remove_columns, from_start or from_end options.
 

@@ -1,6 +1,6 @@
 # Preprocessor: Standardizer
 
-A simple data pre-processor that standardize a dataset and exports the standarization configuration for use on other datasets. Usable both from command line and from class methods.
+A simple data pre-processor that standardize a dataset and exports the standarization configuration for use on other datasets. 
 
 [![Build Status](https://travis-ci.org/harveybc/preprocessor.svg?branch=master)](https://travis-ci.org/harveybc/preprocessor)
 [![Documentation Status](https://readthedocs.org/projects/docs/badge/?version=latest)](https://harveybc-preprocessor.readthedocs.io/en/latest/)
@@ -11,9 +11,9 @@ A simple data pre-processor that standardize a dataset and exports the standariz
 
 Uses sklearn.preprocessing.StandardScaler to standardize features by removing the mean and scaling to unit variance.
 
-Exports the standarization configuration for use on other datasets. Usable both from command line and from class methods.
+Exports the standarization configuration for use on other datasets. 
 
-The standardizer is implemented in the Standardizer class, it has methods for loading a dataset, standardizing it and producing an output dataset and a configuration file that can be loaded and applied to another dataset, please see [test_standarizer](https://github.com/harveybc/preprocessor/blob/master/tests/standardizer/test_standardizer.py). It can also be used via command line.
+The standardizer is implemented in the Standardizer class, it has methods for loading a dataset, standardizing it and producing an output dataset and a configuration file that can be loaded and applied to another dataset, please see [test_standarizer](https://github.com/harveybc/preprocessor/blob/master/tests/standardizer/test_standardizer.py). Usable both from command line and from class methods.
 
 ## Installation
 
