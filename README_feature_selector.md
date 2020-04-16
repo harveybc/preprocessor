@@ -29,7 +29,7 @@ The feature selection is also implemented as a console command:
 * __--input_file <filename>__: Mandatory parameter, is the filename for the input dataset to be processed.
 * __--training_file <filename>__: (Optional) Mandatory parameter, is the filename for the training dataset.
 * __--output_file <filename>__: (Optional) Filename for the output dataset. Defaults to the input dataset with the .output extension.
-* __--threshold <float>__: (Optional) Feature selection threshold. 1 allows all,  0 none .
+* __--percentile <int>__: (Optional) Feature selection percentile of features to keep, defaults to 20.
 
 ## Examples of usage
 The following examples show both the class method and command line uses.

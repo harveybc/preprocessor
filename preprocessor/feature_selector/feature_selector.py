@@ -15,7 +15,7 @@ import argparse
 import sys
 import logging
 import numpy as np
-from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import SelectPercentile
 from preprocessor.preprocessor import Preprocessor
 from itertools import zip_longest 
 from joblib import dump, load
@@ -58,10 +58,10 @@ class FeatureSelector(Preprocessor):
         parser.add_argument("--training_file",
             help="number of rows to remove from end (ignored if auto_trim)"
         )
-        parser.add_argument("--threshold",
-            help="number of rows to remove from end (ignored if auto_trim)",
-            type=float,
-            default=0.2
+        parser.add_argument("--percentile",
+            help="percentile of features to keep",
+            type=int,
+            default=10
         )
         parser.add_argument("--classification",
             help="Uses a classification training signal instead of regression that is the default if this parameter is not set.",
@@ -80,10 +80,10 @@ class FeatureSelector(Preprocessor):
             self.no_config = pargs.no_config
         else:
             self.no_config = False
-        if hasattr(pargs, "threshold"):
-            self.threshold = pargs.threshold
+        if hasattr(pargs, "percentile"):
+            self.percentile = pargs.percentile
         else:
-            self.threshold = 0.2
+            self.percentile = 20
         if hasattr(pargs, "classification"):
             self.classification = True
         else:
@@ -116,10 +116,12 @@ class FeatureSelector(Preprocessor):
         # Initialize feature selector    
         if not(hasattr(self, "classification")):
             self.classification = False
+        if not(hasattr(self, "percentile")):
+            self.percentile = 20
         if self.classification:
-            featureSelector = SelectKBest(score_func = score_func_classification, k=all)
+            featureSelector = SelectPercentile(score_func = score_func_classification, percentile = self.percentile)
         else:
-            featureSelector = SelectKBest(score_func= score_func_regression, k=all)
+            featureSelector = SelectPercentile(score_func= score_func_regression, percentile = self.percentile)
         # fit feature selector using the training signal
         featureSelector.fit(self.input_ds, self.training_ds)
         # applies feature selection mask to the input dataset
