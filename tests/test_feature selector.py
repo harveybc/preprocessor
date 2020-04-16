@@ -55,7 +55,6 @@ class TestFeatureSelector:
         # perform the assertion 
         assert (len(rows_i[0]) > len(rows_o[0]))
     
-
     def test_C04T02_cmdline_feature_selection(self):
         """ Assert if the output has less columns than the input using command line arguments """
         os.system(
@@ -65,6 +64,7 @@ class TestFeatureSelector:
             + self.conf.output_file
         )
         # read the input and output files
+        print("output_file = ", self.conf.output_file)
         rows_i = list(csv.reader(open(self.conf.input_file)))
         rows_o = list(csv.reader(open(self.conf.output_file)))
         # perform the assertion 

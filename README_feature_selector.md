@@ -1,6 +1,5 @@
 # Preprocessor: Feature Selector
 
-
 Performs feature selection based on a classification or regression training signal and a threshold. Usable both from command line and from class methods.
 
 [![Build Status](https://travis-ci.org/harveybc/preprocessor.svg?branch=master)](https://travis-ci.org/harveybc/preprocessor)
