@@ -65,8 +65,8 @@ class TestFeatureSelector:
             + self.conf.output_file
         )
         # read the input and output files
-        rows_i = list(csv.reader(open(self.dt.input_file)))
-        rows_o = list(csv.reader(open(self.dt.output_file)))
+        rows_i = list(csv.reader(open(self.conf.input_file)))
+        rows_o = list(csv.reader(open(self.conf.output_file)))
         # perform the assertion 
         assert (len(rows_i[0]) > len(rows_o[0]))
     
