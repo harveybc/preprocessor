@@ -15,7 +15,7 @@ import argparse
 import sys
 import logging
 import numpy as np
-from sklearn import preprocessing
+from sklearn.feature_selection import SelectKBest
 from preprocessor.preprocessor import Preprocessor
 from itertools import zip_longest 
 from joblib import dump, load
@@ -25,7 +25,16 @@ __copyright__ = "Harvey Bastidas"
 __license__ = "mit"
 
 _logger = logging.getLogger(__name__)
+ 
+def score_func_regression(X,Y):
+    """ Used to score the features for feature selection, for regression. To be used in the fFeatureSeclector.feature_selection() method. """
+    import sklearn
+    return sklearn.feature_selection.mutual_info_regression(X,Y) 
 
+def score_func_classification(X,Y):
+    """ Used to score the features for feature selection, for regression. To be used in the fFeatureSeclector.feature_selection() method. """
+    import sklearn
+    return sklearn.feature_selection.mutual_info_classif(X,Y) 
 
 class FeatureSelector(Preprocessor):
     """ The FeatureSelector preprocessor class """
@@ -52,7 +61,12 @@ class FeatureSelector(Preprocessor):
         parser.add_argument("--threshold",
             help="number of rows to remove from end (ignored if auto_trim)",
             type=float,
-            default=0
+            default=0.2
+        )
+        parser.add_argument("--classification",
+            help="Uses a classification training signal instead of regression that is the default if this parameter is not set.",
+            action="store_true",
+            default=False
         )
         parser.add_argument("--no_config",
             help="Do not generate an output configuration file.",
@@ -66,6 +80,19 @@ class FeatureSelector(Preprocessor):
             self.no_config = pargs.no_config
         else:
             self.no_config = False
+        if hasattr(pargs, "threshold"):
+            self.threshold = pargs.threshold
+        else:
+            self.threshold = 0.2
+        if hasattr(pargs, "classification"):
+            self.classification = True
+        else:
+            self.classification = False
+        if hasattr(pargs, "training_file"):
+            self.training_file = pargs.training_file
+        else:
+            print("Error: No training file parameter provided. Use option -h to show help.")
+            sys.exit()
 
     def core(self):
         """ Core preprocessor task after starting the instance with the main method.
@@ -80,21 +107,30 @@ class FeatureSelector(Preprocessor):
             else:
                 self.feature_selection()
         else:
-            self.feature_selection()
-        
+            self.feature_selection()  
+
     def feature_selection(self):
         """ Process the dataset. """
-        pt = preprocessing.StandardScaler()
-        pt.fit(self.input_ds) 
-        self.output_ds = pt.transform(self.input_ds) 
+        # loads the training file
+        self.training_ds = np.genfromtxt(self.training_file, delimiter=",")
+        # Initialize feature selector    
+        if self.classification:
+            featureSelector = SelectKBest(score_func = score_func_classification, k=50)
+        else:
+            featureSelector = SelectKBest(score_func= score_func_regression, k=50)
+        # fit feature selector using the training signal
+        featureSelector.fit(self.input_ds, self.training_ds)
+        # applies feature selection mask to the input dataset
+        mask = featureSelector.get_support()
+        self.output_ds = self.input_ds[:, mask]    
+        # saves configuration file
         if not(self.no_config):
-            dump(pt, self.output_config_file)
+            np.savetxt(self.output_config_file, mask, delimiter=",")
 
     def load_from_config(self):
         """ Process the dataset from a config file. """
-        pt = preprocessing.StandardScaler()
-        pt = load(self.input_config_file)
-        self.output_ds = pt.transform(self.input_ds)
+        mask = np.genfromtxt(self.input_config_file, delimiter=",")
+        self.output_ds = self.input_ds[:, mask]
         
     def store(self):
         """ Save preprocessed data and the configuration of the preprocessor. """
