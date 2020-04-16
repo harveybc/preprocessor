@@ -114,6 +114,8 @@ class FeatureSelector(Preprocessor):
         # loads the training file
         self.training_ds = np.genfromtxt(self.training_file, delimiter=",")
         # Initialize feature selector    
+        if not(hasattr(self, "classification")):
+            self.classification = False
         if self.classification:
             featureSelector = SelectKBest(score_func = score_func_classification, k=50)
         else:
