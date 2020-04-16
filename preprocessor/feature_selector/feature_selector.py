@@ -52,6 +52,7 @@ class FeatureSelector(Preprocessor):
         Returns:
             :obj:`argparse.Namespace`: command line parameters namespace
         """
+        _logger.debug("Parsing command-line arguments.")
         parser = argparse.ArgumentParser(
             description="Dataset FeatureSelector: select the best scoring features according to a mutual information scoring algorithm."
         )
@@ -101,6 +102,7 @@ class FeatureSelector(Preprocessor):
         Args:
         args (obj): command line parameters as objects
         """
+        _logger.debug("Performing core module task.")       
         if hasattr(self, "input_config_file"):
             if self.input_config_file != None:
                 self.load_from_config()
@@ -135,12 +137,13 @@ class FeatureSelector(Preprocessor):
 
     def load_from_config(self):
         """ Process the dataset from a config file. """
+        _logger.debug("Loading configuration from input_config_file = "+ self.input_config_file)
         mask = np.genfromtxt(self.input_config_file, delimiter=",")
         self.output_ds = self.input_ds[:, mask]
         
     def store(self):
         """ Save preprocessed data and the configuration of the preprocessor. """
-        _logger.debug("output_file = "+ self.output_file)
+        _logger.debug("Storing output_file = "+ self.output_file)
         np.savetxt(self.output_file, self.output_ds, delimiter=",", fmt='%1.6f')
 
 def run(args):
