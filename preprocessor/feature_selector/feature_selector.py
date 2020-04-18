@@ -138,12 +138,12 @@ class FeatureSelector(Preprocessor):
         if not(hasattr(self, "no_config")):
             self.no_config = False
         if not(self.no_config):
-            np.savetxt(self.output_config_file, mask, delimiter=",")
+            dump(mask, self.output_config_file)
 
     def load_from_config(self):
         """ Process the dataset from a config file. """
         _logger.debug("Loading configuration from input_config_file = "+ self.input_config_file)
-        mask = np.genfromtxt(self.input_config_file, delimiter=",")
+        mask =load(self.input_config_file)
         self.output_ds = self.input_ds[:, mask]
         
     def store(self):
