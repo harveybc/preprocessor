@@ -105,10 +105,13 @@ class FeatureSelector(Preprocessor):
         _logger.debug("Performing core module task.")       
         if hasattr(self, "input_config_file"):
             if self.input_config_file != None:
+                _logger.debug("Loading configuration file.")
                 self.load_from_config()
             else:
+                _logger.debug("Performing feature_selection() method.")
                 self.feature_selection()
         else:
+            _logger.debug("Performing feature_selection()
             self.feature_selection()  
 
     def feature_selection(self):
