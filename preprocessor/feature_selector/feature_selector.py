@@ -110,9 +110,11 @@ class FeatureSelector(Preprocessor):
             else:
                 _logger.debug("Performing feature_selection() method.")
                 self.feature_selection()
+                 _logger.debug("End feature_selection() method.")
         else:
-            _logger.debug("Performing feature_selection() method.")
+            _logger.debug("Performing feature_selection() method..")
             self.feature_selection()  
+             _logger.debug("End feature_selection() method..")
 
     def feature_selection(self):
         """ Process the dataset. """
