@@ -33,11 +33,12 @@ class Preprocessor(PreprocessorBase):
         _logger.info("Starting preprocessor...")
         # Load input dataset
         if self.input_ds == None:
+            _logger.debug("Loading input file.")
             self.load_ds()
         # Start core function
         self.core()
         # Start logger
-        _logger.debug("Saving results...")
+        _logger.debug("Saving results.")
         # Save results and output configuration
         self.store()
         _logger.info("Script end.")

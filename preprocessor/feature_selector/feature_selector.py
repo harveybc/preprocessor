@@ -52,6 +52,7 @@ class FeatureSelector(Preprocessor):
         Returns:
             :obj:`argparse.Namespace`: command line parameters namespace
         """
+        _logger.debug("Parsing command-line arguments.")
         parser = argparse.ArgumentParser(
             description="Dataset FeatureSelector: select the best scoring features according to a mutual information scoring algorithm."
         )
@@ -101,13 +102,19 @@ class FeatureSelector(Preprocessor):
         Args:
         args (obj): command line parameters as objects
         """
+        _logger.debug("Performing core module task.")       
         if hasattr(self, "input_config_file"):
             if self.input_config_file != None:
+                _logger.debug("Loading configuration file.")
                 self.load_from_config()
             else:
+                _logger.debug("Performing feature_selection() method.")
                 self.feature_selection()
+                _logger.debug("End feature_selection() method.")
         else:
+            _logger.debug("Performing feature_selection() method..")
             self.feature_selection()  
+            _logger.debug("End feature_selection() method..")
 
     def feature_selection(self):
         """ Process the dataset. """
@@ -131,16 +138,17 @@ class FeatureSelector(Preprocessor):
         if not(hasattr(self, "no_config")):
             self.no_config = False
         if not(self.no_config):
-            np.savetxt(self.output_config_file, mask, delimiter=",")
+            dump(mask, self.output_config_file)
 
     def load_from_config(self):
         """ Process the dataset from a config file. """
-        mask = np.genfromtxt(self.input_config_file, delimiter=",")
+        _logger.debug("Loading configuration from input_config_file = "+ self.input_config_file)
+        mask =load(self.input_config_file)
         self.output_ds = self.input_ds[:, mask]
         
     def store(self):
         """ Save preprocessed data and the configuration of the preprocessor. """
-        _logger.debug("output_file = "+ self.output_file)
+        _logger.debug("Storing output_file = "+ self.output_file)
         np.savetxt(self.output_file, self.output_ds, delimiter=",", fmt='%1.6f')
 
 def run(args):

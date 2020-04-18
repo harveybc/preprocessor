@@ -27,6 +27,9 @@ class Conf:
         fname = os.path.join(os.path.dirname(__file__), "data/out_config.csv")
         self.output_config_file = fname
         """ Output configuration of the preprocessor """
+        fname = os.path.join(os.path.dirname(__file__), "data/training.csv")
+        self.training_file = fname
+        """ Output configuration of the preprocessor """
         
 class TestFeatureSelector:
     """ Component Tests  """
@@ -36,7 +39,7 @@ class TestFeatureSelector:
         self.conf = Conf()
         self.dt = FeatureSelector(self.conf)
         # setup training_file for feature selection
-        self.dt.training_file = os.path.join(os.path.dirname(__file__), "data/training.csv")
+        self.dt.training_file = self.conf.training_file
         """ Data feature_selector object """
         try:
             os.remove(self.conf.output_file)
@@ -55,7 +58,6 @@ class TestFeatureSelector:
         # perform the assertion 
         assert (len(rows_i[0]) > len(rows_o[0]))
     
-
     def test_C04T02_cmdline_feature_selection(self):
         """ Assert if the output has less columns than the input using command line arguments """
         os.system(
@@ -63,8 +65,11 @@ class TestFeatureSelector:
             + self.conf.input_file
             + " --output_file "
             + self.conf.output_file
+            + " --training_file "
+            + self.conf.training_file
         )
         # read the input and output files
+        print("output_file = ", self.conf.output_file)
         rows_i = list(csv.reader(open(self.conf.input_file)))
         rows_o = list(csv.reader(open(self.conf.output_file)))
         # perform the assertion 
@@ -79,6 +84,8 @@ class TestFeatureSelector:
             + self.conf.output_file
             + " --output_config_file "
             + self.conf.output_config_file 
+            + " --training_file "
+            + self.conf.training_file
         )
         # Uses the output as input for another dataset and compare with desired output.
         os.system(
