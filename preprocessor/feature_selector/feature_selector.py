@@ -53,27 +53,11 @@ class FeatureSelector(Preprocessor):
             :obj:`argparse.Namespace`: command line parameters namespace
         """
         _logger.debug("Parsing command-line arguments.")
-        parser = argparse.ArgumentParser(
-            description="Dataset FeatureSelector: select the best scoring features according to a mutual information scoring algorithm."
-        )
-        parser.add_argument("--training_file",
-            help="filename of the training dataset"
-        )
-        parser.add_argument("--percentile",
-            help="percentile of features to keep",
-            type=int,
-            default=10
-        )
-        parser.add_argument("--classification",
-            help="Uses a classification training signal instead of regression that is the default if this parameter is not set.",
-            action="store_true",
-            default=False
-        )
-        parser.add_argument("--no_config",
-            help="Do not generate an output configuration file.",
-            action="store_true",
-            default=False
-        )
+        parser = argparse.ArgumentParser(description="Dataset FeatureSelector: select the best scoring features according to a mutual information scoring algorithm.")
+        parser.add_argument("--training_file", help="filename of the training dataset")
+        parser.add_argument("--percentile", help="percentile of features to keep", type=int, default=10)
+        parser.add_argument("--classification", action="store_true", default=False, help="Uses a classification training signal instead of regression that is the default if this parameter is not set.")
+        parser.add_argument("--no_config", action="store_true", default=False, help="Do not generate an output configuration file.")
         parser = self.parse_cmd(parser)
         pargs = parser.parse_args(args)
         self.assign_arguments(pargs)
