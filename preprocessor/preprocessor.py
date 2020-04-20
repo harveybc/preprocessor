@@ -53,6 +53,32 @@ class Preprocessor(PreprocessorBase):
         parser.add_argument("-vv","--very_verbose",dest="loglevel",help="set loglevel to DEBUG",action="store_const",const=logging.DEBUG)
         return parser
     
+    def assign_arguments(self,pargs):
+        if hasattr(pargs, "input_file"):
+            if pargs.input_file != None: 
+                self.input_file = pargs.input_file
+                if hasattr(pargs, "output_file"):
+                    if pargs.output_file != None: self.output_file = pargs.output_file
+                    else: self.output_file = self.input_file + ".output"
+                else:
+                    self.output_file = self.input_file + ".output"
+                if hasattr(pargs, "input_config_file"):
+                    if pargs.input_config_file != None: self.input_config_file = pargs.input_config_file
+                    else: self.input_config_file = None
+                else:
+                    self.input_config_file = None
+                if hasattr(pargs, "output_config_file"):
+                    if pargs.output_config_file != None: self.output_config_file = pargs.output_config_file
+                    else: self.output_config_file = self.input_file + ".config" 
+                else:
+                    self.output_config_file = self.input_file + ".config"
+            else:
+                print("Error: No input file parameter provided. Use option -h to show help.")
+                sys.exit()
+        else:
+            print("Error: No input file parameter provided. Use option -h to show help.")
+            sys.exit()
+
     def store(self):
         """ Save preprocessed data and the configuration of the preprocessor. """
         pass
