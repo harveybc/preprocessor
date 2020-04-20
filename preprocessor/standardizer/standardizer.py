@@ -43,14 +43,8 @@ class Standardizer(Preprocessor):
         Returns:
             :obj:`argparse.Namespace`: command line parameters namespace
         """
-        parser = argparse.ArgumentParser(
-            description="Dataset Standardizer: standarizes a dataset."
-        )
-        parser.add_argument("--no_config",
-            help="Do not generate an output configuration file.",
-            action="store_true",
-            default=False
-        )
+        parser = argparse.ArgumentParser(description="Dataset Standardizer: standarizes a dataset.")
+        parser.add_argument("--no_config", help="Do not generate an output configuration file.", action="store_true",default=False)
         parser = self.parse_cmd(parser)
         pargs = parser.parse_args(args)
         self.assign_arguments(pargs)

@@ -44,14 +44,8 @@ class SlidingWindow(Preprocessor):
         Returns:
             :obj:`argparse.Namespace`: command line parameters namespace
         """
-        parser = argparse.ArgumentParser(
-            description="SlidingWindow: performs the sliding window technique on the input dataset."
-        )
-        parser.add_argument("--window_size",
-            help="Size of the window to be use for the sliding window technique. Default 30",
-            type=int,
-            default=30
-        )
+        parser = argparse.ArgumentParser(description="SlidingWindow: performs the sliding window technique on the input dataset.")
+        parser.add_argument("--window_size", type=int, default=30, help="Size of the window to be use for the sliding window technique. Default 30")
         parser = self.parse_cmd(parser)
         pargs = parser.parse_args(args)
         if hasattr(pargs, "window_size"):

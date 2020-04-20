@@ -9,3 +9,5 @@ exclude:
 - .*/setup\.py
 - .*/__init__\.py
 - .*/__main__\.py
+- .*/preprocessor\.py
+
