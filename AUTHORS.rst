@@ -2,4 +2,4 @@
 Contributors
 ============
 
-* Harvey Bastidas <harveybc@users.noreply.github.com>
+* Harvey Bastidas <harveybc@ingeni-us.com>
