@@ -161,7 +161,7 @@ html_theme_options = {"sidebar_width": "300px", "page_width": "1200px"}
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
 try:
-    from data_trimmer import __version__ as version
+    from preprocessor import __version__ as version
 except ImportError:
     pass
 else:
@@ -226,7 +226,7 @@ html_static_path = ["_static"]
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "data_trimmer-doc"
+htmlhelp_basename = "preprocessor-doc"
 
 
 # -- Options for LaTeX output --------------------------------------------------
