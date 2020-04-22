@@ -9,7 +9,7 @@ BUILDDIR      = ./
 AUTODOCDIR    = api
 AUTODOCBUILD  = sphinx-apidoc
 PROJECT       = preprocessor
-MODULEDIR     = ../src/data_trimmer
+MODULEDIR     = ../preprocessor
 
 # User-friendly check for sphinx-build
 ifeq ($(shell which $(SPHINXBUILD) >/dev/null 2>&1; echo $?), 1)
