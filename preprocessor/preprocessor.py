@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-""" This File contains the Preprocessor class, it is the base class for DataTrimmer, FeatureSelector, Standardizer and MSSADecomposer classes. """
+""" This File contains the Preprocessor class, it is the base class for DataTrimmer, FeatureSelector, Standardizer and SlidingWindow classes. """
 
 import argparse
 import sys
@@ -18,7 +18,7 @@ _logger = logging.getLogger(__name__)
 
 
 class Preprocessor(PreprocessorBase):
-    """ Base class for DataTrimmer, FeatureSelector, Standardizer, MSSADecomposer. """
+    """ Base class for DataTrimmer, FeatureSelector, Standardizer, SlidingWindow. """
 
     def main(self, args):
         """ Starts an instance. Main entry point allowing external calls.
