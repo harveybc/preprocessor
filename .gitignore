@@ -59,3 +59,4 @@ tests/test_output.csv
 tests/data/test_output.csv
 test_output.csv
 *.462506
+.coverage (Carmencita's conflicted copy 2020-04-29)
