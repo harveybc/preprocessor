@@ -16,9 +16,13 @@ All modules are usable both from command line and from class methods.
 
 ## Installation
 
-The installation is made by clonning the github repo and manually installing it, package based installation coming soon..
+To install the package via PIP, use the following command:
 
-### Steps
+> pip install -i https://test.pypi.org/simple/ harveybc-preprocessor
+
+Also, the installation can be made by clonning the github repo and manually installing it as in the following instructions.
+
+### Github Installation Steps
 1. Clone the GithHub repo:   
 > git clone https://github.com/harveybc/preprocessor
 2. Change to the repo folder:
