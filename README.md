@@ -31,7 +31,8 @@ Also, the installation can be made by clonning the github repo and manually inst
 > pip install -r requirements.txt
 4. Install python package (also installs the console command data-trimmer)
 > python setup.py install
-5. (Optional) Perform tests
+5. Add the repo directory to the environment variable PYTHONPATH
+6. (Optional) Perform tests
 > python setup.py install
 6. (Optional) Generate Sphinx Documentation
 > python setup.py docs
