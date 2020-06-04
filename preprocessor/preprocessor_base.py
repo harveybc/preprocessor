@@ -64,6 +64,12 @@ class PreprocessorBase:
         self.input_ds = np.genfromtxt(self.input_file, delimiter=",")
         # load input config dataset if the parameter is available
         # Initialize input number of rows and columns
-        self.rows_d, self.cols_d = self.input_ds.shape
+        try:
+            self.rows_d, self.cols_d = self.input_ds.shape
+        except:
+            (self.rows_d,) = self.input_ds.shape
+            self.cols_d = 1
+            self.input_ds = self.input_ds.reshape(self.rows_d, self.cols_d)
+        
     
     
