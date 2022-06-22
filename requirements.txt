@@ -12,7 +12,7 @@
 # pip install -r requirements.txt
 # Remember to also add them in setup.cfg but unpinned.
 # Example:
-numpy==1.13.3
+numpy==1.22.0
 scikit-learn==0.20.2
 joblib==0.14.1
 # scipy==1.0
