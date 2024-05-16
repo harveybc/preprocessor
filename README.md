@@ -43,11 +43,11 @@ All the CLI commands and the class modules are installed with the preprocessor p
 
 Detailed Sphinix documentation for all modules can be generated in HTML format with the optional step 6 of the installation process, it contains documentation of the classes and methods of all modules in the preprocessor package. 
 
-## Data-Trimmer
+## Unbiaser
 
-A simple data pre-processor that trims the constant valued columns.  Also removes rows from the start and the end of a dataset with features with consecutive zeroes. 
+Removes bias from a timeseries by substracting to each tick with the average of the last <window_size> ticks.
 
-See [Data-Trimmer Readme](../master/README_data_trimmer.md) for detailed description and usage instructions.
+See [Unbiaser Readme](../master/README_unbiaser.md) for detailed description and usage instructions.
 
 ## Standarizer
 
@@ -55,17 +55,23 @@ Standardizes a dataset and exports the standarization configuration for use on o
 
 See [Standardizer Readme](../master/README_standardizer.md) for detailed description and usage instructions.
 
+## Feature Selector
+
+Performs the feature selection based on a classification or regression training signal and a threeshold. 
+
+See [Feature Selector Readme](../master/README_feature_selector.md) for detailed description and usage instructions.
+
 ## Sliding Window
 
 Performs the sliding window technique and exports an expanded dataset with configurable window_size.
 
 See [Sliding Window Readme](../master/README_sliding_window.md) for detailed description and usage instructions.
 
-## Feature Selector
+## Data-Trimmer
 
-Performs the feature selection based on a classification or regression training signal and a threeshold. 
+A simple data pre-processor that trims the constant valued columns.  Also removes rows from the start and the end of a dataset with features with consecutive zeroes. 
 
-See [Feature Selector Readme](../master/README_feature_selector.md) for detailed description and usage instructions.
+See [Data-Trimmer Readme](../master/README_data_trimmer.md) for detailed description and usage instructions.
 
 ## Examples of usage
 
@@ -92,6 +98,36 @@ dt.store()
 > data_trimmer --input_file "tests/data/test_input.csv"
 
 
+File Structure:
+```md
+preprocessor/
+│
+├── app/                           # Main application package
+│   ├── __init__.py                    # Initializes the Python package
+│   ├── main.py                        # Entry point for the application
+│   ├── config.py                      # Configuration settings for the app
+│   ├── cli.py                         # Command line interface handling
+│   ├── data_handler.py                # Module to handle data loading
+│   ├── default_plugin.py              # Default plugin logic
+│   └── plugins/                       # Plugins directory
+│       ├── __init__.py                # Makes plugins a Python package
+│       ├── plugin_unbiaser.py
+│       ├── plugin_normalizer.py
+│       ├── plugin_standardizer.py
+│       ├── plugin_trimmer.py
+│       └── plugin_feature_selector.py
+│
+├── tests/                             # Test modules for your application
+│   ├── __init__.py                         # Initializes the Python package for tests
+│   ├── test_preprocessor.py                # Tests for decoder functionality
+│   ├── datasets/                           # Test datasets directory
+│   └── configs/                            # Test configurations directory
+│
+├── setup.py                           # Setup file for the package installation
+├── README.md                          # Project description and instructions
+├── requirements.txt                   # External packages needed
+└── .gitignore                         # Specifies intentionally untracked files to ignore
+```
 
 
 
