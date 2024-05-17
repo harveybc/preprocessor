@@ -112,7 +112,6 @@ preprocessor/
 │   └── plugins/                       # Plugins directory
 │       ├── __init__.py                # Makes plugins a Python package
 │       ├── plugin_unbiaser.py
-│       ├── plugin_normalizer.py
 │       ├── plugin_standardizer.py
 │       ├── plugin_trimmer.py
 │       └── plugin_feature_selector.py
