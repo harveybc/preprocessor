@@ -108,11 +108,10 @@ preprocessor/
 │   ├── config.py                      # Configuration settings for the app
 │   ├── cli.py                         # Command line interface handling
 │   ├── data_handler.py                # Module to handle data loading
-│   ├── default_plugin.py              # Default plugin logic
+│   ├── default_plugin.py              # Default plugin (normalizer)
 │   └── plugins/                       # Plugins directory
 │       ├── __init__.py                # Makes plugins a Python package
 │       ├── plugin_unbiaser.py
-│       ├── plugin_standardizer.py
 │       ├── plugin_trimmer.py
 │       └── plugin_feature_selector.py
 │

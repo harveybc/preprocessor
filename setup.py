@@ -1,30 +1,23 @@
-# -*- coding: utf-8 -*-
-"""
-    Setup file for data_trimmer.
-    Use setup.cfg to configure your project.
+from setuptools import setup, find_packages
 
-    This file was generated with PyScaffold 3.2.3.
-    PyScaffold helps you to put up the scaffold of your new Python project.
-    Learn more under: https://pyscaffold.org/
-"""
-import sys
-
-from pkg_resources import VersionConflict, require
-from setuptools import setup
-from setuptools import find_packages
-
-# sys.path.append('preprocessor\\')
-from preprocessor.data_trimmer.data_trimmer import DataTrimmer
-
-try:
-    require("setuptools>=38.3")
-except VersionConflict:
-    print("Error: version of setuptools is too old (<38.3)!")
-    sys.exit(1)
-
-
-if __name__ == "__main__":
-    setup(
-        packages=find_packages(exclude=["contrib", "docs", "tests"]),
-        use_pyscaffold=True,
-    )
+setup(
+    name='preprocessor',
+    version='0.1.0',
+    packages=find_packages(),
+    entry_points={
+        'preprocessor.plugins': [
+            'default_plugin=app.default_plugin:DefaultPlugin',
+            'unbiaser=app.plugins.plugin_unbiaser:Plugin',
+            'trimmer=app.plugins.plugin_trimmer:Plugin',
+            'feature_selector=app.plugins.plugin_feature_selector:Plugin'
+        ]
+    },
+    install_requires=[
+        'pandas',
+        'numpy',
+        'requests'  # Added for potential remote logging and config loading
+    ],
+    author='Harvey Bastidas',
+    author_email='your.email@example.com',
+    description='A preprocessing system that supports dynamic loading of plugins for processing CSV data.'
+)
