@@ -1,0 +1,98 @@
+# Default Plugin for Preprocessor (Normalizer/Standardizer)
+
+## Description
+
+The Default Plugin is a normalization plugin for the Preprocessor application. It supports two normalization methods: z-score and min-max normalization. This plugin can save and load normalization parameters, making it reusable for consistent preprocessing across different datasets.
+
+## Parameters
+
+The plugin accepts the following parameters:
+
+- **method** (str): The normalization method to use. Options are `'z-score'` and `'min-max'`. Default is `'z-score'`.
+- **save_params** (str): The file path to save the normalization parameters. Default is `'normalization_params.json'`.
+- **load_params** (str): The file path to load the normalization parameters. If provided, the parameters will be loaded from this file instead of being calculated from the data.
+
+## Usage
+
+### From Command Line
+
+You can use the Default Plugin from the Preprocessor application via command line parameters. Below are some examples:
+
+### Example 1: Using Default Parameters (Z-Score Normalization)
+
+```bash
+python app/main.py --config config.json --plugin default_plugin
+```
+
+### Example 2: Using Min-Max Normalization and Saving Parameters
+
+```bash
+python app/main.py --config config.json --plugin default_plugin --method min-max --save_params min_max_params.json
+```
+
+### Example 3: Loading Pre-Saved Normalization Parameters
+
+```bash
+python app/main.py --config config.json --plugin default_plugin --load_params min_max_params.json
+```
+### Plugin Configuration File Example
+
+```json
+{
+    "csv_file": "path/to/input.csv",
+    "output_file": "path/to/output.csv",
+    "plugins": [
+        {
+            "name": "default_plugin",
+            "params": {
+                "method": "z-score",
+                "save_params": "normalization_params.json"
+            }
+        }
+    ],
+    "remote_log": "http://remote-log-server/api/logs"
+}
+```
+
+### Min-Max Configuration File Example
+
+```json
+{
+    "method": "min-max",
+    "min": {
+        "feature1": 0.0,
+        "feature2": -1.0,
+        "feature3": 10.0,
+        "feature4": 5.0
+    },
+    "max": {
+        "feature1": 1.0,
+        "feature2": 1.0,
+        "feature3": 50.0,
+        "feature4": 15.0
+    }
+}
+```
+
+### Z-Score (standardization) Configuration File Example
+
+```json
+{
+    "method": "z-score",
+    "mean": {
+        "feature1": 0.5,
+        "feature2": 0.0,
+        "feature3": 30.0,
+        "feature4": 10.0
+    },
+    "std": {
+        "feature1": 0.1,
+        "feature2": 0.5,
+        "feature3": 10.0,
+        "feature4": 2.0
+    }
+}
+```
+
+
+

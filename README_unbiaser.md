@@ -1,55 +1,77 @@
-
-# Preprocessor: Unbiaser Moving Average (UnbiaserMA)
-
-A simple data pre-processor that removes the moving average from a dataset and exports the configuration for use on other datasets.
-
-[![Build Status](https://travis-ci.org/harveybc/preprocessor.svg?branch=master)](https://travis-ci.org/harveybc/preprocessor)
-[![Documentation Status](https://readthedocs.org/projects/docs/badge/?version=latest)](https://harveybc-preprocessor.readthedocs.io/en/latest/)
-[![BCH compliance](https://bettercodehub.com/edge/badge/harveybc/preprocessor?branch=master)](https://bettercodehub.com/)
-[![license](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000)](https://github.com/harveybc/preprocessor/blob/master/LICENSE)
-[![Discord Chat](https://img.shields.io/discord/701635039678562345.svg)](https://discord.gg/NRQw9Cy)  
+# Unbiaser Plugin for Preprocessor
 
 ## Description
 
-Uses a custom moving average removal method to adjust data points in a dataset by removing the average of the previous N values from each point.
+The Unbiaser Plugin is used to remove bias from time series data in the Preprocessor application. It supports two methods: moving average (MA) and exponential moving average (EMA) bias removal. This plugin can save and load bias removal parameters, making it reusable for consistent preprocessing across different datasets.
 
-Exports the configuration for use on other datasets.
+## Parameters
 
-The unbiaser moving average is implemented in the UnbiaserMA class, which has methods for loading a dataset, processing it to remove the moving average, and producing an output dataset and a configuration file that can be loaded and applied to another dataset. Usable both from command line and from class methods.
+The plugin accepts the following parameters:
 
-## Installation
+- **method** (str): The bias removal method to use. Options are `'ma'` and `'ema'`. Default is `'ma'`.
+- **window_sizes** (list): List of window sizes for the moving average method for each column. Default is `[3]`.
+- **ema_alphas** (list): List of alpha parameters for the exponential moving average method for each column. Default is `[0.3]`.
+- **save_params** (str): The file path to save the bias removal parameters. Default is `'unbias_params.json'`.
+- **load_params** (str): The file path to load the bias removal parameters. If provided, the parameters will be loaded from this file instead of being calculated from the data.
 
-The module is installed with the preprocessor package, the instructions are described in the [preprocessor README](../master/README.md).
+## Usage
 
-### Command-Line Execution
+### From Command Line
 
-The unbiaser moving average is also implemented as a console command:
-> unbiaser_ma --input_file <input_dataset> <optional_parameters>
+You can use the Unbiaser Plugin from the Preprocessor application via command line parameters. Below are some examples:
 
-### Command-Line Parameters
+### Example 1: Using Default Parameters (Moving Average Bias Removal)
 
-* __--input_file <filename>__: The only mandatory parameter, is the filename for the input dataset to be processed.
-* __--output_file <filename>__: (Optional) Filename for the output dataset. Defaults to the input dataset with the .output extension.
-* __--window_size <size>: (Optional) Number of previous ticks for average calculation. Defaults to 24
-## Examples of usage
-The following examples show both the class method and command line uses.
+```bash
+python app/main.py --config config.json --plugin unbiaser_plugin
+```
+### Example 2: Using EMA Bias Removal and Saving Parameters
+python app/main.py --config config.json --plugin unbiaser_plugin --method ema --ema_alphas 0.2 --save_params ema_params.json
 
-### Usage via Class Methods
-```python
-from preprocessor.unbiaser_ma.unbiaser_ma import UnbiaserMA
-# configure parameters (same variable names as command-line parameters)
-class Conf:
-    def __init__(self):
-        self.input_file = "tests/data/test_input.csv"
-conf = Conf()
-# instance unbiaser class and loads dataset
-um = UnbiaserMA(conf)
-# process the dataset to remove the moving average
-um.unbias_ma()
-# save output to output file
-um.store()
+### Example 3: Loading Pre-Saved Bias Removal Parameters
+```bash
+python app/main.py --config config.json --plugin unbiaser_plugin --load_params unbias_params.json
 ```
 
-### Usage via CLI
+## Configuration File Example
 
-> unbiaser_ma --input_file "tests/data/test_input.csv"
+Here is an example of a JSON configuration file (config.json) that can be used with the Preprocessor application:
+
+```json
+{
+    "csv_file": "path/to/input.csv",
+    "output_file": "path/to/output.csv",
+    "plugins": [
+        {
+            "name": "unbiaser_plugin",
+            "params": {
+                "method": "ma",
+                "window_sizes": [3],
+                "save_params": "unbias_params.json",
+                "load_params": "unbias_params.json"
+            }
+        }
+    ],
+    "remote_log": "http://remote-log-server/api/logs"
+}
+```
+
+## Output Configuration File Examples
+
+### Moving Average (MA) Output Configuration File Example
+```json
+{
+    "method": "ma",
+    "window_sizes": [3]
+}
+```
+
+### Exponential Moving Average (EMA) Output Configuration File Example
+```json
+{
+    "method": "ema",
+    "ema_alphas": [0.3]
+}
+```
+
+

@@ -113,7 +113,8 @@ preprocessor/
 │       ├── __init__.py                # Makes plugins a Python package
 │       ├── plugin_unbiaser.py
 │       ├── plugin_trimmer.py
-│       └── plugin_feature_selector.py
+│       ├── plugin_feature_selector_pre.py
+│       └── plugin_feature_selector_post.py
 │
 ├── tests/                             # Test modules for your application
 │   ├── __init__.py                         # Initializes the Python package for tests
