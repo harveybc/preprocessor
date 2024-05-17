@@ -1,102 +1,186 @@
-# Preprocessor
 
-A simple timeseries data pre-processor.
-
-[![Build Status](https://travis-ci.org/harveybc/preprocessor.svg?branch=master)](https://travis-ci.org/harveybc/preprocessor)
-[![Documentation Status](https://readthedocs.org/projects/docs/badge/?version=latest)](https://harveybc-preprocessor.readthedocs.io/en/latest/)
-[![BCH compliance](https://bettercodehub.com/edge/badge/harveybc/preprocessor?branch=master)](https://bettercodehub.com/)
-[![license](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000)](https://github.com/harveybc/preprocessor/blob/master/LICENSE)
-[![Discord Chat](https://img.shields.io/discord/701635039678562345.svg)](https://discord.gg/NRQw9Cy)  
+# Preprocessor 
 
 ## Description
 
-Implements modular components for dataset preprocessing: a data-trimmer, a standardizer, a feature selector and a sliding window data generator.
+The Preprocessor project is a flexible and modular application for preprocessing time series data. It supports dynamic loading of plugins for various preprocessing tasks such as normalization, unbiasing, trimming, and feature selection. Each plugin can save and load its parameters for consistent preprocessing across different datasets.
 
-All modules are usable both from command line and from class methods.
+## Plugins
 
-## Installation
+### 1. Default (Normalizer) Plugin
 
-To install the package via PIP, use the following command:
+The Normalizer Plugin is used to normalize data using methods such as z-score and min-max normalization.
 
-> pip install -i https://test.pypi.org/simple/ harveybc-preprocessor
+[Read more about the Normalizer Plugin](https://github.com/harveybc/preprocessor/blob/main/README_normalizer.md)
 
-Also, the installation can be made by clonning the github repo and manually installing it as in the following instructions.
+### 2. Unbiaser Plugin
 
-### Github Installation Steps
-1. Clone the GithHub repo:   
-> git clone https://github.com/harveybc/preprocessor
-2. Change to the repo folder:
-> cd preprocessor
-3. Install requirements.
-> pip install -r requirements.txt
-4. Install python package (also installs the console command data-trimmer)
-> python setup.py install
-5. Add the repo directory to the environment variable PYTHONPATH
-6. (Optional) Perform tests
-> python setup.py test
-7. (Optional) Generate Sphinx Documentation
-> python setup.py docs
+The Unbiaser Plugin removes bias from time series data using moving average (MA) and exponential moving average (EMA) methods.
 
-## Modules
+[Read more about the Unbiaser Plugin](https://github.com/harveybc/preprocessor/blob/main/README_unbiaser.md)
 
-All the CLI commands and the class modules are installed with the preprocessor package, the following sections describe each module briefly and link to each module's basic documentation. 
+### 3. Trimmer Plugin
 
-Detailed Sphinix documentation for all modules can be generated in HTML format with the optional step 6 of the installation process, it contains documentation of the classes and methods of all modules in the preprocessor package. 
+The Trimmer Plugin removes specified columns and rows from the dataset.
 
-## Unbiaser
+[Read more about the Trimmer Plugin](https://github.com/harveybc/preprocessor/blob/main/README_trimmer.md)
 
-Removes bias from a timeseries by substracting to each tick with the average of the last <window_size> ticks.
+### 4. Pre-Feature Selector Plugin
 
-See [Unbiaser Readme](../master/README_unbiaser.md) for detailed description and usage instructions.
+The Pre-Feature Selector Plugin performs initial screening for feature selection using methods such as ACF, PACF, and Granger Causality Test.
 
-## Standarizer
+[Read more about the Pre-Feature Selector Plugin](https://github.com/harveybc/preprocessor/blob/main/README_feature_selector_pre.md)
 
-Standardizes a dataset and exports the standarization configuration for use on other datasets. 
+### 5. Post-Feature Selector Plugin
 
-See [Standardizer Readme](../master/README_standardizer.md) for detailed description and usage instructions.
+The Post-Feature Selector Plugin performs feature selection after initial preprocessing using methods such as LASSO, Elastic Net, Mutual Information, Cross-Validation with LSTM/CNN, and Boruta Algorithm.
 
-## Feature Selector
+[Read more about the Post-Feature Selector Plugin](https://github.com/harveybc/preprocessor/blob/main/README_feature_selector_post.md)
 
-Performs the feature selection based on a classification or regression training signal and a threeshold. 
+## Example of Use
 
-See [Feature Selector Readme](../master/README_feature_selector.md) for detailed description and usage instructions.
+### Command Line
 
-## Sliding Window
+You can use the Preprocessor application from the command line with various plugins. Below are some examples:
 
-Performs the sliding window technique and exports an expanded dataset with configurable window_size.
+#### Using Default Parameters (Normalizer Plugin)
 
-See [Sliding Window Readme](../master/README_sliding_window.md) for detailed description and usage instructions.
+```bash
+python app/main.py --config config.json --plugin default_plugin
+Using Unbiaser Plugin with EMA Method
+bash
+Mostrar siempre los detalles
 
-## Data-Trimmer
+Copiar código
+python app/main.py --config config.json --plugin unbiaser_plugin --method ema --ema_alphas 0.2 --save_params ema_params.json
+Using Trimmer Plugin to Remove Columns and Rows
+bash
+Mostrar siempre los detalles
 
-A simple data pre-processor that trims the constant valued columns.  Also removes rows from the start and the end of a dataset with features with consecutive zeroes. 
+Copiar código
+python app/main.py --config config.json --plugin trimmer_plugin --columns 0 1 2 --rows 0 1 2
+Using Pre-Feature Selector Plugin with ACF Method
+bash
+Mostrar siempre los detalles
 
-See [Data-Trimmer Readme](../master/README_data_trimmer.md) for detailed description and usage instructions.
+Copiar código
+python app/main.py --config config.json --plugin pre_feature_selector_plugin --method acf --save_params acf_params.json
+Using Post-Feature Selector Plugin with LASSO Method
+bash
+Mostrar siempre los detalles
 
-## Examples of usage
+Copiar código
+python app/main.py --config config.json --plugin post_feature_selector_plugin --method lasso --save_params lasso_params.json
+Example Configuration Files
+Example 1: Normalizer Plugin Configuration
+json
+Mostrar siempre los detalles
 
-The following examples show both the class method and command line uses for one module, for examples of other modules, please see the specific module´s documentation.
+Copiar código
+{
+    "csv_file": "path/to/input.csv",
+    "output_file": "path/to/output.csv",
+    "plugins": [
+        {
+            "name": "default_plugin",
+            "params": {
+                "method": "z-score",
+                "save_params": "normalization_params.json",
+                "load_params": "normalization_params.json"
+            }
+        }
+    ],
+    "remote_log": "http://remote-log-server/api/logs"
+}
+Example 2: Unbiaser Plugin Configuration
+json
+Mostrar siempre los detalles
 
-### Example: Usage via Class Methods (data_trimmer module)
-```python
-from preprocessor.data_trimmer.data_trimmer import DataTrimmer
-# configure parameters (same variable names as command-line parameters)
-class Conf:
-    def __init__(self):
-        self.input_file = "tests/data/test_input.csv"
-conf = Conf()
-# instance trimmer class and loads dataset
-dt = DataTrimmer(conf)
-# perform the module's core method
-dt.core()
-# save output to output file
-dt.store()
-```
+Copiar código
+{
+    "csv_file": "path/to/input.csv",
+    "output_file": "path/to/output.csv",
+    "plugins": [
+        {
+            "name": "unbiaser_plugin",
+            "params": {
+                "method": "ema",
+                "ema_alphas": [0.2],
+                "save_params": "ema_params.json",
+                "load_params": "ema_params.json"
+            }
+        }
+    ],
+    "remote_log": "http://remote-log-server/api/logs"
+}
+Example 3: Trimmer Plugin Configuration
+json
+Mostrar siempre los detalles
 
-### Example: Usage via CLI (data_trimmer module)
+Copiar código
+{
+    "csv_file": "path/to/input.csv",
+    "output_file": "path/to/output.csv",
+    "plugins": [
+        {
+            "name": "trimmer_plugin",
+            "params": {
+                "columns": [0, 1, 2],
+                "rows": [0, 1, 2],
+                "save_params": "trimmer_params.json",
+                "load_params": "trimmer_params.json"
+            }
+        }
+    ],
+    "remote_log": "http://remote-log-server/api/logs"
+}
+Example 4: Pre-Feature Selector Plugin Configuration
+json
+Mostrar siempre los detalles
 
-> data_trimmer --input_file "tests/data/test_input.csv"
+Copiar código
+{
+    "csv_file": "path/to/input.csv",
+    "output_file": "path/to/output.csv",
+    "plugins": [
+        {
+            "name": "pre_feature_selector_plugin",
+            "params": {
+                "method": "acf",
+                "max_lag": 5,
+                "significance_level": 0.05,
+                "save_params": "acf_params.json",
+                "load_params": "acf_params.json"
+            }
+        }
+    ],
+    "remote_log": "http://remote-log-server/api/logs"
+}
+Example 5: Post-Feature Selector Plugin Configuration
+json
+Mostrar siempre los detalles
 
+Copiar código
+{
+    "csv_file": "path/to/input.csv",
+    "output_file": "path/to/output.csv",
+    "plugins": [
+        {
+            "name": "post_feature_selector_plugin",
+            "params": {
+                "method": "lasso",
+                "alpha": 1.0,
+                "l1_ratio": 0.5,
+                "model_type": "lstm",
+                "timesteps": 1,
+                "features": 1,
+                "save_params": "feature_selection_params.json",
+                "load_params": "feature_selection_params.json"
+            }
+        }
+    ],
+    "remote_log": "http://remote-log-server/api/logs"
+}
 
 File Structure:
 ```md
