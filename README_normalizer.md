@@ -10,7 +10,31 @@ The plugin accepts the following parameters:
 
 - **method** (str): The normalization method to use. Options are `'z-score'` and `'min-max'`. Default is `'z-score'`.
 - **save_params** (str): The file path to save the normalization parameters. Default is `'normalization_params.json'`.
-- **load_params** (str): The file path to load the normalization parameters. If provided, the parameters will be loaded from this file instead of being calculated from the data.
+- **load_params** (str): The file path to load the normalization parameters. If provided, the parameters will be loaded from this file instead of being calculated from the data and the normalization will be applied to the data with the provided parameters.
+
+## Methods
+
+### Z-Score Normalization
+
+Z-score normalization, also known as standard score normalization, transforms the data to have a mean of 0 and a standard deviation of 1. This method is useful when the data follows a Gaussian distribution. The formula for z-score normalization is:
+
+\[ Z = \frac{(X - \mu)}{\sigma} \]
+
+where:
+- \( X \) is the original data point
+- \( \mu \) is the mean of the data
+- \( \sigma \) is the standard deviation of the data
+
+### Min-Max Normalization
+
+Min-max normalization scales the data to a fixed range, typically between 0 and 1. This method is useful when the data does not follow a Gaussian distribution and you want to preserve the relationships between data points. The formula for min-max normalization is:
+
+\[ X' = \frac{(X - X_{\text{min}})}{(X_{\text{max}} - X_{\text{min}})} \]
+
+where:
+- \( X \) is the original data point
+- \( X_{\text{min}} \) is the minimum value in the data
+- \( X_{\text{max}} \) is the maximum value in the data
 
 ## Usage
 
