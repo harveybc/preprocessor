@@ -11,19 +11,19 @@ The Preprocessor project is a flexible and modular application for preprocessing
 
 The Normalizer Plugin is used to normalize data using methods such as z-score and min-max normalization.
 
-[Read more about the Normalizer Plugin](https://github.com/harveybc/preprocessor/blob/main/README_normalizer.md)
+[Read more about the Normalizer Plugin](https://github.com/harveybc/preprocessor/blob/master/README_normalizer.md)
 
 ### 2. Unbiaser Plugin
 
 The Unbiaser Plugin removes bias from time series data using moving average (MA) and exponential moving average (EMA) methods.
 
-[Read more about the Unbiaser Plugin](https://github.com/harveybc/preprocessor/blob/main/README_unbiaser.md)
+[Read more about the Unbiaser Plugin](https://github.com/harveybc/preprocessor/blob/master/README_unbiaser.md)
 
 ### 3. Trimmer Plugin
 
 The Trimmer Plugin removes specified columns and rows from the dataset.
 
-[Read more about the Trimmer Plugin](https://github.com/harveybc/preprocessor/blob/main/README_trimmer.md)
+[Read more about the Trimmer Plugin](https://github.com/harveybc/preprocessor/blob/master/README_trimmer.md)
 
 ### 4. Pre-FeatureExtraction, Feature Selector Plugin
 
@@ -31,7 +31,7 @@ Performs the initial screening for redundant or non-informative data, the Pre-Fe
 
 This selection is meant to be performed before feature extraction or other dimensionality reduction technique.
 
-[Read more about the Pre-Feature Selector Plugin](https://github.com/harveybc/preprocessor/blob/main/README_feature_selector_pre.md)
+[Read more about the Pre-Feature Selector Plugin](https://github.com/harveybc/preprocessor/blob/master/README_feature_selector_pre.md)
 
 ### 5. Post-FeatureExtraction, Feature Selector Plugin
 
@@ -39,7 +39,7 @@ The Post-FeatureEtraction Feature Selector Plugin performs feature selection aft
 
 This selection is meant to be performed after feature extraction or other dimensionality reduction technique.
 
-[Read more about the Post-Feature Selector Plugin](https://github.com/harveybc/preprocessor/blob/main/README_feature_selector_post.md)
+[Read more about the Post-Feature Selector Plugin](https://github.com/harveybc/preprocessor/blob/master/README_feature_selector_post.md)
 
 ## Examples of Use
 
