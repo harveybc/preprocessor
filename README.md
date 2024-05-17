@@ -25,19 +25,23 @@ The Trimmer Plugin removes specified columns and rows from the dataset.
 
 [Read more about the Trimmer Plugin](https://github.com/harveybc/preprocessor/blob/main/README_trimmer.md)
 
-### 4. Pre-Feature Selector Plugin
+### 4. Pre-FeatureExtraction, Feature Selector Plugin
 
-The Pre-Feature Selector Plugin performs initial screening for feature selection using methods such as ACF, PACF, and Granger Causality Test.
+Performs the initial screening for redundant or non-informative data, the Pre-FeatureExtraction Feature Selector Plugin performs feature selection using methods such as ACF, PACF, and Granger Causality Test. 
+
+This selection is meant to be performed before feature extraction or other dimensionality reduction technique.
 
 [Read more about the Pre-Feature Selector Plugin](https://github.com/harveybc/preprocessor/blob/main/README_feature_selector_pre.md)
 
-### 5. Post-Feature Selector Plugin
+### 5. Post-FeatureExtraction, Feature Selector Plugin
 
-The Post-Feature Selector Plugin performs feature selection after initial preprocessing using methods such as LASSO, Elastic Net, Mutual Information, Cross-Validation with LSTM/CNN, and Boruta Algorithm.
+The Post-FeatureEtraction Feature Selector Plugin performs feature selection after initial preprocessing and feature extraction using methods such as LASSO, Elastic Net, Mutual Information, Cross-Validation with LSTM/CNN, and Boruta Algorithm.
+
+This selection is meant to be performed after feature extraction or other dimensionality reduction technique.
 
 [Read more about the Post-Feature Selector Plugin](https://github.com/harveybc/preprocessor/blob/main/README_feature_selector_post.md)
 
-## Example of Use
+## Examples of Use
 
 ### Command Line
 
@@ -47,36 +51,37 @@ You can use the Preprocessor application from the command line with various plug
 
 ```bash
 python app/main.py --config config.json --plugin default_plugin
-Using Unbiaser Plugin with EMA Method
-bash
-Mostrar siempre los detalles
+```
 
-Copiar código
+#### Using Unbiaser Plugin with EMA Method
+
+```bash
 python app/main.py --config config.json --plugin unbiaser_plugin --method ema --ema_alphas 0.2 --save_params ema_params.json
-Using Trimmer Plugin to Remove Columns and Rows
-bash
-Mostrar siempre los detalles
+```
 
-Copiar código
+#### Using Trimmer Plugin to Remove Columns and Rows
+
+```bash
 python app/main.py --config config.json --plugin trimmer_plugin --columns 0 1 2 --rows 0 1 2
-Using Pre-Feature Selector Plugin with ACF Method
-bash
-Mostrar siempre los detalles
+```
 
-Copiar código
+#### Using Pre-Feature Selector Plugin with ACF Method
+
+```bash
 python app/main.py --config config.json --plugin pre_feature_selector_plugin --method acf --save_params acf_params.json
-Using Post-Feature Selector Plugin with LASSO Method
-bash
-Mostrar siempre los detalles
+```
 
-Copiar código
+#### Using Post-Feature Selector Plugin with LASSO Method
+
+```bash
 python app/main.py --config config.json --plugin post_feature_selector_plugin --method lasso --save_params lasso_params.json
-Example Configuration Files
-Example 1: Normalizer Plugin Configuration
-json
-Mostrar siempre los detalles
+```
 
-Copiar código
+### Example Configuration Files
+
+#### Example 1: Normalizer Plugin Configuration
+
+```json
 {
     "csv_file": "path/to/input.csv",
     "output_file": "path/to/output.csv",
@@ -92,11 +97,11 @@ Copiar código
     ],
     "remote_log": "http://remote-log-server/api/logs"
 }
-Example 2: Unbiaser Plugin Configuration
-json
-Mostrar siempre los detalles
+```
 
-Copiar código
+#### Example 2: Unbiaser Plugin Configuration
+
+```json
 {
     "csv_file": "path/to/input.csv",
     "output_file": "path/to/output.csv",
@@ -113,11 +118,11 @@ Copiar código
     ],
     "remote_log": "http://remote-log-server/api/logs"
 }
-Example 3: Trimmer Plugin Configuration
-json
-Mostrar siempre los detalles
+```
 
-Copiar código
+#### Example 3: Trimmer Plugin Configuration
+
+```json
 {
     "csv_file": "path/to/input.csv",
     "output_file": "path/to/output.csv",
@@ -134,11 +139,11 @@ Copiar código
     ],
     "remote_log": "http://remote-log-server/api/logs"
 }
-Example 4: Pre-Feature Selector Plugin Configuration
-json
-Mostrar siempre los detalles
+```
 
-Copiar código
+#### Example 4: Pre-Feature Selector Plugin Configuration
+
+```json
 {
     "csv_file": "path/to/input.csv",
     "output_file": "path/to/output.csv",
@@ -156,11 +161,11 @@ Copiar código
     ],
     "remote_log": "http://remote-log-server/api/logs"
 }
-Example 5: Post-Feature Selector Plugin Configuration
-json
-Mostrar siempre los detalles
+```
 
-Copiar código
+#### Example 5: Post-Feature Selector Plugin Configuration
+
+```json
 {
     "csv_file": "path/to/input.csv",
     "output_file": "path/to/output.csv",
@@ -181,8 +186,10 @@ Copiar código
     ],
     "remote_log": "http://remote-log-server/api/logs"
 }
+```
 
-File Structure:
+### File Structure:
+
 ```md
 preprocessor/
 │
@@ -202,7 +209,7 @@ preprocessor/
 │
 ├── tests/                             # Test modules for your application
 │   ├── __init__.py                         # Initializes the Python package for tests
-│   ├── test_preprocessor.py                # Tests for decoder functionality
+│   ├── test_preprocessor.py                # Tests for preprocessor functionality
 │   ├── datasets/                           # Test datasets directory
 │   └── configs/                            # Test configurations directory
 │
