@@ -18,23 +18,24 @@ The plugin accepts the following parameters:
 
 Z-score normalization, also known as standard score normalization, transforms the data to have a mean of 0 and a standard deviation of 1. This method is useful when the data follows a Gaussian distribution. The formula for z-score normalization is:
 
-\[ Z = \frac{(X - \mu)}{\sigma} \]
+$`Z = \frac{(X - \mu)}{\sigma}`$
 
 where:
-- \( X \) is the original data point
-- \( \mu \) is the mean of the data
-- \( \sigma \) is the standard deviation of the data
+- $`X`$ is the original data point
+- $`\mu`$ is the mean of the data
+- $`\sigma`$ is the standard deviation of the data
 
 ### Min-Max Normalization
 
 Min-max normalization scales the data to a fixed range, typically between 0 and 1. This method is useful when the data does not follow a Gaussian distribution and you want to preserve the relationships between data points. The formula for min-max normalization is:
 
-\[ X' = \frac{(X - X_{\text{min}})}{(X_{\text{max}} - X_{\text{min}})} \]
+$`X' = \frac{(X - X_{\text{min}})}{(X_{\text{max}} - X_{\text{min}})}`$
 
 where:
-- \( X \) is the original data point
-- \( X_{\text{min}} \) is the minimum value in the data
-- \( X_{\text{max}} \) is the maximum value in the data
+- $`X`$ is the original data point
+- $`X_{\text{min}}`$ is the minimum value in the data
+- $`X_{\text{max}}`$ is the maximum value in the data
+
 
 ## Usage
 
