@@ -39,9 +39,9 @@ Use statistical methods (correlation, mutual-information and others) to remove r
 -Autoencoder with a sliding window technique with the window size equal to encoder input size.
 -Transforms a single timeseries(column) into a multi-column dataset with the number of columns equal to the reduced dimension (encoder output size), ready to be feed to a prediction model for training.
 
-### Prediction Trainig Data
+### Prediction Training Data
 
-- The data to be estimated, and to be used as trainig signal, is the variation in the close price in multiple timeframes (15min, 1h, 4h, 1d, 1w), and also the volatility as the standard deviation of logarithmic returns (in the previous timeframe).
+The data to be estimated, and to be used as trainig signal, is the variation in the close price in multiple timeframes (15min, 1h, 4h, 1d, 1w), and also the volatility as the standard deviation of logarithmic returns (in the previous timeframe).
 
 ## 4. Modeling
 
