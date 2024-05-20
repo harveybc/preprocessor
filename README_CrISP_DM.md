@@ -45,7 +45,7 @@ The data to be estimated, and to be used as trainig signal, is the variation in 
 
 ## 4. Modeling
 
-Having all the resulting features of the data preparation, select the most suitable estimation model for the required training signal. Model election implies the configuration of hyperparameters and training of the models with preprocessed data trying to aproximate the training signal. Models to test: SVM, ANN, CNN, and 
+Having all the resulting features of the data preparation, select the most suitable estimation model for the required training signal. Model selection implies the configuration of hyperparameters and training of the models with preprocessed data trying to aproximate the training signal. Models to test: SVM, ANN, CNN, and 
 others.
 
 ### Error Measurements:
