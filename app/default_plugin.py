@@ -20,6 +20,7 @@ class DefaultPlugin:
         method = params.get('method', 'z-score')
         save_params_path = params.get('save_params', 'normalization_params.json')
         load_params_path = params.get('load_params')
+        normalization_range = params.get('range', (0, 1))
 
         if load_params_path and os.path.exists(load_params_path):
             with open(load_params_path, 'r') as f:
@@ -34,8 +35,8 @@ class DefaultPlugin:
             elif method == 'min-max':
                 min_val = data.min()
                 max_val = data.max()
-                self.normalization_params = {'method': 'min-max', 'min': min_val.to_dict(), 'max': max_val.to_dict()}
-                normalized_data = (data - min_val) / (max_val - min_val)
+                self.normalization_params = {'method': 'min-max', 'min': min_val.to_dict(), 'max': max_val.to_dict(), 'range': normalization_range}
+                normalized_data = (data - min_val) / (max_val - min_val) * (normalization_range[1] - normalization_range[0]) + normalization_range[0]
             else:
                 raise ValueError(f"Unknown normalization method: {method}")
 
@@ -51,7 +52,8 @@ class DefaultPlugin:
             elif self.normalization_params['method'] == 'min-max':
                 min_val = pd.Series(self.normalization_params['min'])
                 max_val = pd.Series(self.normalization_params['max'])
-                normalized_data = (data - min_val) / (max_val - min_val)
+                normalization_range = self.normalization_params.get('range', (0, 1))
+                normalized_data = (data - min_val) / (max_val - min_val) * (normalization_range[1] - normalization_range[0]) + normalization_range[0]
             else:
                 raise ValueError(f"Unknown normalization method: {self.normalization_params['method']}")
 
