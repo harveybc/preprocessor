@@ -1,18 +1,21 @@
 import sys
 import os
-print("Current working directory:", os.getcwd())
-print("Python path:", sys.path)
-# Ensure the current directory is in the PYTHONPATH
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-
 import json
 import requests
+import pkg_resources
+
+print("Current working directory:", os.getcwd())
+print("Python path:", sys.path)
+
+# Ensure the current directory is in the PYTHONPATH
+current_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(current_dir)
+sys.path.append(os.path.dirname(current_dir))
+
 from app.cli import parse_args
 from app.config import CSV_INPUT_PATH, CSV_OUTPUT_PATH, DEFAULT_PLUGIN, REMOTE_LOG_URL, REMOTE_CONFIG_URL
-from app.data_handler import DataHandler
+from app.data_handler import load_csv, write_csv
 from app.default_plugin import DefaultPlugin
-import pkg_resources
 
 def load_plugin(plugin_name):
     """
@@ -53,15 +56,14 @@ def main():
     }
 
     # Load the CSV data
-    data_handler = DataHandler()
-    data = data_handler.read_csv(config['csv_file'])
+    data = load_csv(config['csv_file'])
 
     # Load and apply the plugin
     plugin = load_plugin(config['plugin_name'])
     processed_data = plugin.process(data)
 
     # Save the processed data to output CSV
-    data_handler.write_csv(config['output_file'], processed_data)
+    write_csv(config['output_file'], processed_data)
 
     # Log processing completion
     if config['remote_log']:
