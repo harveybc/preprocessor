@@ -1,6 +1,7 @@
 import sys
 import os
-
+print("Current working directory:", os.getcwd())
+print("Python path:", sys.path)
 # Ensure the current directory is in the PYTHONPATH
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
