@@ -1,4 +1,10 @@
 import sys
+import os
+
+# Ensure the current directory is in the PYTHONPATH
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+
 import json
 import requests
 from app.cli import parse_args
