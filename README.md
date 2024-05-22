@@ -43,38 +43,62 @@ This selection is meant to be performed after feature extraction or other dimens
 
 ## Examples of Use
 
-### Command Line
-
 You can use the Preprocessor application from the command line with various plugins. Below are some examples:
 
-#### Using Default Parameters (Normalizer Plugin)
+### Default Plugin (Normalizer Plugin)
+
+#### Using Z-Score Normalization
 
 ```bash
-python app/main.py --config config.json --plugin default_plugin
+python app/main.py path/to/input.csv --plugin default_plugin --method z-score --save_config path/to/save_config.json
 ```
 
-#### Using Unbiaser Plugin with EMA Method
+#### Using Min-Max Normalization
 
 ```bash
-python app/main.py --config config.json --plugin unbiaser_plugin --method ema --ema_alphas 0.2 --save_params ema_params.json
+python app/main.py path/to/input.csv --plugin default_plugin --method min-max --range 0 1 --save_config path/to/save_config.json
+```
+### Unbiaser Plugin
+
+#### Using Moving Average Method
+
+```bash
+python app/main.py path/to/input.csv --plugin unbiaser_plugin --method ma --window_size 5 --save_config path/to/save_config.json
 ```
 
-#### Using Trimmer Plugin to Remove Columns and Rows
+#### Using Exponential Moving Average Method
 
 ```bash
-python app/main.py --config config.json --plugin trimmer_plugin --columns 0 1 2 --rows 0 1 2
+python app/main.py path/to/input.csv --plugin unbiaser_plugin --method ema --ema_alphas 0.2 --save_config path/to/save_config.json
+Trimmer Plugin
 ```
 
-#### Using Pre-Feature Selector Plugin with ACF Method
+### Removing Specific Rows and Columns
 
 ```bash
-python app/main.py --config config.json --plugin pre_feature_selector_plugin --method acf --save_params acf_params.json
+python app/main.py path/to/input.csv --plugin trimmer_plugin --rows 0 1 2 --columns 0 1 --save_config path/to/save_config.json
 ```
 
-#### Using Post-Feature Selector Plugin with LASSO Method
+### Pre-Feature Selector Plugin
+
+#### Using Autocorrelation Function (ACF) Method
 
 ```bash
-python app/main.py --config config.json --plugin post_feature_selector_plugin --method lasso --save_params lasso_params.json
+python app/main.py path/to/input.csv --plugin pre_feature_selector_plugin --method acf --max_lag 5 --significance_level 0.05 --save_config path/to/save_config.json
+```
+
+### Post-Feature Selector Plugin
+
+#### Using LASSO Method
+
+```bash
+python app/main.py path/to/input.csv --plugin post_feature_selector_plugin --method lasso --alpha 1.0 --save_config path/to/save_config.json
+```
+
+#### Using Cross-Validation with LSTM Model
+
+```bash
+python app/main.py path/to/input.csv --plugin post_feature_selector_plugin --method cross_val --model_type lstm --timesteps 10 --features 1 --save_config path/to/save_config.json
 ```
 
 ### Example Configuration Files
