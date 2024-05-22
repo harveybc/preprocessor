@@ -53,8 +53,11 @@ def main():
         'output_file': args.output_file if args.output_file else CSV_OUTPUT_PATH,
         'plugin_name': args.plugin if args.plugin else DEFAULT_PLUGIN,
         'remote_log': args.remote_log if args.remote_log else REMOTE_LOG_URL,
-        'method': args.method,
-        'range': tuple(args.range) if args.range else (0, 1)
+        'method': args.method if args.method else 'z-score',
+        'range': tuple(args.range) if args.range else (0, 1),
+        'save_config': args.save_config if args.save_config else None,
+        'load_config': args.load_config if args.load_config else None,
+        'quiet_mode': args.quiet_mode if args.quiet_mode else False
     }
 
     # Load the CSV data
@@ -67,13 +70,20 @@ def main():
     # Save the processed data to output CSV
     write_csv(config['output_file'], processed_data)
 
+    # Save configuration if save_config path is provided
+    if config['save_config']:
+        with open(config['save_config'], 'w') as f:
+            json.dump(config, f)
+
     # Log processing completion
     if config['remote_log']:
         try:
             response = requests.post(config['remote_log'], json={'message': 'Processing complete', 'output_file': config['output_file']})
-            print(f"Remote log response: {response.text}")
+            if not config['quiet_mode']:
+                print(f"Remote log response: {response.text}")
         except requests.RequestException as e:
-            print(f"Failed to send remote log: {e}", file=sys.stderr)
+            if not config['quiet_mode']:
+                print(f"Failed to send remote log: {e}", file=sys.stderr)
 
 if __name__ == "__main__":
     main()
