@@ -21,7 +21,10 @@ class DefaultPlugin:
         Returns:
             pd.DataFrame: The normalized data.
         """
-        # Drop non-numeric columns (e.g., date columns)
+        # Retain non-numeric columns (e.g., date columns)
+        non_numeric_data = data.select_dtypes(exclude=[np.number])
+        
+        # Select only numeric columns for processing
         numeric_data = data.select_dtypes(include=[np.number])
 
         if load_params and os.path.exists(load_params):
@@ -60,7 +63,6 @@ class DefaultPlugin:
                 raise ValueError(f"Unknown normalization method: {self.normalization_params['method']}")
 
         # Combine numeric data back with non-numeric data (e.g., date columns)
-        non_numeric_data = data.select_dtypes(exclude=[np.number])
         result = pd.concat([non_numeric_data, normalized_data], axis=1)
 
         return result

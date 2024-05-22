@@ -109,8 +109,3 @@ def main():
             if not config['quiet_mode']:
                 print(f"Remote log response: {response.text}")
         except requests.RequestException as e:
-            if not config['quiet_mode']:
-                print(f"Failed to send remote log: {e}", file=sys.stderr)
-
-if __name__ == "__main__":
-    main()

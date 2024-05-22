@@ -2,7 +2,7 @@ import pandas as pd
 
 def load_csv(file_path):
     """
-    Load a CSV file into a pandas DataFrame, handling date columns and header detection.
+    Load a CSV file into a pandas DataFrame, handling date columns, header detection, and correct numeric parsing.
 
     Args:
         file_path (str): The path to the CSV file to be loaded.
@@ -12,15 +12,15 @@ def load_csv(file_path):
     """
     try:
         # Try to read the file with headers
-        data = pd.read_csv(file_path, parse_dates=True)
-        
+        data = pd.read_csv(file_path, sep=',', parse_dates=[0], dayfirst=True)
+
         # Check if the first column is a date column
         if pd.api.types.is_datetime64_any_dtype(data.iloc[:, 0]):
             data.set_index(data.columns[0], inplace=True)
 
     except pd.errors.ParserError:
         # If there is a parsing error, try reading without headers
-        data = pd.read_csv(file_path, header=None, parse_dates=[0])
+        data = pd.read_csv(file_path, header=None, sep=',', parse_dates=[0], dayfirst=True)
 
         # Check if the first column is a date column
         if pd.api.types.is_datetime64_any_dtype(data.iloc[:, 0]):
@@ -53,7 +53,7 @@ def write_csv(file_path, data):
         None
     """
     try:
-        data.to_csv(file_path, index=True)
+        data.to_csv(file_path, index=False)
     except Exception as e:
         print(f"An error occurred while writing the CSV: {e}")
         raise
