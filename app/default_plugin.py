@@ -65,4 +65,13 @@ class DefaultPlugin:
         # Combine numeric data back with non-numeric data (e.g., date columns)
         result = pd.concat([non_numeric_data, normalized_data], axis=1)
 
+        # Debug information
+        for column in data.columns:
+            if column in non_numeric_data.columns:
+                print(f"Column '{column}' is non-numeric and was not processed.")
+            elif column in numeric_data.columns:
+                print(f"Column '{column}' was successfully processed.")
+            else:
+                print(f"Column '{column}' was not found in the processed data.")
+
         return result
