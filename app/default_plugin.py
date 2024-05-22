@@ -1,6 +1,7 @@
 import pandas as pd
 import json
 import os
+import numpy as np
 
 class DefaultPlugin:
     def __init__(self):
@@ -21,7 +22,7 @@ class DefaultPlugin:
             pd.DataFrame: The normalized data.
         """
         # Drop non-numeric columns (e.g., date columns)
-        numeric_data = data.select_dtypes(include=[pd.np.number])
+        numeric_data = data.select_dtypes(include=[np.number])
 
         if load_params and os.path.exists(load_params):
             with open(load_params, 'r') as f:
@@ -59,7 +60,7 @@ class DefaultPlugin:
                 raise ValueError(f"Unknown normalization method: {self.normalization_params['method']}")
 
         # Combine numeric data back with non-numeric data (e.g., date columns)
-        non_numeric_data = data.select_dtypes(exclude=[pd.np.number])
+        non_numeric_data = data.select_dtypes(exclude=[np.number])
         result = pd.concat([non_numeric_data, normalized_data], axis=1)
 
         return result
