@@ -56,21 +56,35 @@ def main():
     # Parse command line arguments
     args = parse_args()
 
-    # Attempt to load remote configuration if provided
-    remote_config = load_remote_config(args.remote_config) if args.remote_config else None
-
-    # Use remote configuration if available, otherwise fallback to CLI arguments
-    config = remote_config if remote_config else {
+    # Initialize config with CLI arguments
+    config = {
         'csv_file': args.csv_file,
         'output_file': args.output_file if args.output_file else CSV_OUTPUT_PATH,
         'plugin_name': args.plugin if args.plugin else DEFAULT_PLUGIN,
-        'remote_log': args.remote_log if args.remote_log else REMOTE_LOG_URL,
         'method': args.method if args.method else DEFAULT_NORMALIZATION_METHOD,
         'range': tuple(args.range) if args.range else DEFAULT_NORMALIZATION_RANGE,
         'save_config': args.save_config if args.save_config else CONFIG_SAVE_PATH,
         'load_config': args.load_config if args.load_config else CONFIG_LOAD_PATH,
-        'quiet_mode': args.quiet_mode if args.quiet_mode else DEFAULT_QUIET_MODE
+        'quiet_mode': args.quiet_mode if args.quiet_mode else DEFAULT_QUIET_MODE,
+        'remote_log': None,
+        'remote_config': None
     }
+
+    # Load remote configuration if provided
+    if args.remote_config:
+        remote_config = load_remote_config(args.remote_config)
+        if remote_config:
+            config.update(remote_config)
+
+    # Load local configuration if provided
+    if args.load_config:
+        try:
+            with open(args.load_config, 'r') as f:
+                local_config = json.load(f)
+            config.update(local_config)
+        except FileNotFoundError:
+            print(f"Error: The file {args.load_config} does not exist.")
+            raise
 
     # Load the CSV data
     data = load_csv(config['csv_file'])
@@ -88,8 +102,8 @@ def main():
         with open(config['save_config'], 'w') as f:
             json.dump(config, f)
 
-    # Log processing completion
-    if config['remote_log']:
+    # Log processing completion if remote logging is configured
+    if 'remote_log' in config and config['remote_log']:
         try:
             response = requests.post(config['remote_log'], json={'message': 'Processing complete', 'output_file': config['output_file']})
             if not config['quiet_mode']:
