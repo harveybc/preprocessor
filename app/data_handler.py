@@ -12,7 +12,7 @@ def load_csv(file_path):
     """
     try:
         # Try reading the file with headers
-        data_with_headers = pd.read_csv(file_path, header=0, sep=',', parse_dates=[0], dayfirst=True, infer_datetime_format=True)
+        data_with_headers = pd.read_csv(file_path, header=0, sep=',', parse_dates=[0], dayfirst=True)
         
         # Check if the first row contains headers by verifying if column names are strings
         if all(isinstance(col, str) for col in data_with_headers.columns):
@@ -20,7 +20,7 @@ def load_csv(file_path):
             has_headers = True
         else:
             # If not, read the file without headers
-            data = pd.read_csv(file_path, header=None, sep=',', parse_dates=[0], dayfirst=True, infer_datetime_format=True)
+            data = pd.read_csv(file_path, header=None, sep=',', parse_dates=[0], dayfirst=True)
             has_headers = False
 
         # Check if the first column is a date column
