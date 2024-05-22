@@ -7,45 +7,22 @@ The Preprocessor project is a flexible and modular application for preprocessing
 
 ## Plugins
 
-### 1. Default (Normalizer) Plugin
-
-The Normalizer Plugin is used to normalize data using methods such as z-score and min-max normalization.
-
-[Read more about the Normalizer Plugin](https://github.com/harveybc/preprocessor/blob/master/README_normalizer.md)
-
-### 2. Unbiaser Plugin
-
-The Unbiaser Plugin removes bias from time series data using moving average (MA) and exponential moving average (EMA) methods.
-
-[Read more about the Unbiaser Plugin](https://github.com/harveybc/preprocessor/blob/master/README_unbiaser.md)
-
-### 3. Trimmer Plugin
-
-The Trimmer Plugin removes specified columns and rows from the dataset.
-
-[Read more about the Trimmer Plugin](https://github.com/harveybc/preprocessor/blob/master/README_trimmer.md)
 
 ### 4. Pre-FeatureExtraction, Feature Selector Plugin
 
-Performs the initial screening for redundant or non-informative data, the Pre-FeatureExtraction Feature Selector Plugin performs feature selection using methods such as ACF, PACF, and Granger Causality Test. 
-
-This selection is meant to be performed before feature extraction or other dimensionality reduction technique.
-
-[Read more about the Pre-Feature Selector Plugin](https://github.com/harveybc/preprocessor/blob/master/README_feature_selector_pre.md)
 
 ### 5. Post-FeatureExtraction, Feature Selector Plugin
 
-The Post-FeatureEtraction Feature Selector Plugin performs feature selection after initial preprocessing and feature extraction using methods such as LASSO, Elastic Net, Mutual Information, Cross-Validation with LSTM/CNN, and Boruta Algorithm.
-
-This selection is meant to be performed after feature extraction or other dimensionality reduction technique.
-
-[Read more about the Post-Feature Selector Plugin](https://github.com/harveybc/preprocessor/blob/master/README_feature_selector_post.md)
 
 ## Examples of Use
 
 You can use the Preprocessor application from the command line with various plugins. Below are some examples:
 
 ### Default Plugin (Normalizer Plugin)
+
+The Normalizer Plugin is used to normalize data using methods such as z-score and min-max normalization.
+
+[Read more about the Normalizer Plugin](https://github.com/harveybc/preprocessor/blob/master/README_normalizer.md)
 
 #### Using Z-Score Normalization
 
@@ -59,6 +36,10 @@ python app/main.py path/to/input.csv --plugin default_plugin --method z-score --
 python app/main.py path/to/input.csv --plugin default_plugin --method min-max --range 0 1 --save_config path/to/save_config.json
 ```
 ### Unbiaser Plugin
+
+The Unbiaser Plugin removes bias from time series data using moving average (MA) and exponential moving average (EMA) methods.
+
+[Read more about the Unbiaser Plugin](https://github.com/harveybc/preprocessor/blob/master/README_unbiaser.md)
 
 #### Using Moving Average Method
 
@@ -75,11 +56,21 @@ Trimmer Plugin
 
 ### Removing Specific Rows and Columns
 
+The Trimmer Plugin removes specified columns and rows from the dataset.
+
+[Read more about the Trimmer Plugin](https://github.com/harveybc/preprocessor/blob/master/README_trimmer.md)
+
 ```bash
 python app/main.py path/to/input.csv --plugin trimmer_plugin --rows 0 1 2 --columns 0 1 --save_config path/to/save_config.json
 ```
 
 ### Pre-Feature Selector Plugin
+
+Performs the initial screening for redundant or non-informative data, the Pre-FeatureExtraction Feature Selector Plugin performs feature selection using methods such as ACF, PACF, and Granger Causality Test. 
+
+This selection is meant to be performed before feature extraction or other dimensionality reduction technique.
+
+[Read more about the Pre-Feature Selector Plugin](https://github.com/harveybc/preprocessor/blob/master/README_feature_selector_pre.md)
 
 #### Using Autocorrelation Function (ACF) Method
 
@@ -88,6 +79,12 @@ python app/main.py path/to/input.csv --plugin pre_feature_selector_plugin --meth
 ```
 
 ### Post-Feature Selector Plugin
+
+The Post-FeatureEtraction Feature Selector Plugin performs feature selection after initial preprocessing and feature extraction using methods such as LASSO, Elastic Net, Mutual Information, Cross-Validation with LSTM/CNN, and Boruta Algorithm.
+
+This selection is meant to be performed after feature extraction or other dimensionality reduction technique.
+
+[Read more about the Post-Feature Selector Plugin](https://github.com/harveybc/preprocessor/blob/master/README_feature_selector_post.md)
 
 #### Using LASSO Method
 
