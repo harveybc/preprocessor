@@ -2,27 +2,18 @@ import pandas as pd
 
 def load_csv(file_path):
     """
-    Load a CSV file into a pandas DataFrame, handling date columns, header detection, and correct numeric parsing.
+    Load a CSV file into a pandas DataFrame, handling date columns and correct numeric parsing.
 
     Args:
         file_path (str): The path to the CSV file to be loaded.
 
     Returns:
-        tuple: A tuple containing the loaded data as a pandas DataFrame and a boolean indicating if headers were present.
+        pd.DataFrame: The loaded data as a pandas DataFrame.
     """
     try:
-        # Try reading the file with headers
-        data_with_headers = pd.read_csv(file_path, header=0, sep=',', parse_dates=[0], dayfirst=True)
+        # Read the file without headers
+        data = pd.read_csv(file_path, header=None, sep=',', parse_dates=[0], dayfirst=True)
         
-        # Check if the first row contains headers by verifying if column names are strings
-        if all(isinstance(col, str) for col in data_with_headers.columns):
-            data = data_with_headers
-            has_headers = True
-        else:
-            # If not, read the file without headers
-            data = pd.read_csv(file_path, header=None, sep=',', parse_dates=[0], dayfirst=True)
-            has_headers = False
-
         # Check if the first column is a date column
         if pd.api.types.is_datetime64_any_dtype(data.iloc[:, 0]):
             data.columns = ['date'] + [f'col_{i}' for i in range(1, len(data.columns))]
@@ -49,22 +40,21 @@ def load_csv(file_path):
         print(f"An error occurred while loading the CSV: {e}")
         raise
     
-    return data, has_headers
+    return data
 
-def write_csv(file_path, data, has_headers):
+def write_csv(file_path, data):
     """
     Write a pandas DataFrame to a CSV file.
 
     Args:
         file_path (str): The path to the CSV file to be written.
         data (pd.DataFrame): The data to be written to the CSV file.
-        has_headers (bool): Whether to include headers in the output file.
 
     Returns:
         None
     """
     try:
-        data.to_csv(file_path, index=True, header=has_headers)
+        data.to_csv(file_path, index=True, header=False)
     except Exception as e:
         print(f"An error occurred while writing the CSV: {e}")
         raise
