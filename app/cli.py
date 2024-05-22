@@ -21,6 +21,9 @@ def parse_args():
     parser.add_argument('--method', type=str, help='Method to use in the plugin (e.g., z-score, min-max).')
     parser.add_argument('--range', type=float, nargs=2, help='Range for min-max normalization (e.g., 0 1 or -1 1).')
 
+    # Optional argument for specifying the output CSV file
+    parser.add_argument('-o', '--output_file', type=str, help='Path to the output CSV file.')
+
     # Optional argument for remote logging, monitoring, and storage of results
     parser.add_argument('-rl', '--remote_log', type=str, help='URL of a remote data-logger API endpoint.')
 
