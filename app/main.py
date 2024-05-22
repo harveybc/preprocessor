@@ -13,7 +13,19 @@ sys.path.append(current_dir)
 sys.path.append(os.path.dirname(current_dir))
 
 from app.cli import parse_args
-from app.config import CSV_INPUT_PATH, CSV_OUTPUT_PATH, DEFAULT_PLUGIN, REMOTE_LOG_URL, REMOTE_CONFIG_URL
+from app.config import (
+    CSV_INPUT_PATH,
+    CSV_OUTPUT_PATH,
+    CONFIG_SAVE_PATH,
+    CONFIG_LOAD_PATH,
+    DEFAULT_PLUGIN,
+    REMOTE_LOG_URL,
+    REMOTE_CONFIG_URL,
+    PLUGIN_DIRECTORY,
+    DEFAULT_NORMALIZATION_METHOD,
+    DEFAULT_NORMALIZATION_RANGE,
+    DEFAULT_QUIET_MODE
+)
 from app.data_handler import load_csv, write_csv
 from app.default_plugin import DefaultPlugin
 
@@ -53,11 +65,11 @@ def main():
         'output_file': args.output_file if args.output_file else CSV_OUTPUT_PATH,
         'plugin_name': args.plugin if args.plugin else DEFAULT_PLUGIN,
         'remote_log': args.remote_log if args.remote_log else REMOTE_LOG_URL,
-        'method': args.method if args.method else 'z-score',
-        'range': tuple(args.range) if args.range else (0, 1),
-        'save_config': args.save_config if args.save_config else None,
-        'load_config': args.load_config if args.load_config else None,
-        'quiet_mode': args.quiet_mode if args.quiet_mode else False
+        'method': args.method if args.method else DEFAULT_NORMALIZATION_METHOD,
+        'range': tuple(args.range) if args.range else DEFAULT_NORMALIZATION_RANGE,
+        'save_config': args.save_config if args.save_config else CONFIG_SAVE_PATH,
+        'load_config': args.load_config if args.load_config else CONFIG_LOAD_PATH,
+        'quiet_mode': args.quiet_mode if args.quiet_mode else DEFAULT_QUIET_MODE
     }
 
     # Load the CSV data
