@@ -52,7 +52,9 @@ def main():
         'csv_file': args.csv_file,
         'output_file': args.output_file if args.output_file else CSV_OUTPUT_PATH,
         'plugin_name': args.plugin if args.plugin else DEFAULT_PLUGIN,
-        'remote_log': args.remote_log if args.remote_log else REMOTE_LOG_URL
+        'remote_log': args.remote_log if args.remote_log else REMOTE_LOG_URL,
+        'method': args.method,
+        'range': tuple(args.range) if args.range else (0, 1)
     }
 
     # Load the CSV data
@@ -60,7 +62,7 @@ def main():
 
     # Load and apply the plugin
     plugin = load_plugin(config['plugin_name'])
-    processed_data = plugin.process(data)
+    processed_data = plugin.process(data, method=config.get('method'), range=config.get('range'))
 
     # Save the processed data to output CSV
     write_csv(config['output_file'], processed_data)
