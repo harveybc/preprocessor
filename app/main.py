@@ -76,7 +76,9 @@ def main():
     data = load_csv(config['csv_file'])
 
     # Load and apply the plugin
-    plugin = load_plugin(config['plugin_name'])
+    pluginClass = load_plugin(config['plugin_name'])
+    plugin = pluginClass()
+
     processed_data = plugin.process(data=data, method=config['method'], range=config['range'], save_params=config['save_config'], load_params=config['load_config'])
 
     # Save the processed data to output CSV
