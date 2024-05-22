@@ -12,7 +12,7 @@ def load_csv(file_path):
     """
     try:
         # Try to read the file with headers
-        data = pd.read_csv(file_path, parse_dates=True, infer_datetime_format=True)
+        data = pd.read_csv(file_path, parse_dates=True)
         
         # Check if the first column is a date column
         if pd.api.types.is_datetime64_any_dtype(data.iloc[:, 0]):
@@ -20,7 +20,7 @@ def load_csv(file_path):
 
     except pd.errors.ParserError:
         # If there is a parsing error, try reading without headers
-        data = pd.read_csv(file_path, header=None, parse_dates=[0], infer_datetime_format=True)
+        data = pd.read_csv(file_path, header=None, parse_dates=[0])
 
         # Check if the first column is a date column
         if pd.api.types.is_datetime64_any_dtype(data.iloc[:, 0]):
