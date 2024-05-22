@@ -20,21 +20,24 @@ class DefaultPlugin:
         Returns:
             pd.DataFrame: The normalized data.
         """
+        # Drop non-numeric columns (e.g., date columns)
+        numeric_data = data.select_dtypes(include=[pd.np.number])
+
         if load_params and os.path.exists(load_params):
             with open(load_params, 'r') as f:
                 self.normalization_params = json.load(f)
 
         if self.normalization_params is None:
             if method == 'z-score':
-                mean = data.mean()
-                std = data.std()
+                mean = numeric_data.mean()
+                std = numeric_data.std()
                 self.normalization_params = {'method': 'z-score', 'mean': mean.to_dict(), 'std': std.to_dict()}
-                normalized_data = (data - mean) / std
+                normalized_data = (numeric_data - mean) / std
             elif method == 'min-max':
-                min_val = data.min()
-                max_val = data.max()
+                min_val = numeric_data.min()
+                max_val = numeric_data.max()
                 self.normalization_params = {'method': 'min-max', 'min': min_val.to_dict(), 'max': max_val.to_dict(), 'range': range}
-                normalized_data = (data - min_val) / (max_val - min_val) * (range[1] - range[0]) + range[0]
+                normalized_data = (numeric_data - min_val) / (max_val - min_val) * (range[1] - range[0]) + range[0]
             else:
                 raise ValueError(f"Unknown normalization method: {method}")
 
@@ -46,13 +49,17 @@ class DefaultPlugin:
             if self.normalization_params['method'] == 'z-score':
                 mean = pd.Series(self.normalization_params['mean'])
                 std = pd.Series(self.normalization_params['std'])
-                normalized_data = (data - mean) / std
+                normalized_data = (numeric_data - mean) / std
             elif self.normalization_params['method'] == 'min-max':
                 min_val = pd.Series(self.normalization_params['min'])
                 max_val = pd.Series(self.normalization_params['max'])
                 range = self.normalization_params.get('range', (0, 1))
-                normalized_data = (data - min_val) / (max_val - min_val) * (range[1] - range[0]) + range[0]
+                normalized_data = (numeric_data - min_val) / (max_val - min_val) * (range[1] - range[0]) + range[0]
             else:
                 raise ValueError(f"Unknown normalization method: {self.normalization_params['method']}")
 
-        return normalized_data
+        # Combine numeric data back with non-numeric data (e.g., date columns)
+        non_numeric_data = data.select_dtypes(exclude=[pd.np.number])
+        result = pd.concat([non_numeric_data, normalized_data], axis=1)
+
+        return result

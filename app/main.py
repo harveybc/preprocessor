@@ -38,7 +38,7 @@ def load_plugin(plugin_name):
         return entry_point.load()
     except StopIteration:
         print(f"Plugin {plugin_name} not found.", file=sys.stderr)
-        return DefaultPlugin()
+        return DefaultPlugin
 
 def load_remote_config(remote_config_url):
     """
@@ -76,10 +76,9 @@ def main():
     data = load_csv(config['csv_file'])
 
     # Load and apply the plugin
-    pluginClass = load_plugin(config['plugin_name'])
-    plugin = pluginClass()
-
-    processed_data = plugin.process(data=data, method=config['method'], range=config['range'], save_params=config['save_config'], load_params=config['load_config'])
+    plugin_class = load_plugin(config['plugin_name'])
+    plugin = plugin_class()
+    processed_data = plugin.process(data, method=config['method'], range=config['range'], save_params=config['save_config'], load_params=config['load_config'])
 
     # Save the processed data to output CSV
     write_csv(config['output_file'], processed_data)
