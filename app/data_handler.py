@@ -11,18 +11,13 @@ def load_csv(file_path):
         pd.DataFrame: The loaded data as a pandas DataFrame.
     """
     try:
-        # Try to read the file with headers
-        data = pd.read_csv(file_path, sep=',', parse_dates=[0], dayfirst=True)
+        # Read the file without headers
+        data = pd.read_csv(file_path, header=None, sep=',', parse_dates=[0], dayfirst=True, infer_datetime_format=True)
         
         # Check if the first column is a date column
         if pd.api.types.is_datetime64_any_dtype(data.iloc[:, 0]):
-            data.set_index(data.columns[0], inplace=True)
-    except pd.errors.ParserError:
-        # If there is a parsing error, try reading without headers
-        data = pd.read_csv(file_path, header=None, sep=',', parse_dates=[0], dayfirst=True)
-        data.columns = ['date'] + [f'col_{i}' for i in range(1, len(data.columns))]
-        data.set_index('date', inplace=True)
-
+            data.columns = ['date'] + [f'col_{i}' for i in range(1, len(data.columns))]
+            data.set_index('date', inplace=True)
     except FileNotFoundError:
         print(f"Error: The file {file_path} does not exist.")
         raise
