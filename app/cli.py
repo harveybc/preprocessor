@@ -18,6 +18,8 @@ def parse_args():
 
     # Optional arguments for selecting plugins
     parser.add_argument('-p', '--plugin', type=str, default='default_plugin', help='Name of the preprocessing plugin to use.')
+    parser.add_argument('--method', type=str, help='Method to use in the plugin (e.g., z-score, min-max).')
+    parser.add_argument('--range', type=float, nargs=2, help='Range for min-max normalization (e.g., 0 1 or -1 1).')
 
     # Optional argument for remote logging, monitoring, and storage of results
     parser.add_argument('-rl', '--remote_log', type=str, help='URL of a remote data-logger API endpoint.')
