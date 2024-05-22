@@ -1,18 +1,48 @@
 
 # Preprocessor 
 
-## Description
-
 The Preprocessor project is a flexible and modular application for preprocessing time series data. It supports dynamic loading of plugins for various preprocessing tasks such as normalization, unbiasing, trimming, and feature selection. Each plugin can save and load its parameters for consistent preprocessing across different datasets.
 
-## Plugins
+## Installation Instructions
 
+To install and set up the Preprocessor application, follow these steps:
 
-### 4. Pre-FeatureExtraction, Feature Selector Plugin
+1. **Clone the Repository**:
+    ```bash
+    git clone https://github.com/harveybc/preprocessor.git
+    cd preprocessor
+    ```
 
+2. **Create and Activate a Virtual Environment**:
+    - **Using `venv` (Python 3.3+)**:
+        ```bash
+        python -m venv env
+        source env/bin/activate  # On Windows use `env\Scripts\activate`
+        ```
 
-### 5. Post-FeatureExtraction, Feature Selector Plugin
+    - **Using `conda`**:
+        ```bash
+        conda create --name preprocessor_env python=3.9
+        conda activate preprocessor_env
+        ```
 
+3. **Install Dependencies**:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4. **Install the Preprocessor Package**:
+    ```bash
+    pip install -e .
+    ```
+
+5. **Verify the Installation**:
+    - Run the following command to ensure the setup is correct:
+        ```bash
+        python app/main.py --help
+        ```
+
+This command should display the help message for the Preprocessor application, confirming that the installation was successful.
 
 ## Examples of Use
 
