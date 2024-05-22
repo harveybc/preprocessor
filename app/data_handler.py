@@ -18,6 +18,15 @@ def load_csv(file_path):
         if pd.api.types.is_datetime64_any_dtype(data.iloc[:, 0]):
             data.columns = ['date'] + [f'col_{i}' for i in range(1, len(data.columns))]
             data.set_index('date', inplace=True)
+        else:
+            # Manually set column names if the first column is not a date
+            data.columns = [f'col_{i}' for i in range(len(data.columns))]
+
+        # Convert numeric columns to appropriate data types
+        for col in data.columns:
+            if col != 'date':
+                data[col] = pd.to_numeric(data[col], errors='coerce')
+                
     except FileNotFoundError:
         print(f"Error: The file {file_path} does not exist.")
         raise
