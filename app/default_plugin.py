@@ -21,7 +21,7 @@ class DefaultPlugin:
         Returns:
             pd.DataFrame: The normalized data.
         """
-        # Detect and retain the date column
+        # Retain the date column
         date_column = data.select_dtypes(include=[np.datetime64]).columns
         non_numeric_data = data[date_column]
         
