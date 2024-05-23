@@ -18,11 +18,15 @@ def parse_args():
 
     # Optional arguments for selecting plugins
     parser.add_argument('-p', '--plugin', type=str, default='default_plugin', help='Name of the preprocessing plugin to use.')
-    parser.add_argument('--method', type=str, help='Method to use in the plugin (e.g., z-score, min-max).')
-    parser.add_argument('--range', type=float, nargs=2, help='Range for min-max normalization (e.g., 0 1 or -1 1).')
 
-    # Optional argument for specifying the output CSV file
-    parser.add_argument('-o', '--output_file', type=str, help='Path to the output CSV file.')
+    # Optional argument for the normalization method (specific to the default plugin)
+    parser.add_argument('--method', type=str, default='z-score', help='Normalization method to use (z-score or min-max).')
+
+    # Optional argument for the normalization range (specific to the default plugin)
+    parser.add_argument('--range', type=float, nargs=2, help='Normalization range (min max).')
+
+    # Optional argument for the output file
+    parser.add_argument('-o', '--output_file', type=str, help='Output CSV file path.')
 
     # Optional argument for remote logging, monitoring, and storage of results
     parser.add_argument('-rl', '--remote_log', type=str, help='URL of a remote data-logger API endpoint.')
@@ -32,6 +36,25 @@ def parse_args():
 
     # Optional argument for quiet mode
     parser.add_argument('-qm', '--quiet_mode', action='store_true', help='Run in quiet mode without printing to console.')
+
+    # Optional arguments for the unbiaser plugin
+    parser.add_argument('--window_size', type=int, help='Window size for the unbiaser plugin.')
+    parser.add_argument('--ema_alpha', type=float, help='Alpha value for EMA in the unbiaser plugin.')
+
+    # Optional arguments for the trimmer plugin
+    parser.add_argument('--remove_rows', type=int, nargs='+', help='Rows to remove in the trimmer plugin.')
+    parser.add_argument('--remove_columns', type=int, nargs='+', help='Columns to remove in the trimmer plugin.')
+
+    # Optional arguments for the feature_selector_pre plugin
+    parser.add_argument('--max_lag', type=int, help='Max lag for Granger causality in the feature_selector_pre plugin.')
+    parser.add_argument('--significance_level', type=float, help='Significance level for statistical tests in the feature_selector_pre plugin.')
+
+    # Optional arguments for the feature_selector_post plugin
+    parser.add_argument('--alpha', type=float, help='Alpha value for Lasso and Elastic Net in the feature_selector_post plugin.')
+    parser.add_argument('--l1_ratio', type=float, help='L1 ratio for Elastic Net in the feature_selector_post plugin.')
+    parser.add_argument('--model_type', type=str, help='Model type for cross-validation feature selection (lstm or cnn) in the feature_selector_post plugin.')
+    parser.add_argument('--timesteps', type=int, help='Timesteps for LSTM/CNN in the feature_selector_post plugin.')
+    parser.add_argument('--features', type=int, help='Number of features for LSTM/CNN in the feature_selector_post plugin.')
 
     return parser.parse_args()
 
