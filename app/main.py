@@ -11,7 +11,9 @@ parent_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
 if parent_dir not in sys.path:
     sys.path.append(parent_dir)
 
-print("Current working directory:", os.getcwd())
+print("Current working directory:", current_dir)
+print("Parent directory:", parent_dir)
+
 print("Python path:", sys.path)
 
 from app.cli import parse_args
