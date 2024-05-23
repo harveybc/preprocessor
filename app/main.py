@@ -1,32 +1,5 @@
 import sys
 import os
-
-# Print initial PYTHONPATH for debugging
-print("Initial Python path:", sys.path)
-
-# Ensure the parent directory is in the PYTHONPATH
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
-
-# Print the directories being added for debugging
-print("Current directory:", current_dir)
-print("Parent directory:", parent_dir)
-
-# Add the parent directory to the PYTHONPATH environment variable
-os.environ["PYTHONPATH"] = parent_dir + os.pathsep + os.environ.get("PYTHONPATH", "")
-
-# Print PYTHONPATH environment variable after modification
-print("Modified PYTHONPATH environment variable:", os.environ["PYTHONPATH"])
-
-# Ensure the parent directory is in the sys.path
-if parent_dir not in sys.path:
-    sys.path.append(parent_dir)
-
-# Print PYTHONPATH after modification
-print("Modified Python path:", sys.path)
-
-# Continue with the rest of the imports and code
-
 import json
 import requests
 import pkg_resources
