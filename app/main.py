@@ -1,20 +1,28 @@
 import sys
 import os
-import json
-import requests
-import pkg_resources
+
+# Print initial PYTHONPATH for debugging
+print("Initial Python path:", sys.path)
 
 # Ensure the parent directory is in the PYTHONPATH
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
 
+# Print the directories being added for debugging
+print("Current directory:", current_dir)
+print("Parent directory:", parent_dir)
+
 if parent_dir not in sys.path:
     sys.path.append(parent_dir)
 
-print("Current working directory:", current_dir)
-print("Parent directory:", parent_dir)
+# Print PYTHONPATH after modification
+print("Modified Python path:", sys.path)
 
-print("Python path:", sys.path)
+# Continue with the rest of the imports and code
+
+import json
+import requests
+import pkg_resources
 
 from app.cli import parse_args
 from app.config import (
