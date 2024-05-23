@@ -26,17 +26,29 @@ To install and set up the Preprocessor application, follow these steps:
         conda activate preprocessor_env
         ```
 
-3. **Install Dependencies**:
+3. **Configure PYTHONPATH**:
+    - **On Windows**
+        ```bash
+        set PYTHONPATH=%PYTHONPATH%;C:\Users\USERNAME\preprocessor
+        ```
+
+    - **On Linux**
+        ```bash
+        export PYTHONPATH=/home/USERNAME/preprocessor/:${PYTHONPATH}
+        ```
+If you having the error: ModuleNotFoundError: No module named 'app.cli', either run the previous command or for a more permanent solution, set the PYTHONPATH environment variable in the environment variables menu on Windows or in the respective specific Linux distro configuration.
+
+4. **Install Dependencies**:
     ```bash
     pip install -r requirements.txt
     ```
 
-4. **Install the Preprocessor Package**:
+5. **Install the Preprocessor Package**:
     ```bash
     pip install -e .
     ```
 
-5. **Verify the Installation**:
+6. **Verify the Installation**:
     - Run the following command to ensure the setup is correct:
         ```bash
         python app/main.py --help
