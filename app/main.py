@@ -4,14 +4,18 @@ import json
 import requests
 import pkg_resources
 
+# Ensure the current directory and parent directory are in the PYTHONPATH
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+
+if current_dir not in sys.path:
+    sys.path.append(current_dir)
+
+if parent_dir not in sys.path:
+    sys.path.append(parent_dir)
+
 print("Current working directory:", os.getcwd())
 print("Python path:", sys.path)
-
-# Ensure the current directory is in the PYTHONPATH
-current_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(current_dir)
-sys.path.append(os.path.join(current_dir, '..'))
-
 
 from app.cli import parse_args
 from app.config import (
