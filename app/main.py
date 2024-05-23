@@ -4,12 +4,9 @@ import json
 import requests
 import pkg_resources
 
-# Ensure the current directory and parent directory are in the PYTHONPATH
+# Ensure the parent directory is in the PYTHONPATH
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
-
-if current_dir not in sys.path:
-    sys.path.append(current_dir)
 
 if parent_dir not in sys.path:
     sys.path.append(parent_dir)
