@@ -4,16 +4,21 @@ import os
 # Print initial PYTHONPATH for debugging
 print("Initial Python path:", sys.path)
 
-# Ensure the parent directory is in the PYTHONPATH
+# Remove entries related to the current directory structure if present
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
+
+# Remove current_dir if it exists in sys.path
+if current_dir in sys.path:
+    sys.path.remove(current_dir)
+
+# Ensure the parent directory is in the PYTHONPATH
+if parent_dir not in sys.path:
+    sys.path.append(parent_dir)
 
 # Print the directories being added for debugging
 print("Current directory:", current_dir)
 print("Parent directory:", parent_dir)
-
-if parent_dir not in sys.path:
-    sys.path.append(parent_dir)
 
 # Print PYTHONPATH after modification
 print("Modified Python path:", sys.path)
