@@ -6,7 +6,7 @@ import pkg_resources
 
 # Ensure the current directory and parent directory are in the PYTHONPATH
 current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
+parent_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
 
 if current_dir not in sys.path:
     sys.path.append(current_dir)
