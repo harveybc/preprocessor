@@ -57,13 +57,13 @@ The Normalizer Plugin is used to normalize data using methods such as z-score an
 #### Using Z-Score Normalization
 
 ```bash
-python app/main.py path/to/input.csv --plugin default_plugin --method z-score --save_config path/to/save_config.json
+python app/main.py path/to/input.csv --plugin default_plugin --method z-score --save_config save_config.json
 ```
 
 #### Using Min-Max Normalization
 
 ```bash
-python app/main.py path/to/input.csv --plugin default_plugin --method min-max --range 0 1 --save_config path/to/save_config.json
+python app/main.py path/to/input.csv --plugin default_plugin --method min-max --range 0 1 --save_config save_config.json
 ```
 ### Unbiaser Plugin
 
@@ -74,13 +74,13 @@ The Unbiaser Plugin removes bias from time series data using moving average (MA)
 #### Using Moving Average Method
 
 ```bash
-python app/main.py path/to/input.csv --plugin unbiaser_plugin --method ma --window_size 5 --save_config path/to/save_config.json
+python app/main.py path/to/input.csv --plugin unbiaser_plugin --method ma --window_size 5 --save_config save_config.json
 ```
 
 #### Using Exponential Moving Average Method
 
 ```bash
-python app/main.py path/to/input.csv --plugin unbiaser_plugin --method ema --ema_alphas 0.2 --save_config path/to/save_config.json
+python app/main.py path/to/input.csv --plugin unbiaser_plugin --method ema --ema_alphas 0.2 --save_config save_config.json
 Trimmer Plugin
 ```
 

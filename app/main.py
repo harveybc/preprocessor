@@ -10,7 +10,8 @@ print("Python path:", sys.path)
 # Ensure the current directory is in the PYTHONPATH
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(current_dir)
-sys.path.append(os.path.dirname(current_dir))
+sys.path.append(os.path.join(current_dir, '..'))
+
 
 from app.cli import parse_args
 from app.config import (
