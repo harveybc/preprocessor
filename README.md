@@ -51,7 +51,7 @@ If you having the error: ModuleNotFoundError: No module named 'app.cli', either 
 6. **Verify the Installation**:
     - Run the following command to ensure the setup is correct:
         ```bash
-        python app/main.py --help
+        preprocessor.bat  --help
         ```
 
 This command should display the help message for the Preprocessor application, confirming that the installation was successful.
@@ -69,13 +69,13 @@ The Normalizer Plugin is used to normalize data using methods such as z-score an
 #### Using Z-Score Normalization
 
 ```bash
-python app/main.py path/to/input.csv --plugin default_plugin --method z-score --save_config save_config.json
+preprocessor.bat  path/to/input.csv --plugin default_plugin --method z-score --save_config save_config.json
 ```
 
 #### Using Min-Max Normalization
 
 ```bash
-python app/main.py path/to/input.csv --plugin default_plugin --method min-max --range 0 1 --save_config save_config.json
+preprocessor.bat  path/to/input.csv --plugin default_plugin --method min-max --range 0 1 --save_config save_config.json
 ```
 ### Unbiaser Plugin
 
@@ -86,13 +86,13 @@ The Unbiaser Plugin removes bias from time series data using moving average (MA)
 #### Using Moving Average Method
 
 ```bash
-python app/main.py path/to/input.csv --plugin unbiaser_plugin --method ma --window_size 5 --save_config save_config.json
+preprocessor.bat  path/to/input.csv --plugin unbiaser_plugin --method ma --window_size 5 --save_config save_config.json
 ```
 
 #### Using Exponential Moving Average Method
 
 ```bash
-python app/main.py path/to/input.csv --plugin unbiaser_plugin --method ema --ema_alphas 0.2 --save_config save_config.json
+preprocessor.bat  path/to/input.csv --plugin unbiaser_plugin --method ema --ema_alphas 0.2 --save_config save_config.json
 Trimmer Plugin
 ```
 
@@ -103,7 +103,7 @@ The Trimmer Plugin removes specified columns and rows from the dataset.
 [Read more about the Trimmer Plugin](https://github.com/harveybc/preprocessor/blob/master/README_trimmer.md)
 
 ```bash
-python app/main.py path/to/input.csv --plugin trimmer_plugin --rows 0 1 2 --columns 0 1 --save_config path/to/save_config.json
+preprocessor.bat  path/to/input.csv --plugin trimmer_plugin --rows 0 1 2 --columns 0 1 --save_config path/to/save_config.json
 ```
 
 ### Pre-Feature Selector Plugin
@@ -117,7 +117,7 @@ This selection is meant to be performed before feature extraction or other dimen
 #### Using Autocorrelation Function (ACF) Method
 
 ```bash
-python app/main.py path/to/input.csv --plugin pre_feature_selector_plugin --method acf --max_lag 5 --significance_level 0.05 --save_config path/to/save_config.json
+preprocessor.bat  path/to/input.csv --plugin pre_feature_selector_plugin --method acf --max_lag 5 --significance_level 0.05 --save_config path/to/save_config.json
 ```
 
 ### Post-Feature Selector Plugin
@@ -131,13 +131,13 @@ This selection is meant to be performed after feature extraction or other dimens
 #### Using LASSO Method
 
 ```bash
-python app/main.py path/to/input.csv --plugin post_feature_selector_plugin --method lasso --alpha 1.0 --save_config path/to/save_config.json
+preprocessor.bat  path/to/input.csv --plugin post_feature_selector_plugin --method lasso --alpha 1.0 --save_config path/to/save_config.json
 ```
 
 #### Using Cross-Validation with LSTM Model
 
 ```bash
-python app/main.py path/to/input.csv --plugin post_feature_selector_plugin --method cross_val --model_type lstm --timesteps 10 --features 1 --save_config path/to/save_config.json
+preprocessor.bat  path/to/input.csv --plugin post_feature_selector_plugin --method cross_val --model_type lstm --timesteps 10 --features 1 --save_config path/to/save_config.json
 ```
 
 ### Example Configuration Files
