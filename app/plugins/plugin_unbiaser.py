@@ -42,8 +42,6 @@ class Plugin:
         else:
             raise ValueError(f"Unknown method: {method}")
 
-        # Concatenate the date column back with the processed data
-        #processed_data = pd.concat([data.iloc[:, 0], processed_data], axis=1)
         print("Processing complete. Returning processed data.")
         return processed_data
 
