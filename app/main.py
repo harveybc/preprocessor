@@ -111,9 +111,9 @@ def main():
     plugin = plugin_class()
 
     # Determine the plugin-specific parameters
-    if config['plugin_name'] == 'unbiaser_plugin':
+    if config['plugin_name'] == 'unbiaser':
         processed_data = plugin.process(data, method=config['method'], window_size=config['window_size'], ema_alpha=config['ema_alpha'])
-    elif config['plugin_name'] == 'trimmer_plugin':
+    elif config['plugin_name'] == 'trimmer':
         processed_data = plugin.process(data, remove_rows=config['remove_rows'], remove_columns=config['remove_columns'])
     elif config['plugin_name'] == 'feature_selector_pre':
         processed_data = plugin.process(data, max_lag=config['max_lag'], significance_level=config['significance_level'])
