@@ -70,6 +70,7 @@ class Plugin:
         unbiassed_data = data.copy()
 
         for col in data.columns:
+            print(f"Processing column: {col}")
             for i in range(len(data)):
                 if i < window_size:
                     # For initial rows where the window is not fully populated
