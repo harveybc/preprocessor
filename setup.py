@@ -9,7 +9,8 @@ setup(
             'default_plugin=app.default_plugin:DefaultPlugin',
             'unbiaser=app.plugins.plugin_unbiaser:Plugin',
             'trimmer=app.plugins.plugin_trimmer:Plugin',
-            'feature_selector=app.plugins.plugin_feature_selector:Plugin'
+            'feature_selector=app.plugins.plugin_feature_selector:Plugin',
+            'cleaner=app.plugins.plugin_cleaner:Plugin'  
         ]
     },
     install_requires=[
