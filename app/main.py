@@ -3,17 +3,6 @@ import os
 import json
 import requests
 import pkg_resources
-
-# Ensure the parent directory is in the PYTHONPATH
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
-
-if parent_dir not in sys.path:
-    sys.path.append(parent_dir)
-
-# Print PYTHONPATH after modification
-print("Modified Python path:", sys.path)
-
 from app.cli import parse_args
 from app.config import (
     CSV_INPUT_PATH,
@@ -80,7 +69,9 @@ def main():
         'timesteps': args.timesteps,
         'features': args.features,
         'remote_log': None,
-        'remote_config': None
+        'remote_config': None,
+        'frequency': args.frequency,
+        'outlier_threshold': args.outlier_threshold
     }
 
     # Load remote configuration if provided
@@ -119,6 +110,8 @@ def main():
         processed_data = plugin.process(data, max_lag=config['max_lag'], significance_level=config['significance_level'], save_params=config['save_config'], load_params=config['load_config'])
     elif config['plugin_name'] == 'feature_selector_post':
         processed_data = plugin.process(data, alpha=config['alpha'], l1_ratio=config['l1_ratio'], model_type=config['model_type'], timesteps=config['timesteps'], features=config['features'], save_params=config['save_config'], load_params=config['load_config'])
+    elif config['plugin_name'] == 'cleaner':
+        processed_data = plugin.process(data, method=config['method'], frequency=config['frequency'], outlier_threshold=config['outlier_threshold'], save_params=config['save_config'], load_params=config['load_config'])
     else:
         processed_data = plugin.process(data, method=config['method'], range=config['range'], save_params=config['save_config'], load_params=config['load_config'])
 

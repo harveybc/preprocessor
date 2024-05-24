@@ -56,6 +56,10 @@ def parse_args():
     parser.add_argument('--timesteps', type=int, help='Timesteps for LSTM/CNN in the feature_selector_post plugin.')
     parser.add_argument('--features', type=int, help='Number of features for LSTM/CNN in the feature_selector_post plugin.')
 
+    # Optional arguments for cleaner plugin
+    parser.add_argument('--frequency', type=str, help='Expected frequency for continuity checking.')
+    parser.add_argument('--outlier_threshold', type=float, help='Threshold for outlier detection.')
+
     return parser.parse_args()
 
 if __name__ == '__main__':
