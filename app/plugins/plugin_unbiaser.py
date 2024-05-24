@@ -44,10 +44,10 @@ class Plugin:
 
         if self.params['method'] == 'ma':
             print("Applying moving average unbiasing.")
-            processed_data = self._moving_average_unbias(data.iloc[:, 1:], self.params['window_size'])
+            processed_data = self._moving_average_unbias(data.iloc[:, 0:], self.params['window_size'])
         elif self.params['method'] == 'ema':
             print("Applying exponential moving average unbiasing.")
-            processed_data = self._ema_unbias(data.iloc[:, 1:], self.params['ema_alpha'])
+            processed_data = self._ema_unbias(data.iloc[:, 0:], self.params['ema_alpha'])
         else:
             raise ValueError(f"Unknown method: {self.params['method']}")
 
