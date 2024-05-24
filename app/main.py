@@ -112,13 +112,13 @@ def main():
 
     # Determine the plugin-specific parameters
     if config['plugin_name'] == 'unbiaser':
-        processed_data = plugin.process(data, method=config['method'], window_size=config['window_size'], ema_alpha=config['ema_alpha'])
+        processed_data = plugin.process(data, method=config['method'], window_size=config['window_size'], ema_alpha=config['ema_alpha'], save_params=config['save_config'], load_params=config['load_config'])
     elif config['plugin_name'] == 'trimmer':
-        processed_data = plugin.process(data, remove_rows=config['remove_rows'], remove_columns=config['remove_columns'])
+        processed_data = plugin.process(data, remove_rows=config['remove_rows'], remove_columns=config['remove_columns'], save_params=config['save_config'], load_params=config['load_config'])
     elif config['plugin_name'] == 'feature_selector_pre':
-        processed_data = plugin.process(data, max_lag=config['max_lag'], significance_level=config['significance_level'])
+        processed_data = plugin.process(data, max_lag=config['max_lag'], significance_level=config['significance_level'], save_params=config['save_config'], load_params=config['load_config'])
     elif config['plugin_name'] == 'feature_selector_post':
-        processed_data = plugin.process(data, alpha=config['alpha'], l1_ratio=config['l1_ratio'], model_type=config['model_type'], timesteps=config['timesteps'], features=config['features'])
+        processed_data = plugin.process(data, alpha=config['alpha'], l1_ratio=config['l1_ratio'], model_type=config['model_type'], timesteps=config['timesteps'], features=config['features'], save_params=config['save_config'], load_params=config['load_config'])
     else:
         processed_data = plugin.process(data, method=config['method'], range=config['range'], save_params=config['save_config'], load_params=config['load_config'])
 
