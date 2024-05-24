@@ -4,6 +4,16 @@ import json
 import requests
 import pkg_resources
 
+# Ensure the parent directory is in the PYTHONPATH
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
+
+if parent_dir not in sys.path:
+    sys.path.append(parent_dir)
+
+# Print PYTHONPATH after modification
+print("Modified Python path:", sys.path)
+
 from app.cli import parse_args
 from app.config import (
     CSV_INPUT_PATH,
@@ -30,7 +40,7 @@ def load_plugin(plugin_name):
         return entry_point.load()
     except StopIteration:
         print(f"Plugin {plugin_name} not found.", file=sys.stderr)
-        return DefaultPlugin
+        return None
 
 def load_remote_config(remote_config_url):
     """
@@ -58,6 +68,17 @@ def main():
         'save_config': args.save_config if args.save_config else CONFIG_SAVE_PATH,
         'load_config': args.load_config if args.load_config else CONFIG_LOAD_PATH,
         'quiet_mode': args.quiet_mode if args.quiet_mode else DEFAULT_QUIET_MODE,
+        'window_size': args.window_size,
+        'ema_alpha': args.ema_alpha,
+        'remove_rows': args.remove_rows,
+        'remove_columns': args.remove_columns,
+        'max_lag': args.max_lag,
+        'significance_level': args.significance_level,
+        'alpha': args.alpha,
+        'l1_ratio': args.l1_ratio,
+        'model_type': args.model_type,
+        'timesteps': args.timesteps,
+        'features': args.features,
         'remote_log': None,
         'remote_config': None
     }
@@ -83,8 +104,23 @@ def main():
 
     # Load and apply the plugin
     plugin_class = load_plugin(config['plugin_name'])
+    if plugin_class is None:
+        print(f"Plugin {config['plugin_name']} could not be loaded. Exiting.")
+        return
+
     plugin = plugin_class()
-    processed_data = plugin.process(data, method=config['method'], range=config['range'], save_params=config['save_config'], load_params=config['load_config'])
+
+    # Determine the plugin-specific parameters
+    if config['plugin_name'] == 'unbiaser_plugin':
+        processed_data = plugin.process(data, method=config['method'], window_size=config['window_size'], ema_alpha=config['ema_alpha'])
+    elif config['plugin_name'] == 'trimmer_plugin':
+        processed_data = plugin.process(data, remove_rows=config['remove_rows'], remove_columns=config['remove_columns'])
+    elif config['plugin_name'] == 'feature_selector_pre':
+        processed_data = plugin.process(data, max_lag=config['max_lag'], significance_level=config['significance_level'])
+    elif config['plugin_name'] == 'feature_selector_post':
+        processed_data = plugin.process(data, alpha=config['alpha'], l1_ratio=config['l1_ratio'], model_type=config['model_type'], timesteps=config['timesteps'], features=config['features'])
+    else:
+        processed_data = plugin.process(data, method=config['method'], range=config['range'], save_params=config['save_config'], load_params=config['load_config'])
 
     # Save the processed data to output CSV
     write_csv(config['output_file'], processed_data)
