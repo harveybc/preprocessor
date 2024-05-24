@@ -22,9 +22,14 @@ class Plugin:
         Returns:
             pd.DataFrame: The unbiassed data.
         """
+        print("Starting the process method.")
+        print(f"Method: {method}, Window size: {window_size}, EMA alpha: {ema_alpha}")
+        print(f"Save params path: {save_params}, Load params path: {load_params}")
+
         if load_params and os.path.exists(load_params):
             with open(load_params, 'r') as f:
                 self.params = json.load(f)
+            print("Loaded parameters:", self.params)
 
         if self.params is None:
             self.params = {
@@ -35,16 +40,52 @@ class Plugin:
             if save_params:
                 with open(save_params, 'w') as f:
                     json.dump(self.params, f)
+            print("Saved parameters:", self.params)
 
         if self.params['method'] == 'ma':
-            return self._moving_average_unbias(data, self.params['window_size'])
+            print("Applying moving average unbiasing.")
+            processed_data = self._moving_average_unbias(data.iloc[:, 1:], self.params['window_size'])
         elif self.params['method'] == 'ema':
-            return self._ema_unbias(data, self.params['ema_alpha'])
+            print("Applying exponential moving average unbiasing.")
+            processed_data = self._ema_unbias(data.iloc[:, 1:], self.params['ema_alpha'])
         else:
             raise ValueError(f"Unknown method: {self.params['method']}")
 
+        # Concatenate the date column back with the processed data
+        processed_data = pd.concat([data.iloc[:, 0], processed_data], axis=1)
+        print("Processing complete. Returning processed data.")
+        return processed_data
+
     def _moving_average_unbias(self, data, window_size):
-        return data.rolling(window=window_size, min_periods=1).mean()
+        """
+        Apply moving average unbiasing to the data.
+        Args:
+            data (pd.DataFrame): The input data to be processed.
+            window_size (int): The window size for the moving average.
+
+        Returns:
+            pd.DataFrame: The unbiassed data.
+        """
+        print(f"Applying moving average with window size: {window_size}")
+        ma = data.rolling(window=window_size).mean()
+        print("Moving average values:\n", ma.head())
+        unbiassed_data = data - ma
+        print("Unbiassed data (first 5 rows):\n", unbiassed_data.head())
+        return unbiassed_data
 
     def _ema_unbias(self, data, alpha):
-        return data.ewm(alpha=alpha).mean()
+        """
+        Apply exponential moving average unbiasing to the data.
+        Args:
+            data (pd.DataFrame): The input data to be processed.
+            alpha (float): The alpha value for the exponential moving average.
+
+        Returns:
+            pd.DataFrame: The unbiassed data.
+        """
+        print(f"Applying exponential moving average with alpha: {alpha}")
+        ema = data.ewm(alpha=alpha).mean()
+        print("Exponential moving average values:\n", ema.head())
+        unbiassed_data = data - ema
+        print("Unbiassed data (first 5 rows):\n", unbiassed_data.head())
+        return unbiassed_data
