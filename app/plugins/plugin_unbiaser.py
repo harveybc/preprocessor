@@ -31,7 +31,7 @@ class Plugin:
                 self.params = json.load(f)
             print("Loaded parameters:", self.params)
 
-        if self.params is None:
+        if self.params == None:
             self.params = {
                 'method': method,
                 'window_size': window_size,
@@ -72,7 +72,10 @@ class Plugin:
         for col in data.columns:
             print(f"Processing column: {col}")
             for i in range(len(data)):
-                if i < window_size:
+                if i == 0:
+                    # First row, subtracting the value itself
+                    unbiassed_data.at[data.index[i], col] = 0
+                elif i < window_size:
                     # For initial rows where the window is not fully populated
                     unbiassed_data.at[data.index[i], col] = data.at[data.index[i], col] - data[col][:i+1].mean()
                 else:
