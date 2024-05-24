@@ -67,9 +67,17 @@ class Plugin:
             pd.DataFrame: The unbiassed data.
         """
         print(f"Applying moving average with window size: {window_size}")
-        ma = data.rolling(window=window_size).mean()
-        print("Moving average values:\n", ma.head())
-        unbiassed_data = data - ma
+        unbiassed_data = data.copy()
+
+        for col in data.columns:
+            for i in range(len(data)):
+                if i < window_size:
+                    # For initial rows where the window is not fully populated
+                    unbiassed_data.at[data.index[i], col] = data.at[data.index[i], col] - data[col][:i+1].mean()
+                else:
+                    # For rows where the window is fully populated
+                    unbiassed_data.at[data.index[i], col] = data.at[data.index[i], col] - data[col][i-window_size+1:i+1].mean()
+
         print("Unbiassed data (first 5 rows):\n", unbiassed_data.head())
         return unbiassed_data
 
