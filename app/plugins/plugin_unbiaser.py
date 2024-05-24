@@ -59,6 +59,7 @@ class Plugin:
     def _moving_average_unbias(self, data, window_size):
         """
         Apply moving average unbiasing to the data.
+
         Args:
             data (pd.DataFrame): The input data to be processed.
             window_size (int): The window size for the moving average.
@@ -88,6 +89,7 @@ class Plugin:
     def _ema_unbias(self, data, alpha):
         """
         Apply exponential moving average unbiasing to the data.
+
         Args:
             data (pd.DataFrame): The input data to be processed.
             alpha (float): The alpha value for the exponential moving average.
