@@ -91,8 +91,6 @@ class Plugin:
         Returns:
             pd.DataFrame: The unbiassed data.
         """
-
-        
         print(f"Applying exponential moving average with alpha: {alpha}")
         ema = data.ewm(alpha=alpha).mean()
         print("Exponential moving average values:\n", ema.head())
