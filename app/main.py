@@ -79,16 +79,16 @@ def main():
         'model_type': args.model_type,
         'timesteps': args.timesteps,
         'features': args.features,
+        'remote_log': None,
+        'remote_config': None,
+        'headers': args.headers,
         'period': args.period,
         'outlier_threshold': args.outlier_threshold,
         'solve_missing': args.solve_missing,
         'delete_outliers': args.delete_outliers,
         'interpolate_outliers': args.interpolate_outliers,
         'delete_nan': args.delete_nan,
-        'interpolate_nan': args.interpolate_nan,
-        'remote_log': None,
-        'remote_config': None,
-        'headers': args.headers
+        'interpolate_nan': args.interpolate_nan
     }
 
     # Load remote configuration if provided
