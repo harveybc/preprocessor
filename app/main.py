@@ -3,6 +3,7 @@ import os
 import json
 import requests
 import pkg_resources
+from app.data_handler import load_csv, write_csv
 from app.cli import parse_args
 from app.config import (
     CSV_INPUT_PATH,
@@ -17,7 +18,6 @@ from app.config import (
     DEFAULT_NORMALIZATION_RANGE,
     DEFAULT_QUIET_MODE
 )
-from app.data_handler import load_csv, write_csv
 from app.default_plugin import DefaultPlugin
 
 def load_plugin(plugin_name):
@@ -68,15 +68,11 @@ def main():
         'model_type': args.model_type,
         'timesteps': args.timesteps,
         'features': args.features,
+        'period': args.period,
+        'outlier_threshold': args.outlier_threshold,
         'remote_log': None,
         'remote_config': None,
-        'outlier_threshold': args.outlier_threshold,
-        'period': args.period,
-        'solve_missing': args.solve_missing,
-        'delete_outliers': args.delete_outliers,
-        'interpolate_outliers': args.interpolate_outliers,
-        'delete_nan': args.delete_nan,
-        'interpolate_nan': args.interpolate_nan
+        'headers': args.headers
     }
 
     # Load remote configuration if provided
@@ -96,7 +92,7 @@ def main():
             raise
 
     # Load the CSV data
-    data = load_csv(config['csv_file'])
+    data = load_csv(config['csv_file'], headers=config['headers'])
 
     # Load and apply the plugin
     plugin_class = load_plugin(config['plugin_name'])
@@ -121,7 +117,7 @@ def main():
         processed_data = plugin.process(data, method=config['method'], range=config['range'], save_params=config['save_config'], load_params=config['load_config'])
 
     # Save the processed data to output CSV
-    write_csv(config['output_file'], processed_data)
+    write_csv(config['output_file'], processed_data, headers=config['headers'])
 
     # Save configuration if save_config path is provided
     if config['save_config']:
