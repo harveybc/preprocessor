@@ -3,34 +3,29 @@ import pandas as pd
 def load_csv(file_path, headers=False):
     """
     Load a CSV file into a pandas DataFrame, handling date columns and correct numeric parsing.
-
     Args:
         file_path (str): The path to the CSV file to be loaded.
-        headers (bool): Indicates if the CSV file contains headers.
-
+        headers (bool): Whether the CSV file contains headers.
     Returns:
         pd.DataFrame: The loaded data as a pandas DataFrame.
     """
     try:
         # Read the file with or without headers
-        header = 0 if headers else None
-        data = pd.read_csv(file_path, header=header, sep=',', parse_dates=[0], dayfirst=True)
+        header_option = 0 if headers else None
+        data = pd.read_csv(file_path, header=header_option, sep=',', parse_dates=[0], dayfirst=True)
 
-        if headers:
-            # Set the first column as date index if headers are present
-            if pd.api.types.is_datetime64_any_dtype(data.iloc[:, 0]):
-                data.set_index(data.columns[0], inplace=True)
-            else:
-                data.set_index(pd.to_datetime(data.iloc[:, 0]), inplace=True)
-                data.drop(data.columns[0], axis=1, inplace=True)
-        else:
-            # Manually set column names if the first column is not a date
+        # Check if the first column is a date column
+        if pd.api.types.is_datetime64_any_dtype(data.iloc[:, 0]):
             data.columns = ['date'] + [f'col_{i}' for i in range(1, len(data.columns))]
             data.set_index('date', inplace=True)
+        else:
+            # Manually set column names if the first column is not a date
+            data.columns = [f'col_{i}' for i in range(len(data.columns))]
 
         # Convert numeric columns to appropriate data types
         for col in data.columns:
-            data[col] = pd.to_numeric(data[col], errors='coerce')
+            if col != 'date':
+                data[col] = pd.to_numeric(data[col], errors='coerce')
 
     except FileNotFoundError:
         print(f"Error: The file {file_path} does not exist.")
@@ -50,12 +45,10 @@ def load_csv(file_path, headers=False):
 def write_csv(file_path, data, headers=False):
     """
     Write a pandas DataFrame to a CSV file.
-
     Args:
         file_path (str): The path to the CSV file to be written.
         data (pd.DataFrame): The data to be written to the CSV file.
-        headers (bool): Indicates if the CSV file should contain headers.
-
+        headers (bool): Whether to write headers to the CSV file.
     Returns:
         None
     """

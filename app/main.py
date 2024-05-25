@@ -4,6 +4,17 @@ import json
 import requests
 import pkg_resources
 from app.data_handler import load_csv, write_csv
+
+# Ensure the parent directory is in the PYTHONPATH
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
+
+if parent_dir not in sys.path:
+    sys.path.append(parent_dir)
+
+# Print PYTHONPATH after modification
+print("Modified Python path:", sys.path)
+
 from app.cli import parse_args
 from app.config import (
     CSV_INPUT_PATH,
@@ -70,6 +81,11 @@ def main():
         'features': args.features,
         'period': args.period,
         'outlier_threshold': args.outlier_threshold,
+        'solve_missing': args.solve_missing,
+        'delete_outliers': args.delete_outliers,
+        'interpolate_outliers': args.interpolate_outliers,
+        'delete_nan': args.delete_nan,
+        'interpolate_nan': args.interpolate_nan,
         'remote_log': None,
         'remote_config': None,
         'headers': args.headers
