@@ -70,7 +70,6 @@ def main():
         'features': args.features,
         'remote_log': None,
         'remote_config': None,
-        'frequency': args.frequency,
         'outlier_threshold': args.outlier_threshold,
         'period': args.period,
         'solve_missing': args.solve_missing,
