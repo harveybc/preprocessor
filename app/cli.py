@@ -57,15 +57,15 @@ def parse_args():
     parser.add_argument('--features', type=int, help='Number of features for LSTM/CNN in the feature_selector_post plugin.')
 
     # Optional arguments for cleaner plugin
-    parser.add_argument('--period', type=int, help='Period in minutes for continuity checking in the cleaner plugin.')
-    parser.add_argument('--outlier_threshold', type=float, help='Threshold for outlier detection in the cleaner plugin.')
+    parser.add_argument('--period', type=int, help='Period in minutes for continuity checking.')
+    parser.add_argument('--outlier_threshold', type=float, help='Threshold for outlier detection.')
 
-    # Optional arguments for cleaner plugin methods
-    parser.add_argument('--solve_missing', action='store_true', help='Solve missing values in the cleaner plugin.')
-    parser.add_argument('--delete_outliers', action='store_true', help='Delete outliers in the cleaner plugin.')
-    parser.add_argument('--interpolate_outliers', action='store_true', help='Interpolate outliers in the cleaner plugin.')
-    parser.add_argument('--delete_nan', action='store_true', help='Delete rows with NaN values in the cleaner plugin.')
-    parser.add_argument('--interpolate_nan', action='store_true', help='Interpolate NaN values in the cleaner plugin.')
+    # Additional options for the cleaner plugin
+    parser.add_argument('--solve_missing', action='store_true', help='Solve missing values.')
+    parser.add_argument('--delete_outliers', action='store_true', help='Delete outliers.')
+    parser.add_argument('--interpolate_outliers', action='store_true', help='Interpolate outliers.')
+    parser.add_argument('--delete_nan', action='store_true', help='Delete rows with NaN values.')
+    parser.add_argument('--interpolate_nan', action='store_true', help='Interpolate NaN values.')
 
     # Optional argument for handling headers
     parser.add_argument('--headers', action='store_true', help='Indicate if the CSV file contains headers.')
