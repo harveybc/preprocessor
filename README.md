@@ -26,29 +26,17 @@ To install and set up the Preprocessor application, follow these steps:
         conda activate preprocessor_env
         ```
 
-3. **Configure PYTHONPATH**:
-    - **On Windows**
-        ```bash
-        set PYTHONPATH=%PYTHONPATH%;C:\Users\USERNAME\preprocessor
-        ```
-
-    - **On Linux**
-        ```bash
-        export PYTHONPATH=/home/USERNAME/preprocessor/:${PYTHONPATH}
-        ```
-If you having the error: ModuleNotFoundError: No module named 'app.cli', either run the previous command or for a more permanent solution, set the PYTHONPATH environment variable in the environment variables menu on Windows or in the respective specific Linux distro configuration.
-
-4. **Install Dependencies**:
+3. **Install Dependencies**:
     ```bash
     pip install -r requirements.txt
     ```
 
-5. **Install the Preprocessor Package**:
+4. **Install the Preprocessor Package**:
     ```bash
-    pip install -e .
+    python setup.py install
     ```
 
-6. **Verify the Installation**:
+5. **Verify the Installation**:
     - Run the following command to ensure the setup is correct:
         ```bash
         preprocessor.bat  --help
@@ -83,11 +71,11 @@ The `cleaner` plugin performs data cleaning during preprocessing. It includes tw
 
 #### Detect/Correct Timeseries Continuity
 ```bash
-python app/main.py path/to/input.csv --plugin cleaner --method continuity --frequency 5T --save_config out_config.json
+preprocessor.bat path/to/input.csv --plugin cleaner --method continuity --frequency 5T --save_config out_config.json
 ```
 #### Detect/Correct Outliers
 ```bash
-python app/main.py path/to/input.csv --plugin cleaner --method outlier --outlier_threshold 3.0 --save_config out_config.json
+preprocessor.bat path/to/input.csv --plugin cleaner --method outlier --outlier_threshold 3.0 --save_config out_config.json
 ```
 ### Unbiaser Plugin
 
