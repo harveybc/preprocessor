@@ -77,6 +77,18 @@ preprocessor.bat  path/to/input.csv --plugin default_plugin --method z-score --s
 ```bash
 preprocessor.bat  path/to/input.csv --plugin default_plugin --method min-max --range 0 1 --save_config save_config.json
 ```
+### Cleaner Plugin
+
+The `cleaner` plugin performs data cleaning during preprocessing. It includes two methods: one for verifying the continuity of data using the date column and another for removing or correcting outliers.
+
+#### Detect/Correct Timeseries Continuity
+```bash
+python app/main.py path/to/input.csv --plugin cleaner --method continuity --frequency 5T --save_config out_config.json
+```
+#### Detect/Correct Outliers
+```bash
+python app/main.py path/to/input.csv --plugin cleaner --method outlier --outlier_threshold 3.0 --save_config out_config.json
+```
 ### Unbiaser Plugin
 
 The Unbiaser Plugin removes bias from time series data using moving average (MA) and exponential moving average (EMA) methods.
