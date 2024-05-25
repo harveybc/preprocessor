@@ -71,7 +71,13 @@ def main():
         'remote_log': None,
         'remote_config': None,
         'frequency': args.frequency,
-        'outlier_threshold': args.outlier_threshold
+        'outlier_threshold': args.outlier_threshold,
+        'period': args.period,
+        'solve_missing': args.solve_missing,
+        'delete_outliers': args.delete_outliers,
+        'interpolate_outliers': args.interpolate_outliers,
+        'delete_nan': args.delete_nan,
+        'interpolate_nan': args.interpolate_nan
     }
 
     # Load remote configuration if provided
@@ -111,7 +117,7 @@ def main():
     elif config['plugin_name'] == 'feature_selector_post':
         processed_data = plugin.process(data, alpha=config['alpha'], l1_ratio=config['l1_ratio'], model_type=config['model_type'], timesteps=config['timesteps'], features=config['features'], save_params=config['save_config'], load_params=config['load_config'])
     elif config['plugin_name'] == 'cleaner':
-        processed_data = plugin.process(data, method=config['method'], frequency=config['frequency'], outlier_threshold=config['outlier_threshold'], save_params=config['save_config'], load_params=config['load_config'])
+        processed_data = plugin.process(data, method=config['method'], period=config['period'], outlier_threshold=config['outlier_threshold'], solve_missing=config['solve_missing'], delete_outliers=config['delete_outliers'], interpolate_outliers=config['interpolate_outliers'], delete_nan=config['delete_nan'], interpolate_nan=config['interpolate_nan'], save_params=config['save_config'], load_params=config['load_config'])
     else:
         processed_data = plugin.process(data, method=config['method'], range=config['range'], save_params=config['save_config'], load_params=config['load_config'])
 
