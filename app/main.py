@@ -85,9 +85,7 @@ def main():
         'interpolate_outliers': args.interpolate_outliers,
         'delete_nan': args.delete_nan,
         'interpolate_nan': args.interpolate_nan,
-        'headers': args.headers,
-        'select_single': args.select_single,
-        'select_multi': args.select_multi
+        'headers': args.headers
     }
 
     # Load remote configuration if provided
@@ -107,7 +105,7 @@ def main():
             raise
 
     # Load the CSV data
-    data = load_csv(config['csv_file'], config['headers'])
+    data = load_csv(config['csv_file'], headers=config['headers'])
 
     # Load and apply the plugin
     plugin_class = load_plugin(config['plugin_name'])
@@ -123,10 +121,10 @@ def main():
     elif config['plugin_name'] == 'trimmer':
         processed_data = plugin.process(data, remove_rows=config['remove_rows'], remove_columns=config['remove_columns'], save_params=config['save_config'], load_params=config['load_config'])
     elif config['plugin_name'] == 'feature_selector_pre':
-        if config['select_single'] is not None:
-            processed_data = plugin.process(data, method='select_single', columns=config['select_single'], save_params=config['save_config'], load_params=config['load_config'])
-        elif config['select_multi'] is not None:
-            processed_data = plugin.process(data, method='select_multi', columns=config['select_multi'], save_params=config['save_config'], load_params=config['load_config'])
+        if config['method'] == 'select_single':
+            processed_data = plugin.select_single(data, config['select_single'])
+        elif config['method'] == 'select_multi':
+            processed_data = plugin.select_multi(data, config['select_multi'])
         else:
             processed_data = plugin.process(data, method=config['method'], max_lag=config['max_lag'], significance_level=config['significance_level'], save_params=config['save_config'], load_params=config['load_config'])
     elif config['plugin_name'] == 'feature_selector_post':
@@ -137,7 +135,7 @@ def main():
         processed_data = plugin.process(data, method=config['method'], save_params=config['save_config'], load_params=config['load_config'])
 
     # Save the processed data to output CSV
-    write_csv(config['output_file'], processed_data, config['headers'])
+    write_csv(config['output_file'], processed_data, headers=config['headers'])
 
     # Save configuration if save_config path is provided
     if config['save_config']:
