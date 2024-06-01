@@ -96,9 +96,8 @@ class Plugin:
             print(f"Missing timestamps found: {missing}")
             if solve_missing:
                 print("Solving missing values by interpolation.")
-                missing_df = pd.DataFrame(index=missing, columns=data.columns)
+                missing_df = pd.DataFrame(index=missing, columns=data.columns).infer_objects()
                 data = pd.concat([data, missing_df]).sort_index()
-                data = data.infer_objects()
                 data.interpolate(method='linear', inplace=True)
 
         return data
