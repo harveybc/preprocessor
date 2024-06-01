@@ -4,14 +4,12 @@ import json
 import requests
 import pkg_resources
 
-# Ensure the parent directory is in the PYTHONPATH
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
 
 if parent_dir not in sys.path:
     sys.path.append(parent_dir)
 
-# Print PYTHONPATH after modification
 print("Modified Python path:", sys.path)
 
 from app.cli import parse_args
@@ -32,9 +30,6 @@ from app.data_handler import load_csv, write_csv
 from app.default_plugin import DefaultPlugin
 
 def load_plugin(plugin_name):
-    """
-    Load a plugin based on the name specified.
-    """
     try:
         entry_point = next(pkg_resources.iter_entry_points('preprocessor.plugins', plugin_name))
         return entry_point.load()
@@ -43,9 +38,6 @@ def load_plugin(plugin_name):
         return None
 
 def load_remote_config(remote_config_url):
-    """
-    Load configuration from a remote URL.
-    """
     try:
         response = requests.get(remote_config_url)
         response.raise_for_status()
@@ -55,10 +47,8 @@ def load_remote_config(remote_config_url):
         return None
 
 def main():
-    # Parse command line arguments
     args = parse_args()
 
-    # Initialize config with CLI arguments
     config = {
         'csv_file': args.csv_file,
         'output_file': args.output_file if args.output_file else CSV_OUTPUT_PATH,
@@ -90,16 +80,15 @@ def main():
         'single': args.single,
         'multi': args.multi,
         'headers': args.headers,
-        'force_date': args.force_date
+        'force_date': args.force_date,
+        'method': args.method  # Ensure method is included in the config
     }
 
-    # Load remote configuration if provided
     if args.remote_config:
         remote_config = load_remote_config(args.remote_config)
         if remote_config:
             config.update(remote_config)
 
-    # Load local configuration if provided
     if args.load_config:
         try:
             with open(args.load_config, 'r') as f:
@@ -109,10 +98,8 @@ def main():
             print(f"Error: The file {args.load_config} does not exist.")
             raise
 
-    # Load the CSV data
     data = load_csv(config['csv_file'], headers=config['headers'])
 
-    # Load and apply the plugin
     plugin_class = load_plugin(config['plugin_name'])
     if plugin_class is None:
         print(f"Plugin {config['plugin_name']} could not be loaded. Exiting.")
@@ -120,18 +107,14 @@ def main():
 
     plugin = plugin_class()
 
-    # Process the data with the selected plugin and method
-    processed_data = plugin.process(data, method=config['method'], save_params=config['save_config'], load_params=config['load_config'])
+    processed_data = plugin.process(data, method=config['method'], save_params=config['save_config'], load_params=config['load_config'], single=config['single'], multi=config['multi'])
 
-    # Save the processed data to output CSV
     write_csv(config['output_file'], processed_data, headers=config['headers'], force_date=config['force_date'])
 
-    # Save configuration if save_config path is provided
     if config['save_config']:
         with open(config['save_config'], 'w') as f:
             json.dump(config, f)
 
-    # Log processing completion if remote logging is configured
     if 'remote_log' in config and config['remote_log']:
         try:
             response = requests.post(config['remote_log'], json={'message': 'Processing complete', 'output_file': config['output_file']})
