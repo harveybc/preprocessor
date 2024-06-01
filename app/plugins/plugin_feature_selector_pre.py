@@ -11,13 +11,9 @@ class Plugin:
             if single >= len(data.columns):
                 raise ValueError(f"Column index '{single}' is out of range.")
             selected_features = [data.columns[single]]
-            if not force_date:
-                selected_features = [col for col in selected_features if col != 'date']  # Exclude date column if force_date is False
 
         elif method == 'select_multi':
             selected_features = [str(col) for col in multi]
-            if not force_date:
-                selected_features = [col for col in selected_features if col != 'date']  # Exclude date column if force_date is False
 
         else:
             if load_params and os.path.exists(load_params):
@@ -41,5 +37,9 @@ class Plugin:
                         json.dump(self.feature_selection_params, f)
             else:
                 selected_features = self.feature_selection_params['selected_features']
+
+        # Exclude date column if force_date is False
+        if not force_date and 'date' in selected_features:
+            selected_features.remove('date')
 
         return data[selected_features]
