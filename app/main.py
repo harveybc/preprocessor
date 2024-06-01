@@ -63,7 +63,8 @@ def main():
         'csv_file': args.csv_file,
         'output_file': args.output_file if args.output_file else CSV_OUTPUT_PATH,
         'plugin_name': args.plugin if args.plugin else DEFAULT_PLUGIN,
-        'method': args.method if args.method else DEFAULT_NORMALIZATION_METHOD,
+        'method': args.method if args.method else 'granger',  # Ensure a valid default method
+        'range': tuple(args.range) if args.range else DEFAULT_NORMALIZATION_RANGE,
         'save_config': args.save_config if args.save_config else CONFIG_SAVE_PATH,
         'load_config': args.load_config if args.load_config else CONFIG_LOAD_PATH,
         'quiet_mode': args.quiet_mode if args.quiet_mode else DEFAULT_QUIET_MODE,
@@ -78,10 +79,6 @@ def main():
         'model_type': args.model_type,
         'timesteps': args.timesteps,
         'features': args.features,
-        'remote_log': None,
-        'remote_config': None,
-        'select_single': args.select_single,
-        'select_multi': args.select_multi,
         'period': args.period,
         'outlier_threshold': args.outlier_threshold,
         'solve_missing': args.solve_missing,
@@ -125,12 +122,12 @@ def main():
     elif config['plugin_name'] == 'trimmer':
         processed_data = plugin.process(data, remove_rows=config['remove_rows'], remove_columns=config['remove_columns'], save_params=config['save_config'], load_params=config['load_config'])
     elif config['plugin_name'] == 'feature_selector_pre':
-        if config['select_single']:
-            processed_data = plugin.process(data, method='select_single', save_params=config['save_config'], load_params=config['load_config'], column=config['select_single'])
-        elif config['select_multi']:
-            processed_data = plugin.process(data, method='select_multi', save_params=config['save_config'], load_params=config['load_config'], columns=config['select_multi'])
+        if config['method'] == 'select_single':
+            processed_data = plugin.process(data, method=config['method'], column=config['select_single'], save_params=config['save_config'], load_params=config['load_config'])
+        elif config['method'] == 'select_multi':
+            processed_data = plugin.process(data, method=config['method'], columns=config['select_multi'], save_params=config['save_config'], load_params=config['load_config'])
         else:
-            processed_data = plugin.process(data, method=config['method'], save_params=config['save_config'], load_params=config['load_config'], max_lag=config['max_lag'], significance_level=config['significance_level'])
+            processed_data = plugin.process(data, method=config['method'], max_lag=config['max_lag'], significance_level=config['significance_level'], save_params=config['save_config'], load_params=config['load_config'])
     elif config['plugin_name'] == 'feature_selector_post':
         processed_data = plugin.process(data, alpha=config['alpha'], l1_ratio=config['l1_ratio'], model_type=config['model_type'], timesteps=config['timesteps'], features=config['features'], save_params=config['save_config'], load_params=config['load_config'])
     elif config['plugin_name'] == 'cleaner':
