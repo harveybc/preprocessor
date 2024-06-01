@@ -83,7 +83,6 @@ def main():
         'remote_config': None,
         'headers': args.headers,
         'period': args.period,
-        'outlier_threshold': args.outlier_threshold,
         'solve_missing': args.solve_missing,
         'delete_outliers': args.delete_outliers,
         'interpolate_outliers': args.interpolate_outliers,
@@ -108,7 +107,7 @@ def main():
             raise
 
     # Load the CSV data
-    data = load_csv(config['csv_file'], config['headers'])
+    data = load_csv(config['csv_file'], headers=config['headers'])
 
     # Load and apply the plugin
     plugin_class = load_plugin(config['plugin_name'])
@@ -133,7 +132,7 @@ def main():
         processed_data = plugin.process(data, method=config['method'], range=config['range'], save_params=config['save_config'], load_params=config['load_config'])
 
     # Save the processed data to output CSV
-    write_csv(config['output_file'], processed_data, config['headers'])
+    write_csv(config['output_file'], processed_data, headers=config['headers'])
 
     # Save configuration if save_config path is provided
     if config['save_config']:
