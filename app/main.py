@@ -88,7 +88,7 @@ def main():
         'interpolate_nan': args.interpolate_nan,
         'headers': args.headers,
         'select_single': args.select_single,
-        'select_multi': args.select_multi,
+        'select_multi': args.select_multi
     }
 
     # Load remote configuration if provided
@@ -124,7 +124,7 @@ def main():
     elif config['plugin_name'] == 'trimmer':
         processed_data = plugin.process(data, remove_rows=config['remove_rows'], remove_columns=config['remove_columns'], save_params=config['save_config'], load_params=config['load_config'])
     elif config['plugin_name'] == 'feature_selector_pre':
-        processed_data = plugin.process(data, method=config['method'], max_lag=config['max_lag'], significance_level=config['significance_level'], save_params=config['save_config'], load_params=config['load_config'], select_single=config['select_single'], select_multi=config['select_multi'])
+        processed_data = plugin.process(data, method=config['method'], max_lag=config['max_lag'], significance_level=config['significance_level'], select_single=config['select_single'], select_multi=config['select_multi'], save_params=config['save_config'], load_params=config['load_config'])
     elif config['plugin_name'] == 'feature_selector_post':
         processed_data = plugin.process(data, alpha=config['alpha'], l1_ratio=config['l1_ratio'], model_type=config['model_type'], timesteps=config['timesteps'], features=config['features'], save_params=config['save_config'], load_params=config['load_config'])
     elif config['plugin_name'] == 'cleaner':
