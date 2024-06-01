@@ -58,7 +58,7 @@ def write_csv(file_path, data, headers=True, force_date=True):
         None
     """
     try:
-        if not force_date and 'date' in data.columns:
+        if not force_date:
             data = data.drop(columns=['date'])  # Drop the date column if force_date is False
         data.to_csv(file_path, index=True, header=headers)
     except Exception as e:
