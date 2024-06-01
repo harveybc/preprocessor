@@ -5,6 +5,11 @@ class Plugin:
         self.feature_selection_params = None
 
     def process(self, data, method='granger', save_params=None, load_params=None, max_lag=5, significance_level=0.05, single=None, multi=None, force_date=True):
+        print("Force date (Plugin process):", force_date)  # Debug print
+        print("Method:", method)  # Debug print
+        print("Single:", single)  # Debug print
+        print("Multi:", multi)  # Debug print
+
         # Ensure that the force_date parameter is passed to the relevant methods
 
         if method == 'select_single':
