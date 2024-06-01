@@ -88,7 +88,7 @@ class Plugin:
             raise ValueError("The date conversion resulted in NaT values. Please check the date format in the input data.")
 
         # Generate a full date range based on the period
-        full_range = pd.date_range(start=data.index.min(), end=data.index.max(), freq=f'{period}T')
+        full_range = pd.date_range(start=data.index.min(), end=data.index.max(), freq=f'{period}min')
 
         # Identify and report missing values
         missing = full_range.difference(data.index)
@@ -98,6 +98,7 @@ class Plugin:
                 print("Solving missing values by interpolation.")
                 missing_df = pd.DataFrame(index=missing, columns=data.columns)
                 data = pd.concat([data, missing_df]).sort_index()
+                data = data.infer_objects()
                 data.interpolate(method='linear', inplace=True)
 
         return data
