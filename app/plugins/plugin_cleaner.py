@@ -79,8 +79,13 @@ class Plugin:
         """
         print(f"Handling missing values with period: {period} minutes, Solve missing: {solve_missing}")
 
-        # Convert 'date' column to datetime
-        data.index = pd.to_datetime(data.index, format='%m/%d/%Y %H:%M')
+        # Ensure the index is a datetime type
+        if not pd.api.types.is_datetime64_any_dtype(data.index):
+            print("Converting index to datetime.")
+            data.index = pd.to_datetime(data.index, format='%m/%d/%Y %H:%M', errors='coerce')
+
+        if data.index.isnull().any():
+            raise ValueError("The date conversion resulted in NaT values. Please check the date format in the input data.")
 
         # Generate a full date range based on the period
         full_range = pd.date_range(start=data.index.min(), end=data.index.max(), freq=f'{period}T')
