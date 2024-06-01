@@ -20,8 +20,8 @@ class Plugin:
             load_params (str): Path to load the feature selection parameters.
             max_lag (int): Maximum lag for the Granger causality test.
             significance_level (float): Significance level for the statistical tests.
-            select_single (str): Single column to select.
-            select_multi (list): List of columns to select.
+            select_single (str): Column to select for 'select_single' method.
+            select_multi (list): Columns to select for 'select_multi' method.
 
         Returns:
             pd.DataFrame: The dataset with only the selected features.
@@ -30,21 +30,19 @@ class Plugin:
         if load_params and os.path.exists(load_params):
             with open(load_params, 'r') as f:
                 self.feature_selection_params = json.load(f)
-            # Load the selected features from the loaded parameters
             selected_features = self.feature_selection_params.get('selected_features', data.columns.tolist())
 
         if self.feature_selection_params is None:
-            # Perform feature selection based on provided method or column selection
-            if select_single:
-                selected_features = self._select_single(data, select_single)
-            elif select_multi:
-                selected_features = self._select_multi(data, select_multi)
-            elif method == 'acf':
+            if method == 'acf':
                 selected_features = self._acf_feature_selection(data, significance_level)
             elif method == 'pacf':
                 selected_features = self._pacf_feature_selection(data, significance_level)
             elif method == 'granger':
                 selected_features = self._granger_causality_feature_selection(data, max_lag, significance_level)
+            elif method == 'select_single':
+                selected_features = self._select_single(data, select_single)
+            elif method == 'select_multi':
+                selected_features = self._select_multi(data, select_multi)
             else:
                 raise ValueError(f"Unknown feature selection method: {method}")
 
@@ -54,42 +52,10 @@ class Plugin:
                 with open(save_params, 'w') as f:
                     json.dump(self.feature_selection_params, f)
         else:
-            # Load the selected features from the parameters
             selected_features = self.feature_selection_params['selected_features']
 
         # Return the dataset with only the selected features
         return data[selected_features]
-
-    def _select_single(self, data, column):
-        """
-        Select a single column from the dataset.
-
-        Args:
-            data (pd.DataFrame): The input data to be processed.
-            column (str): The column to select.
-
-        Returns:
-            list: List containing the single selected column.
-        """
-        if column not in data.columns:
-            raise ValueError(f"Column {column} not found in the dataset.")
-        return [column]
-
-    def _select_multi(self, data, columns):
-        """
-        Select multiple columns from the dataset.
-
-        Args:
-            data (pd.DataFrame): The input data to be processed.
-            columns (list): The list of columns to select.
-
-        Returns:
-            list: List of selected columns.
-        """
-        for column in columns:
-            if column not in data.columns:
-                raise ValueError(f"Column {column} not found in the dataset.")
-        return columns
 
     def _acf_feature_selection(self, data, significance_level):
         """
@@ -148,3 +114,34 @@ class Plugin:
                 if any(p_val < significance_level for p_val in p_values):
                     selected_features.append(column)
         return selected_features
+
+    def _select_single(self, data, column):
+        """
+        Select a single column from the dataset.
+
+        Args:
+            data (pd.DataFrame): The input data to be processed.
+            column (str): The column to select.
+
+        Returns:
+            list: List containing the single selected column.
+        """
+        if column not in data.columns:
+            raise ValueError(f"Column {column} not found in data.")
+        return [column]
+
+    def _select_multi(self, data, columns):
+        """
+        Select multiple columns from the dataset.
+
+        Args:
+            data (pd.DataFrame): The input data to be processed.
+            columns (list): The list of columns to select.
+
+        Returns:
+            list: List of selected columns.
+        """
+        for column in columns:
+            if column not in data.columns:
+                raise ValueError(f"Column {column} not found in data.")
+        return columns
