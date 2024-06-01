@@ -46,6 +46,9 @@ def load_remote_config(remote_config_url):
 
 def main():
     args = parse_args()
+    
+    # Debugging: Print parsed arguments
+    print("Parsed arguments:", args)
 
     config = {
         'csv_file': args.csv_file,
@@ -80,6 +83,9 @@ def main():
         'multi': args.multi
     }
 
+    # Debugging: Print configuration
+    print("Configuration:", config)
+
     if args.remote_config:
         remote_config = load_remote_config(args.remote_config)
         if remote_config:
@@ -96,13 +102,19 @@ def main():
 
     data = load_csv(config['csv_file'])
 
+    # Debugging: Print loaded data
+    print("Loaded data:\n", data.head())
+
     plugin_class = load_plugin(config['plugin_name'])
     if plugin_class is None:
         print(f"Error: The plugin {config['plugin_name']} could not be loaded.")
         return
 
     plugin = plugin_class()
-    processed_data = plugin.process(data, method=config['method'], save_params=config['save_config'], load_params=config['load_config'])
+    processed_data = plugin.process(data, method=config['method'], save_params=config['save_config'], load_params=config['load_config'], single=config['single'], multi=config['multi'])
+
+    # Debugging: Print processed data
+    print("Processed data:\n", processed_data.head())
 
     if not config['quiet_mode']:
         print("Processing complete. Writing output...")
