@@ -11,9 +11,6 @@ parent_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
 if parent_dir not in sys.path:
     sys.path.append(parent_dir)
 
-# Print PYTHONPATH after modification
-print("Modified Python path:", sys.path)
-
 from app.cli import parse_args
 from app.config import (
     CSV_INPUT_PATH,
@@ -63,7 +60,7 @@ def main():
         'csv_file': args.csv_file,
         'output_file': args.output_file if args.output_file else CSV_OUTPUT_PATH,
         'plugin_name': args.plugin if args.plugin else DEFAULT_PLUGIN,
-        'method': args.method if args.method else 'granger',  # Ensure a valid default method
+        'method': args.method if args.method else DEFAULT_NORMALIZATION_METHOD,
         'range': tuple(args.range) if args.range else DEFAULT_NORMALIZATION_RANGE,
         'save_config': args.save_config if args.save_config else CONFIG_SAVE_PATH,
         'load_config': args.load_config if args.load_config else CONFIG_LOAD_PATH,
@@ -79,6 +76,9 @@ def main():
         'model_type': args.model_type,
         'timesteps': args.timesteps,
         'features': args.features,
+        'remote_log': args.remote_log,
+        'remote_config': args.remote_config,
+        'method': args.method,  # method for cleaner and feature_selector_pre plugin
         'period': args.period,
         'outlier_threshold': args.outlier_threshold,
         'solve_missing': args.solve_missing,
@@ -86,7 +86,9 @@ def main():
         'interpolate_outliers': args.interpolate_outliers,
         'delete_nan': args.delete_nan,
         'interpolate_nan': args.interpolate_nan,
-        'headers': args.headers
+        'headers': args.headers,
+        'single': args.single,
+        'multi': args.multi
     }
 
     # Load remote configuration if provided
@@ -117,23 +119,15 @@ def main():
     plugin = plugin_class()
 
     # Determine the plugin-specific parameters
-    if config['plugin_name'] == 'unbiaser':
-        processed_data = plugin.process(data, method=config['method'], window_size=config['window_size'], ema_alpha=config['ema_alpha'], save_params=config['save_config'], load_params=config['load_config'])
-    elif config['plugin_name'] == 'trimmer':
-        processed_data = plugin.process(data, remove_rows=config['remove_rows'], remove_columns=config['remove_columns'], save_params=config['save_config'], load_params=config['load_config'])
-    elif config['plugin_name'] == 'feature_selector_pre':
+    if config['plugin_name'] == 'feature_selector':
         if config['method'] == 'select_single':
-            processed_data = plugin.process(data, method=config['method'], column=config['select_single'], save_params=config['save_config'], load_params=config['load_config'])
+            processed_data = plugin.process(data, method='select_single', single=config['single'], save_params=config['save_config'], load_params=config['load_config'])
         elif config['method'] == 'select_multi':
-            processed_data = plugin.process(data, method=config['method'], columns=config['select_multi'], save_params=config['save_config'], load_params=config['load_config'])
+            processed_data = plugin.process(data, method='select_multi', multi=config['multi'], save_params=config['save_config'], load_params=config['load_config'])
         else:
             processed_data = plugin.process(data, method=config['method'], max_lag=config['max_lag'], significance_level=config['significance_level'], save_params=config['save_config'], load_params=config['load_config'])
-    elif config['plugin_name'] == 'feature_selector_post':
-        processed_data = plugin.process(data, alpha=config['alpha'], l1_ratio=config['l1_ratio'], model_type=config['model_type'], timesteps=config['timesteps'], features=config['features'], save_params=config['save_config'], load_params=config['load_config'])
-    elif config['plugin_name'] == 'cleaner':
-        processed_data = plugin.process(data, method=config['method'], period=config['period'], outlier_threshold=config['outlier_threshold'], solve_missing=config['solve_missing'], delete_outliers=config['delete_outliers'], interpolate_outliers=config['interpolate_outliers'], delete_nan=config['delete_nan'], interpolate_nan=config['interpolate_nan'], save_params=config['save_config'], load_params=config['load_config'])
     else:
-        processed_data = plugin.process(data, method=config['method'], save_params=config['save_config'], load_params=config['load_config'])
+        processed_data = plugin.process(data, method=config['method'], range=config['range'], save_params=config['save_config'], load_params=config['load_config'])
 
     # Save the processed data to output CSV
     write_csv(config['output_file'], processed_data, config['headers'])
