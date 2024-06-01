@@ -82,8 +82,8 @@ class Plugin:
         # Ensure the index is a datetime type
         if not pd.api.types.is_datetime64_any_dtype(data.index):
             print("Converting index to datetime.")
-            data.index = pd.to_datetime(data.index, format='%m/%d/%Y %H:%M', errors='coerce')
-
+            data.index = pd.to_datetime(data.index, errors='coerce')
+        
         if data.index.isnull().any():
             raise ValueError("The date conversion resulted in NaT values. Please check the date format in the input data.")
 
