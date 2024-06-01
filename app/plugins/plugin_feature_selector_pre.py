@@ -64,7 +64,7 @@ class Plugin:
         selected_features = []
         for column in data.columns:
             pacf_values = [abs(val) for val in np.correlate(data[column], data[column], mode='full')]
-            if any(val > significance_level for val in pacf_values):
+            if any val > significance_level for val in pacf_values):
                 selected_features.append(column)
         return selected_features
 
