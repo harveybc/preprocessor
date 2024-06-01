@@ -21,7 +21,7 @@ class Plugin:
             max_lag (int): Maximum lag for the Granger causality test.
             significance_level (float): Significance level for the statistical tests.
             column (int): Index of the single column to select.
-            columns (list): List of indices of multiple columns to select.
+            columns (list): List of column indices to select.
 
         Returns:
             pd.DataFrame: The dataset with only the selected features.
@@ -41,15 +41,9 @@ class Plugin:
             elif method == 'granger':
                 selected_features = self._granger_causality_feature_selection(data, max_lag, significance_level)
             elif method == 'select_single':
-                if column is not None and column < len(data.columns):
-                    selected_features = [data.columns[column]]
-                else:
-                    raise ValueError(f"Invalid column index: {column}")
+                selected_features = self._select_single_column(data, column)
             elif method == 'select_multi':
-                if columns is not None and all(col < len(data.columns) for col in columns):
-                    selected_features = [data.columns[col] for col in columns]
-                else:
-                    raise ValueError(f"Invalid column indices: {columns}")
+                selected_features = self._select_multiple_columns(data, columns)
             else:
                 raise ValueError(f"Unknown feature selection method: {method}")
 
@@ -114,7 +108,7 @@ class Plugin:
             list: List of selected features.
         """
         selected_features = []
-        target_column = 'eur_usd_rate'  # Assuming 'eur_usd_rate' is the target column
+        target_column = data.columns[0]  # Assuming the first column is the target column
         for column in data.columns:
             if column != target_column:
                 test_result = grangercausalitytests(data[[target_column, column]], max_lag, verbose=False)
@@ -122,3 +116,29 @@ class Plugin:
                 if any(p_val < significance_level for p_val in p_values):
                     selected_features.append(column)
         return selected_features
+
+    def _select_single_column(self, data, column):
+        """
+        Select a single column based on the given index.
+
+        Args:
+            data (pd.DataFrame): The input data to be processed.
+            column (int): Index of the column to select.
+
+        Returns:
+            list: List containing the selected column.
+        """
+        return [data.columns[column]]
+
+    def _select_multiple_columns(self, data, columns):
+        """
+        Select multiple columns based on the given list of indices.
+
+        Args:
+            data (pd.DataFrame): The input data to be processed.
+            columns (list): List of column indices to select.
+
+        Returns:
+            list: List of selected columns.
+        """
+        return [data.columns[col] for col in columns]
