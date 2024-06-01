@@ -49,6 +49,10 @@ def parse_args():
     parser.add_argument('--max_lag', type=int, help='Max lag for Granger causality in the feature_selector_pre plugin.')
     parser.add_argument('--significance_level', type=float, help='Significance level for statistical tests in the feature_selector_pre plugin.')
 
+    # New optional arguments for feature selection by columns
+    parser.add_argument('--select_single', type=str, help='Single column to select in the feature_selector_pre plugin.')
+    parser.add_argument('--select_multi', type=str, nargs='+', help='Multiple columns to select in the feature_selector_pre plugin.')
+
     # Optional arguments for the feature_selector_post plugin
     parser.add_argument('--alpha', type=float, help='Alpha value for Lasso and Elastic Net in the feature_selector_post plugin.')
     parser.add_argument('--l1_ratio', type=float, help='L1 ratio for Elastic Net in the feature_selector_post plugin.')
@@ -57,16 +61,16 @@ def parse_args():
     parser.add_argument('--features', type=int, help='Number of features for LSTM/CNN in the feature_selector_post plugin.')
 
     # Optional arguments for cleaner plugin
-    parser.add_argument('--period', type=int, help='Expected period in minutes for continuity checking.')
+    parser.add_argument('--period', type=int, help='Expected period for missing value checking.')
     parser.add_argument('--outlier_threshold', type=float, help='Threshold for outlier detection.')
     parser.add_argument('--solve_missing', action='store_true', help='Solve missing values by interpolation.')
     parser.add_argument('--delete_outliers', action='store_true', help='Delete rows with outliers.')
-    parser.add_argument('--interpolate_outliers', action='store_true', help='Interpolate outlier values.')
+    parser.add_argument('--interpolate_outliers', action='store_true', help='Interpolate outliers with linear interpolation.')
     parser.add_argument('--delete_nan', action='store_true', help='Delete rows with NaN values.')
-    parser.add_argument('--interpolate_nan', action='store_true', help='Interpolate NaN values.')
+    parser.add_argument('--interpolate_nan', action='store_true', help='Interpolate NaN values with linear interpolation.')
 
-    # Optional global header flag
-    parser.add_argument('--headers', action='store_true', help='Specify if the CSV file has headers.')
+    # Global header option
+    parser.add_argument('--headers', action='store_true', help='Indicate if the CSV file has headers.')
 
     return parser.parse_args()
 

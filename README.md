@@ -67,16 +67,39 @@ preprocessor.bat  path/to/input.csv --plugin default_plugin --method min-max --r
 ```
 ### Cleaner Plugin
 
-The `cleaner` plugin performs data cleaning during preprocessing. It includes two methods: one for verifying the continuity of data using the date column and another for removing or correcting outliers.
+The Cleaner Plugin performs data cleaning during preprocessing. It has two main methods: missing_values and outlier.
 
-#### Detect/Correct Missing Values
-```bash
-preprocessor.bat path/to/input.csv --plugin cleaner --method continuity --frequency 5T --save_config out_config.json
-```
-#### Detect/Correct Outliers
-```bash
-preprocessor.bat path/to/input.csv --plugin cleaner --method outlier --outlier_threshold 3.0 --save_config out_config.json
-```
+Parameters
+method: The method to use for cleaning (missing_values or outlier).
+period: The period in minutes for continuity checking. Used with missing_values method.
+outlier_threshold: The threshold for outlier detection. Used with outlier method.
+solve_missing: Boolean flag to solve missing values by interpolating the average of previous and next ticks.
+delete_outliers: Boolean flag to delete rows with outliers.
+interpolate_outliers: Boolean flag to interpolate outlier values.
+delete_nan: Boolean flag to delete rows with NaN values.
+interpolate_nan: Boolean flag to interpolate NaN values.
+headers: Boolean flag to indicate if the input CSV contains headers.
+Example Usage
+Detect and handle missing values with a 5-minute period, solving missing values:
+
+sh
+Copiar código
+preprocessor.bat path/to/input.csv --plugin cleaner --method missing_values --period 5 --solve_missing
+Detect and handle outliers with a threshold of 3, deleting outliers:
+
+sh
+Copiar código
+preprocessor.bat path/to/input.csv --plugin cleaner --method outlier --outlier_threshold 3 --delete_outliers
+Detect and handle outliers with a threshold of 3, interpolating outliers:
+
+sh
+Copiar código
+preprocessor.bat path/to/input.csv --plugin cleaner --method outlier --outlier_threshold 3 --interpolate_outliers
+Detect missing values with a 5-minute period without solving them:
+
+sh
+Copiar código
+preprocessor.bat path/to/input.csv --plugin cleaner --method missing_values --period 5
 ### Unbiaser Plugin
 
 The Unbiaser Plugin removes bias from time series data using moving average (MA) and exponential moving average (EMA) methods.
