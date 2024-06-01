@@ -19,36 +19,11 @@ def parse_args():
     # Optional arguments for selecting plugins
     parser.add_argument('-p', '--plugin', type=str, default='default_plugin', help='Name of the preprocessing plugin to use.')
 
-    # Optional arguments for the unbiaser plugin
-    parser.add_argument('--window_size', type=int, help='Window size for the unbiaser plugin.')
-    parser.add_argument('--ema_alpha', type=float, help='Alpha value for EMA in the unbiaser plugin.')
+    # Optional argument for the normalization method (specific to the default plugin)
+    parser.add_argument('--method', type=str, default='z-score', help='Normalization method to use (z-score or min-max).')
 
-    # Optional arguments for the trimmer plugin
-    parser.add_argument('--remove_rows', type=int, nargs='+', help='Rows to remove in the trimmer plugin.')
-    parser.add_argument('--remove_columns', type=int, nargs='+', help='Columns to remove in the trimmer plugin.')
-
-    # Optional arguments for the feature_selector_pre plugin
-    parser.add_argument('--method', type=str, default='granger', help='Method for feature selection (acf, pacf, granger).')
-    parser.add_argument('--max_lag', type=int, help='Max lag for Granger causality in the feature_selector_pre plugin.')
-    parser.add_argument('--significance_level', type=float, help='Significance level for statistical tests in the feature_selector_pre plugin.')
-    parser.add_argument('--select_single', type=int, help='Index of the single column to select in the feature_selector_pre plugin.')
-    parser.add_argument('--select_multi', type=int, nargs='+', help='Indices of multiple columns to select in the feature_selector_pre plugin.')
-
-    # Optional arguments for the feature_selector_post plugin
-    parser.add_argument('--alpha', type=float, help='Alpha value for Lasso and Elastic Net in the feature_selector_post plugin.')
-    parser.add_argument('--l1_ratio', type=float, help='L1 ratio for Elastic Net in the feature_selector_post plugin.')
-    parser.add_argument('--model_type', type=str, help='Model type for cross-validation feature selection (lstm or cnn) in the feature_selector_post plugin.')
-    parser.add_argument('--timesteps', type=int, help='Timesteps for LSTM/CNN in the feature_selector_post plugin.')
-    parser.add_argument('--features', type=int, help='Number of features for LSTM/CNN in the feature_selector_post plugin.')
-
-    # Optional arguments for cleaner plugin
-    parser.add_argument('--period', type=int, help='Expected period for continuity checking in minutes.')
-    parser.add_argument('--outlier_threshold', type=float, help='Threshold for outlier detection.')
-    parser.add_argument('--solve_missing', action='store_true', help='Solve missing values by interpolation.')
-    parser.add_argument('--delete_outliers', action='store_true', help='Delete outliers from the data.')
-    parser.add_argument('--interpolate_outliers', action='store_true', help='Interpolate outliers in the data.')
-    parser.add_argument('--delete_nan', action='store_true', help='Delete rows with NaN values.')
-    parser.add_argument('--interpolate_nan', action='store_true', help='Interpolate NaN values.')
+    # Optional argument for the normalization range (specific to the default plugin)
+    parser.add_argument('--range', type=float, nargs=2, help='Normalization range (min max).')
 
     # Optional argument for the output file
     parser.add_argument('-o', '--output_file', type=str, help='Output CSV file path.')
@@ -62,8 +37,38 @@ def parse_args():
     # Optional argument for quiet mode
     parser.add_argument('-qm', '--quiet_mode', action='store_true', help='Run in quiet mode without printing to console.')
 
-    # Optional argument for headers
-    parser.add_argument('--headers', action='store_true', help='Indicate if the CSV file has headers.')
+    # Optional arguments for the unbiaser plugin
+    parser.add_argument('--window_size', type=int, help='Window size for the unbiaser plugin.')
+    parser.add_argument('--ema_alpha', type=float, help='Alpha value for EMA in the unbiaser plugin.')
+
+    # Optional arguments for the trimmer plugin
+    parser.add_argument('--remove_rows', type=int, nargs='+', help='Rows to remove in the trimmer plugin.')
+    parser.add_argument('--remove_columns', type=int, nargs='+', help='Columns to remove in the trimmer plugin.')
+
+    # Optional arguments for the feature_selector_pre plugin
+    parser.add_argument('--max_lag', type=int, help='Max lag for Granger causality in the feature_selector_pre plugin.')
+    parser.add_argument('--significance_level', type=float, help='Significance level for statistical tests in the feature_selector_pre plugin.')
+    parser.add_argument('--select_single', type=int, help='Index of the single column to select in the feature_selector_pre plugin.')
+    parser.add_argument('--select_multi', type=int, nargs='+', help='List of column indices to select in the feature_selector_pre plugin.')
+
+    # Optional arguments for the feature_selector_post plugin
+    parser.add_argument('--alpha', type=float, help='Alpha value for Lasso and Elastic Net in the feature_selector_post plugin.')
+    parser.add_argument('--l1_ratio', type=float, help='L1 ratio for Elastic Net in the feature_selector_post plugin.')
+    parser.add_argument('--model_type', type=str, help='Model type for cross-validation feature selection (lstm or cnn) in the feature_selector_post plugin.')
+    parser.add_argument('--timesteps', type=int, help='Timesteps for LSTM/CNN in the feature_selector_post plugin.')
+    parser.add_argument('--features', type=int, help='Number of features for LSTM/CNN in the feature_selector_post plugin.')
+
+    # Optional arguments for the cleaner plugin
+    parser.add_argument('--period', type=int, help='Period for checking missing values in the cleaner plugin.')
+    parser.add_argument('--outlier_threshold', type=float, help='Threshold for outlier detection.')
+    parser.add_argument('--solve_missing', action='store_true', help='Solve missing values by interpolation.')
+    parser.add_argument('--delete_outliers', action='store_true', help='Delete outliers.')
+    parser.add_argument('--interpolate_outliers', action='store_true', help='Interpolate outliers.')
+    parser.add_argument('--delete_nan', action='store_true', help='Delete rows with NaN values.')
+    parser.add_argument('--interpolate_nan', action='store_true', help='Interpolate NaN values.')
+
+    # Optional argument for handling headers
+    parser.add_argument('--headers', action='store_true', help='Specify if the CSV file has headers.')
 
     return parser.parse_args()
 

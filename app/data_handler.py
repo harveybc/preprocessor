@@ -1,26 +1,31 @@
 import pandas as pd
 
-def load_csv(file_path, headers):
+def load_csv(file_path, has_headers):
     """
     Load a CSV file into a pandas DataFrame, handling date columns and correct numeric parsing.
 
     Args:
         file_path (str): The path to the CSV file to be loaded.
-        headers (bool): Whether the CSV file contains headers.
+        has_headers (bool): Whether the CSV file has headers or not.
 
     Returns:
         pd.DataFrame: The loaded data as a pandas DataFrame.
     """
     try:
-        if headers:
-            data = pd.read_csv(file_path, sep=',', parse_dates=[0], dayfirst=True)
-            data.columns = ['date'] + data.columns[1:].tolist()
+        # Read the file with or without headers based on has_headers flag
+        if has_headers:
+            data = pd.read_csv(file_path, header=0, sep=',', parse_dates=[0], dayfirst=True)
         else:
             data = pd.read_csv(file_path, header=None, sep=',', parse_dates=[0], dayfirst=True)
+
+        # Check if the first column is a date column
+        if pd.api.types.is_datetime64_any_dtype(data.iloc[:, 0]):
             data.columns = ['date'] + [f'col_{i}' for i in range(1, len(data.columns))]
-        
-        data.set_index('date', inplace=True)
-        
+            data.set_index('date', inplace=True)
+        else:
+            # Manually set column names if the first column is not a date
+            data.columns = [f'col_{i}' for i in range(len(data.columns))]
+
         # Convert numeric columns to appropriate data types
         for col in data.columns:
             if col != 'date':
@@ -41,20 +46,20 @@ def load_csv(file_path, headers):
     
     return data
 
-def write_csv(file_path, data, headers):
+def write_csv(file_path, data, has_headers):
     """
     Write a pandas DataFrame to a CSV file.
 
     Args:
         file_path (str): The path to the CSV file to be written.
         data (pd.DataFrame): The data to be written to the CSV file.
-        headers (bool): Whether to include headers in the CSV file.
+        has_headers (bool): Whether to write the CSV file with headers or not.
 
     Returns:
         None
     """
     try:
-        data.to_csv(file_path, index=True, header=headers)
+        data.to_csv(file_path, index=True, header=has_headers)
     except Exception as e:
         print(f"An error occurred while writing the CSV: {e}")
         raise
