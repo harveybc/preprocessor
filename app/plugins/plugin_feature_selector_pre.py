@@ -6,27 +6,36 @@ from statsmodels.tsa.stattools import grangercausalitytests
 
 class Plugin:
     def __init__(self):
+        # Initialize the feature selection parameters to None
         self.feature_selection_params = None
 
     def process(self, data, method='granger', save_params=None, load_params=None, max_lag=5, significance_level=0.05, single=None, multi=None):
-        if load_params and os.path.exists(load_params):
-            with open(load_params, 'r') as f:
-                self.feature_selection_params = json.load(f)
-            selected_features = self.feature_selection_params.get('selected_features', data.columns.tolist())
-        
-        if method == 'select_single':
-            if single is not None:
-                selected_features = [data.columns[single]]
-            else:
-                raise ValueError("Single column index not provided for select_single method.")
-        
-        elif method == 'select_multi':
-            if multi is not None:
-                selected_features = [data.columns[i] for i in multi]
-            else:
-                raise ValueError("Multiple column indices not provided for select_multi method.")
-        
+        """
+        Perform feature selection on the dataset using the specified method.
+
+        Args:
+            data (pd.DataFrame): The input data to be processed.
+            method (str): The method for feature selection ('acf', 'pacf', 'granger', 'select_single', 'select_multi').
+            save_params (str): Path to save the feature selection parameters.
+            load_params (str): Path to load the feature selection parameters.
+            max_lag (int): Maximum lag for the Granger causality test.
+            significance_level (float): Significance level for the statistical tests.
+            single (int): Index of the single column to select.
+            multi (list): List of indices of the columns to select.
+
+        Returns:
+            pd.DataFrame: The dataset with only the selected features.
+        """
+        if method == 'select_single' and single is not None:
+            selected_features = [data.columns[single]]
+        elif method == 'select_multi' and multi is not None:
+            selected_features = [data.columns[i] for i in multi]
         else:
+            if load_params and os.path.exists(load_params):
+                with open(load_params, 'r') as f:
+                    self.feature_selection_params = json.load(f)
+                selected_features = self.feature_selection_params.get('selected_features', data.columns.tolist())
+
             if self.feature_selection_params is None:
                 if method == 'acf':
                     selected_features = self._acf_feature_selection(data, significance_level)
@@ -36,7 +45,7 @@ class Plugin:
                     selected_features = self._granger_causality_feature_selection(data, max_lag, significance_level)
                 else:
                     raise ValueError(f"Unknown feature selection method: {method}")
-                
+
                 self.feature_selection_params = {'method': method, 'selected_features': selected_features}
                 if save_params:
                     with open(save_params, 'w') as f:
@@ -44,9 +53,6 @@ class Plugin:
             else:
                 selected_features = self.feature_selection_params['selected_features']
 
-        # Debugging: Print selected features
-        print("Selected features:", selected_features)
-        
         return data[selected_features]
 
     def _acf_feature_selection(self, data, significance_level):
