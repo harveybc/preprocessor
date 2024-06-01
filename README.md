@@ -69,7 +69,7 @@ preprocessor.bat  path/to/input.csv --plugin default_plugin --method min-max --r
 
 The `cleaner` plugin performs data cleaning during preprocessing. It includes two methods: one for verifying the continuity of data using the date column and another for removing or correcting outliers.
 
-#### Detect/Correct Timeseries Continuity
+#### Detect/Correct Missing Values
 ```bash
 preprocessor.bat path/to/input.csv --plugin cleaner --method continuity --frequency 5T --save_config out_config.json
 ```
