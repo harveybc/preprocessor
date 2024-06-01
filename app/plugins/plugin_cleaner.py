@@ -80,8 +80,7 @@ class Plugin:
         print(f"Handling missing values with period: {period} minutes, Solve missing: {solve_missing}")
 
         # Convert 'date' column to datetime
-        data['date'] = pd.to_datetime(data.index, format='%m/%d/%Y %H:%M')
-        data.set_index('date', inplace=True)
+        data.index = pd.to_datetime(data.index, format='%m/%d/%Y %H:%M')
 
         # Generate a full date range based on the period
         full_range = pd.date_range(start=data.index.min(), end=data.index.max(), freq=f'{period}T')
@@ -117,23 +116,22 @@ class Plugin:
         print(f"Delete NaN: {delete_nan}, Interpolate NaN: {interpolate_nan}")
 
         for col in data.columns:
-            if col != 'date':
-                if outlier_threshold is not None:
-                    # Identify outliers
-                    mean = data[col].mean()
-                    std = data[col].std()
-                    outliers = (data[col] - mean).abs() > outlier_threshold * std
+            if outlier_threshold is not None:
+                # Identify outliers
+                mean = data[col].mean()
+                std = data[col].std()
+                outliers = (data[col] - mean).abs() > outlier_threshold * std
 
-                    if outliers.any():
-                        print(f"Outliers detected in column {col}: {data[col][outliers]}")
-                        if delete_outliers:
-                            data = data[~outliers]
-                        elif interpolate_outliers:
-                            data[col][outliers] = np.nan
+                if outliers.any():
+                    print(f"Outliers detected in column {col}: {data[col][outliers]}")
+                    if delete_outliers:
+                        data = data[~outliers]
+                    elif interpolate_outliers:
+                        data[col][outliers] = np.nan
 
-                if delete_nan:
-                    data.dropna(inplace=True)
-                elif interpolate_nan:
-                    data.interpolate(method='linear', inplace=True)
+            if delete_nan:
+                data.dropna(inplace=True)
+            elif interpolate_nan:
+                data.interpolate(method='linear', inplace=True)
 
         return data
