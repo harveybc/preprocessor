@@ -20,7 +20,7 @@ def parse_args():
     parser.add_argument('-p', '--plugin', type=str, default='default_plugin', help='Name of the preprocessing plugin to use.')
 
     # Optional argument for the normalization method (specific to the default plugin)
-    parser.add_argument('--method', type=str, default='z-score', help='Normalization method to use (z-score or min-max).')
+    parser.add_argument('--norm_method', type=str, default='z-score', help='Normalization method to use (z-score or min-max).')
 
     # Optional argument for the normalization range (specific to the default plugin)
     parser.add_argument('--range', type=float, nargs=2, help='Normalization range (min max).')
@@ -48,8 +48,6 @@ def parse_args():
     # Optional arguments for the feature_selector_pre plugin
     parser.add_argument('--max_lag', type=int, help='Max lag for Granger causality in the feature_selector_pre plugin.')
     parser.add_argument('--significance_level', type=float, help='Significance level for statistical tests in the feature_selector_pre plugin.')
-    parser.add_argument('--select_single', type=int, help='Select single column index for feature_selector_pre plugin.')
-    parser.add_argument('--select_multi', type=int, nargs='+', help='Select multiple column indices for feature_selector_pre plugin.')
 
     # Optional arguments for the feature_selector_post plugin
     parser.add_argument('--alpha', type=float, help='Alpha value for Lasso and Elastic Net in the feature_selector_post plugin.')
@@ -58,21 +56,24 @@ def parse_args():
     parser.add_argument('--timesteps', type=int, help='Timesteps for LSTM/CNN in the feature_selector_post plugin.')
     parser.add_argument('--features', type=int, help='Number of features for LSTM/CNN in the feature_selector_post plugin.')
 
-    # Optional arguments for cleaner plugin
-    parser.add_argument('--method', type=str, help='Method to use for cleaning (continuity or outlier).')
-    parser.add_argument('--period', type=int, help='Period for the cleaner plugin.')
-    parser.add_argument('--outlier_threshold', type=float, help='Threshold for outlier detection.')
-    parser.add_argument('--solve_missing', action='store_true', help='Solve missing values.')
-    parser.add_argument('--delete_outliers', action='store_true', help='Delete outliers.')
-    parser.add_argument('--interpolate_outliers', action='store_true', help='Interpolate outliers.')
-    parser.add_argument('--delete_nan', action='store_true', help='Delete NaN values.')
-    parser.add_argument('--interpolate_nan', action='store_true', help='Interpolate NaN values.')
+    # Optional arguments for the cleaner plugin
+    parser.add_argument('--clean_method', type=str, help='Method to use for cleaning (continuity or outlier).')
+    parser.add_argument('--period', type=int, help='Period in minutes for continuity checking in the cleaner plugin.')
+    parser.add_argument('--outlier_threshold', type=float, help='Threshold for outlier detection in the cleaner plugin.')
+    parser.add_argument('--solve_missing', action='store_true', help='Solve missing values by interpolation in the cleaner plugin.')
+    parser.add_argument('--delete_outliers', action='store_true', help='Delete outliers in the cleaner plugin.')
+    parser.add_argument('--interpolate_outliers', action='store_true', help='Interpolate outliers in the cleaner plugin.')
+    parser.add_argument('--delete_nan', action='store_true', help='Delete rows with NaN values in the cleaner plugin.')
+    parser.add_argument('--interpolate_nan', action='store_true', help='Interpolate NaN values in the cleaner plugin.')
 
-    # Optional global arguments
-    parser.add_argument('--headers', action='store_true', help='Specify if the CSV file has headers.')
+    # Optional arguments for the feature_selector plugin
+    parser.add_argument('--single', type=int, help='Column to select for single column selection in the feature_selector plugin.')
+    parser.add_argument('--multi', type=int, nargs='+', help='Columns to select for multiple column selection in the feature_selector plugin.')
 
     return parser.parse_args()
 
 if __name__ == '__main__':
+    # Parse the command line arguments
     args = parse_args()
+
     print(args)
