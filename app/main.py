@@ -80,7 +80,8 @@ def main():
         'interpolate_nan': args.interpolate_nan,
         'method': args.method,
         'single': args.single,
-        'multi': args.multi
+        'multi': args.multi,
+        'force_date': args.force_date
     }
 
     # Debugging: Print configuration
@@ -117,7 +118,7 @@ def main():
     print("Processed data:\n", processed_data.head())
 
     # Determine if date column should be included in the output
-    include_date = not (config['method'] in ['select_single', 'select_multi'])
+    include_date = config['force_date'] or not (config['method'] in ['select_single', 'select_multi'])
 
     if not config['quiet_mode']:
         print("Processing complete. Writing output...")
