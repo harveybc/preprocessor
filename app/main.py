@@ -3,7 +3,6 @@ import os
 import json
 import requests
 import pkg_resources
-from app.data_handler import load_csv, write_csv
 
 # Ensure the parent directory is in the PYTHONPATH
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -29,6 +28,7 @@ from app.config import (
     DEFAULT_NORMALIZATION_RANGE,
     DEFAULT_QUIET_MODE
 )
+from app.data_handler import load_csv, write_csv
 from app.default_plugin import DefaultPlugin
 
 def load_plugin(plugin_name):
@@ -108,7 +108,7 @@ def main():
             raise
 
     # Load the CSV data
-    data = load_csv(config['csv_file'], headers=config['headers'])
+    data = load_csv(config['csv_file'], config['headers'])
 
     # Load and apply the plugin
     plugin_class = load_plugin(config['plugin_name'])
@@ -133,7 +133,7 @@ def main():
         processed_data = plugin.process(data, method=config['method'], range=config['range'], save_params=config['save_config'], load_params=config['load_config'])
 
     # Save the processed data to output CSV
-    write_csv(config['output_file'], processed_data, headers=config['headers'])
+    write_csv(config['output_file'], processed_data, config['headers'])
 
     # Save configuration if save_config path is provided
     if config['save_config']:
