@@ -43,6 +43,8 @@ class Plugin:
             else:
                 raise ValueError(f"Unknown feature selection method: {method}")
 
+            # Ensure selected features are serializable
+            selected_features = [str(f) for f in selected_features]
             self.feature_selection_params = {'method': method, 'selected_features': selected_features}
             if save_params:
                 with open(save_params, 'w') as f:
@@ -68,7 +70,7 @@ class Plugin:
 
     def _granger_causality_feature_selection(self, data, max_lag, significance_level):
         selected_features = []
-        target_column = 'eur_usd_rate'  # Ensure the target column is present
+        target_column = 'eur_usd_rate'
         for column in data.columns:
             if column != target_column:
                 test_result = grangercausalitytests(data[[target_column, column]], max_lag, verbose=False)
