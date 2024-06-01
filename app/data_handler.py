@@ -45,7 +45,6 @@ def load_csv(file_path, headers):
     return data
 
 # Inside data_handler.py
-
 def write_csv(file_path, data, headers=True, force_date=True):
     try:
         if not force_date:
