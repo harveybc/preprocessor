@@ -9,7 +9,7 @@ class Plugin:
         # Initialize the feature selection parameters to None
         self.feature_selection_params = None
 
-    def process(self, data, method='granger', save_params=None, load_params=None, max_lag=5, significance_level=0.05, column=None, columns=None):
+    def process(self, data, method='granger', save_params=None, load_params=None, max_lag=5, significance_level=0.05, target_column=None, select_single=None, select_multi=None):
         """
         Perform feature selection on the dataset using the specified method.
 
@@ -20,8 +20,9 @@ class Plugin:
             load_params (str): Path to load the feature selection parameters.
             max_lag (int): Maximum lag for the Granger causality test.
             significance_level (float): Significance level for the statistical tests.
-            column (int): Index of the single column to select.
-            columns (list): List of column indices to select.
+            target_column (str): The target column for the Granger causality test.
+            select_single (int): Index of the single column to select.
+            select_multi (list of int): Indices of multiple columns to select.
 
         Returns:
             pd.DataFrame: The dataset with only the selected features.
@@ -39,11 +40,11 @@ class Plugin:
             elif method == 'pacf':
                 selected_features = self._pacf_feature_selection(data, significance_level)
             elif method == 'granger':
-                selected_features = self._granger_causality_feature_selection(data, max_lag, significance_level)
+                selected_features = self._granger_causality_feature_selection(data, max_lag, significance_level, target_column)
             elif method == 'select_single':
-                selected_features = self._select_single_column(data, column)
+                selected_features = self._select_single_feature(data, select_single)
             elif method == 'select_multi':
-                selected_features = self._select_multiple_columns(data, columns)
+                selected_features = self._select_multi_features(data, select_multi)
             else:
                 raise ValueError(f"Unknown feature selection method: {method}")
 
@@ -95,7 +96,7 @@ class Plugin:
                 selected_features.append(column)
         return selected_features
 
-    def _granger_causality_feature_selection(self, data, max_lag, significance_level):
+    def _granger_causality_feature_selection(self, data, max_lag, significance_level, target_column):
         """
         Select features based on Granger Causality Test.
 
@@ -103,12 +104,15 @@ class Plugin:
             data (pd.DataFrame): The input data to be processed.
             max_lag (int): Maximum lag for the Granger causality test.
             significance_level (float): Significance level for the Granger causality test.
+            target_column (str): The target column for the Granger causality test.
 
         Returns:
             list: List of selected features.
         """
+        if target_column not in data.columns:
+            raise ValueError(f"Target column '{target_column}' not found in the data.")
+
         selected_features = []
-        target_column = 'eur_usd_rate'  # Assuming 'eur_usd_rate' is the target column
         for column in data.columns:
             if column != target_column:
                 test_result = grangercausalitytests(data[[target_column, column]], max_lag, verbose=False)
@@ -117,34 +121,32 @@ class Plugin:
                     selected_features.append(column)
         return selected_features
 
-    def _select_single_column(self, data, column):
+    def _select_single_feature(self, data, index):
         """
-        Select a single column from the dataset.
+        Select a single feature based on the given index.
 
         Args:
             data (pd.DataFrame): The input data to be processed.
-            column (int): Index of the column to select.
+            index (int): The index of the column to select.
 
         Returns:
-            list: List containing the selected column name.
+            list: List containing the selected feature.
         """
-        if column is not None and column < len(data.columns):
-            return [data.columns[column]]
-        else:
-            raise ValueError(f"Column index {column} is out of range")
+        if index < 0 or index >= len(data.columns):
+            raise ValueError(f"Index {index} is out of bounds for the data with {len(data.columns)} columns.")
+        return [data.columns[index]]
 
-    def _select_multiple_columns(self, data, columns):
+    def _select_multi_features(self, data, indices):
         """
-        Select multiple columns from the dataset.
+        Select multiple features based on the given list of indices.
 
         Args:
             data (pd.DataFrame): The input data to be processed.
-            columns (list): List of column indices to select.
+            indices (list of int): The indices of the columns to select.
 
         Returns:
-            list: List containing the selected column names.
+            list: List containing the selected features.
         """
-        if columns is not None:
-            return [data.columns[col] for col in columns if col < len(data.columns)]
-        else:
-            raise ValueError(f"Column indices {columns} are out of range or invalid")
+        if any(index < 0 or index >= len(data.columns) for index in indices):
+            raise ValueError(f"One or more indices are out of bounds for the data with {len(data.columns)} columns.")
+        return [data.columns[index] for index in indices]
