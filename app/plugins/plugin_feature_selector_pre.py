@@ -1,19 +1,24 @@
-import json
-import os
-import pandas as pd
+# Inside plugin.py
 
 class Plugin:
     def __init__(self):
         self.feature_selection_params = None
 
     def process(self, data, method='granger', save_params=None, load_params=None, max_lag=5, significance_level=0.05, single=None, multi=None, force_date=True):
+        # Ensure that the force_date parameter is passed to the relevant methods
+
         if method == 'select_single':
             if single >= len(data.columns):
                 raise ValueError(f"Column index '{single}' is out of range.")
             selected_features = [data.columns[single]]
+            if not force_date:
+                selected_features = [col for col in selected_features if col != 'date']  # Exclude date column if force_date is False
 
         elif method == 'select_multi':
             selected_features = [str(col) for col in multi]
+            if not force_date:
+                selected_features = [col for col in selected_features if col != 'date']  # Exclude date column if force_date is False
+
         else:
             if load_params and os.path.exists(load_params):
                 with open(load_params, 'r') as f:
@@ -38,36 +43,3 @@ class Plugin:
                 selected_features = self.feature_selection_params['selected_features']
 
         return data[selected_features]
-
-    def _acf_feature_selection(self, data, significance_level, force_date=True):
-        selected_features = []
-        if not force_date:
-            data = data.drop(columns=['date'], errors='ignore')  # Drop the date column if force_date is False
-        for column in data.columns:
-            acf_values = [abs(val) for val in pd.plotting.autocorrelation_plot(data[column])]
-            if any(val > significance_level for val in acf_values):
-                selected_features.append(column)
-        return selected_features
-
-    def _pacf_feature_selection(self, data, significance_level, force_date=True):
-        selected_features = []
-        if not force_date:
-            data = data.drop(columns=['date'], errors='ignore')  # Drop the date column if force_date is False
-        for column in data.columns:
-            pacf_values = [abs(val) for val in pd.plotting.lag_plot(data[column])]
-            if any(val > significance_level for val in pacf_values):
-                selected_features.append(column)
-        return selected_features
-
-    def _granger_causality_feature_selection(self, data, max_lag, significance_level, force_date=True):
-        selected_features = []
-        if not force_date:
-            data = data.drop(columns=['date'], errors='ignore')  # Drop the date column if force_date is False
-        target_column = 'eur_usd_rate'
-        for column in data.columns:
-            if column != target_column:
-                test_result = pd.grangercausalitytests(data[[target_column, column]], max_lag, verbose=False)
-                p_values = [test_result[i+1][0]['ssr_chi2test'][1] for i in range(max_lag)]
-                if any(p_val < significance_level for p_val in p_values):
-                    selected_features.append(column)
-        return selected_features
