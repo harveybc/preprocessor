@@ -81,7 +81,8 @@ def main():
         'method': args.method,
         'single': args.single,
         'multi': args.multi,
-        'force_date': args.force_date
+        'force_date': args.force_date,
+        'headers': args.headers
     }
 
     # Debugging: Print configuration
@@ -101,7 +102,7 @@ def main():
             print(f"Error: The file {args.load_config} does not exist.")
             raise
 
-    data = load_csv(config['csv_file'])
+    data = load_csv(config['csv_file'], headers=config['headers'])
 
     # Debugging: Print loaded data
     print("Loaded data:\n", data.head())
@@ -123,7 +124,7 @@ def main():
     if not config['quiet_mode']:
         print("Processing complete. Writing output...")
 
-    write_csv(config['output_file'], processed_data, include_date=include_date)
+    write_csv(config['output_file'], processed_data, include_date=include_date, headers=config['headers'])
 
     if not config['quiet_mode']:
         print(f"Output written to {config['output_file']}")
