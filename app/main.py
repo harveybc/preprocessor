@@ -116,10 +116,13 @@ def main():
     # Debugging: Print processed data
     print("Processed data:\n", processed_data.head())
 
+    # Determine if date column should be included in the output
+    include_date = not (config['method'] in ['select_single', 'select_multi'])
+
     if not config['quiet_mode']:
         print("Processing complete. Writing output...")
 
-    write_csv(config['output_file'], processed_data)
+    write_csv(config['output_file'], processed_data, include_date=include_date)
 
     if not config['quiet_mode']:
         print(f"Output written to {config['output_file']}")
