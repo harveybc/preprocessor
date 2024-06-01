@@ -112,15 +112,14 @@ def main():
 
     plugin = plugin_class()
 
-
-    print("Column names:", data.columns)
-    print("Column indices:", data.columns.tolist())
+    print("Force date:", config['force_date'])  # Debug print
 
     processed_data = plugin.process(data, method=config['method'], save_params=config['save_config'], load_params=config['load_config'], single=config['single'], multi=config['multi'])
 
     # Pass the 'force_date' parameter to the write_csv function
+    print("Before writing CSV, force_date:", config['force_date'])  # Debug print
     write_csv(config['output_file'], processed_data, headers=config['headers'], force_date=config['force_date'] if config['method'] not in ['select_single', 'select_multi'] else False)
-
+    print("After writing CSV, force_date:", config['force_date'])  # Debug print
     if config['save_config']:
         with open(config['save_config'], 'w') as f:
             json.dump(config, f)
