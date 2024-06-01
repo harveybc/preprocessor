@@ -108,7 +108,7 @@ class Plugin:
             list: List of selected features.
         """
         selected_features = []
-        target_column = data.columns[0]  # Assuming the first column is the target column
+        target_column = 'eur_usd_rate'  # Assuming 'eur_usd_rate' is the target column
         for column in data.columns:
             if column != target_column:
                 test_result = grangercausalitytests(data[[target_column, column]], max_lag, verbose=False)
@@ -119,26 +119,32 @@ class Plugin:
 
     def _select_single_column(self, data, column):
         """
-        Select a single column based on the given index.
+        Select a single column from the dataset.
 
         Args:
             data (pd.DataFrame): The input data to be processed.
             column (int): Index of the column to select.
 
         Returns:
-            list: List containing the selected column.
+            list: List containing the selected column name.
         """
-        return [data.columns[column]]
+        if column is not None and column < len(data.columns):
+            return [data.columns[column]]
+        else:
+            raise ValueError(f"Column index {column} is out of range")
 
     def _select_multiple_columns(self, data, columns):
         """
-        Select multiple columns based on the given list of indices.
+        Select multiple columns from the dataset.
 
         Args:
             data (pd.DataFrame): The input data to be processed.
             columns (list): List of column indices to select.
 
         Returns:
-            list: List of selected columns.
+            list: List containing the selected column names.
         """
-        return [data.columns[col] for col in columns]
+        if columns is not None:
+            return [data.columns[col] for col in columns if col < len(data.columns)]
+        else:
+            raise ValueError(f"Column indices {columns} are out of range or invalid")
