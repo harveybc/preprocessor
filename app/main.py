@@ -64,7 +64,6 @@ def main():
         'output_file': args.output_file if args.output_file else CSV_OUTPUT_PATH,
         'plugin_name': args.plugin if args.plugin else DEFAULT_PLUGIN,
         'method': args.method if args.method else DEFAULT_NORMALIZATION_METHOD,
-        'range': tuple(args.range) if args.range else DEFAULT_NORMALIZATION_RANGE,
         'save_config': args.save_config if args.save_config else CONFIG_SAVE_PATH,
         'load_config': args.load_config if args.load_config else CONFIG_LOAD_PATH,
         'quiet_mode': args.quiet_mode if args.quiet_mode else DEFAULT_QUIET_MODE,
