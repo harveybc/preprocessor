@@ -59,7 +59,7 @@ def write_csv(file_path, data, headers=True, force_date=True):
     """
     try:
         if not force_date and 'date' in data.columns:
-            data = data.drop(columns=['date'])
+            data = data.drop(columns=['date'])  # Drop the date column if force_date is False
         data.to_csv(file_path, index=True, header=headers)
     except Exception as e:
         print(f"An error occurred while writing the CSV: {e}")
