@@ -107,6 +107,10 @@ def main():
 
     plugin = plugin_class()
 
+
+    print("Column names:", data.columns)
+    print("Column indices:", data.columns.tolist())
+
     processed_data = plugin.process(data, method=config['method'], save_params=config['save_config'], load_params=config['load_config'], single=config['single'], multi=config['multi'])
 
     write_csv(config['output_file'], processed_data, headers=config['headers'], force_date=config['force_date'])
