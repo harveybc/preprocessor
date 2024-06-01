@@ -8,9 +8,10 @@ class Plugin:
 
     def process(self, data, method='granger', save_params=None, load_params=None, max_lag=5, significance_level=0.05, single=None, multi=None):
         if method == 'select_single':
-            if single not in data.columns:
-                raise ValueError(f"Column '{single}' not found in the dataset.")
-            selected_features = [str(single)]
+            if single >= len(data.columns):
+                raise ValueError(f"Column index '{single}' is out of range.")
+            selected_features = [data.columns[single]]
+
         elif method == 'select_multi':
             selected_features = [str(col) for col in multi]
         else:
