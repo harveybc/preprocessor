@@ -44,22 +44,12 @@ def load_csv(file_path, headers):
     
     return data
 
+# Inside data_handler.py
+
 def write_csv(file_path, data, headers=True, force_date=True):
-    """
-    Write a pandas DataFrame to a CSV file.
-
-    Args:
-        file_path (str): The path to the CSV file to be written.
-        data (pd.DataFrame): The data to be written to the CSV file.
-        headers (bool): Whether to write the headers.
-        force_date (bool): Whether to include the date column in the output.
-
-    Returns:
-        None
-    """
     try:
-        if not force_date and 'date' in data.columns:
-            data = data.drop(columns=['date'])  # Drop the date column if force_date is False
+        if not force_date:
+            data = data.drop(columns=['date'], errors='ignore')  # Drop the date column if force_date is False
         elif 'date' not in data.columns:
             print("Warning: 'date' column not found in DataFrame. Skipping column removal.")
         data.to_csv(file_path, index=True, header=headers)

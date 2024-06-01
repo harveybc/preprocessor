@@ -121,7 +121,7 @@ def main():
     else:
         force_date = config['force_date']
 
-    processed_data = plugin.process(data, method=config['method'], save_params=config['save_config'], load_params=config['load_config'], single=config['single'], multi=config['multi'])
+    processed_data = plugin.process(data, method=config['method'], save_params=config['save_config'], load_params=config['load_config'], single=config['single'], multi=config['multi'], force_date=config['force_date'])
 
     # Pass the 'force_date' parameter to the write_csv function
     write_csv(config['output_file'], processed_data, headers=config['headers'], force_date=force_date)

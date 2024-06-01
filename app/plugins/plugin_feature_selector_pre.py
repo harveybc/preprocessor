@@ -1,12 +1,10 @@
-import pandas as pd
-import json
-import os
-
 class Plugin:
     def __init__(self):
         self.feature_selection_params = None
 
-    def process(self, data, method='granger', save_params=None, load_params=None, max_lag=5, significance_level=0.05, single=None, multi=None):
+    def process(self, data, method='granger', save_params=None, load_params=None, max_lag=5, significance_level=0.05, single=None, multi=None, force_date=True):
+        # Ensure that the force_date parameter is passed to the relevant methods
+
         if method == 'select_single':
             if single >= len(data.columns):
                 raise ValueError(f"Column index '{single}' is out of range.")
@@ -22,11 +20,11 @@ class Plugin:
 
             if self.feature_selection_params is None:
                 if method == 'acf':
-                    selected_features = self._acf_feature_selection(data, significance_level)
+                    selected_features = self._acf_feature_selection(data, significance_level, force_date)
                 elif method == 'pacf':
-                    selected_features = self._pacf_feature_selection(data, significance_level)
+                    selected_features = self._pacf_feature_selection(data, significance_level, force_date)
                 elif method == 'granger':
-                    selected_features = self._granger_causality_feature_selection(data, max_lag, significance_level)
+                    selected_features = self._granger_causality_feature_selection(data, max_lag, significance_level, force_date)
                 else:
                     raise ValueError(f"Unknown feature selection method: {method}")
 
@@ -39,24 +37,33 @@ class Plugin:
 
         return data[selected_features]
 
-    def _acf_feature_selection(self, data, significance_level):
+    def _acf_feature_selection(self, data, significance_level, force_date=True):
+        # Modify the implementation of the _acf_feature_selection method to handle the force_date parameter
         selected_features = []
+        if not force_date:
+            data = data.drop(columns=['date'])  # Drop the date column if force_date is False
         for column in data.columns:
             acf_values = [abs(val) for val in pd.plotting.autocorrelation_plot(data[column])]
             if any(val > significance_level for val in acf_values):
                 selected_features.append(column)
         return selected_features
 
-    def _pacf_feature_selection(self, data, significance_level):
+    def _pacf_feature_selection(self, data, significance_level, force_date=True):
+        # Modify the implementation of the _pacf_feature_selection method to handle the force_date parameter
         selected_features = []
+        if not force_date:
+            data = data.drop(columns=['date'])  # Drop the date column if force_date is False
         for column in data.columns:
             pacf_values = [abs(val) for val in pd.plotting.lag_plot(data[column])]
             if any(val > significance_level for val in pacf_values):
                 selected_features.append(column)
         return selected_features
 
-    def _granger_causality_feature_selection(self, data, max_lag, significance_level):
+    def _granger_causality_feature_selection(self, data, max_lag, significance_level, force_date=True):
+        # Modify the implementation of the _granger_causality_feature_selection method to handle the force_date parameter
         selected_features = []
+        if not force_date:
+            data = data.drop(columns=['date'])  # Drop the date column if force_date is False
         target_column = 'eur_usd_rate'
         for column in data.columns:
             if column != target_column:
