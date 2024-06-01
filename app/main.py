@@ -98,6 +98,11 @@ def main():
             print(f"Error: The file {args.load_config} does not exist.")
             raise
 
+    # Modify the 'force_date' parameter based on the selected method
+    if config['method'] == 'select_single' or config['method'] == 'select_multi':
+        config['force_date'] = args.force_date if args.force_date else False
+
+
     data = load_csv(config['csv_file'], headers=config['headers'])
 
     plugin_class = load_plugin(config['plugin_name'])
