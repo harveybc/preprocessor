@@ -9,19 +9,19 @@ class Plugin:
         # Initialize the feature selection parameters to None
         self.feature_selection_params = None
 
-    def process(self, data, method='granger', save_params=None, load_params=None, max_lag=5, significance_level=0.05, select_single=None, select_multi=None):
+    def process(self, data, method='granger', save_params=None, load_params=None, max_lag=5, significance_level=0.05, column=None, columns=None):
         """
         Perform feature selection on the dataset using the specified method.
 
         Args:
             data (pd.DataFrame): The input data to be processed.
-            method (str): The method for feature selection ('acf', 'pacf', 'granger').
+            method (str): The method for feature selection ('acf', 'pacf', 'granger', 'select_single', 'select_multi').
             save_params (str): Path to save the feature selection parameters.
             load_params (str): Path to load the feature selection parameters.
             max_lag (int): Maximum lag for the Granger causality test.
             significance_level (float): Significance level for the statistical tests.
-            select_single (str): Column to select for 'select_single' method.
-            select_multi (list): Columns to select for 'select_multi' method.
+            column (int): Index of the single column to select.
+            columns (list): List of indices of multiple columns to select.
 
         Returns:
             pd.DataFrame: The dataset with only the selected features.
@@ -30,6 +30,7 @@ class Plugin:
         if load_params and os.path.exists(load_params):
             with open(load_params, 'r') as f:
                 self.feature_selection_params = json.load(f)
+            # Load the selected features from the loaded parameters
             selected_features = self.feature_selection_params.get('selected_features', data.columns.tolist())
 
         if self.feature_selection_params is None:
@@ -40,9 +41,15 @@ class Plugin:
             elif method == 'granger':
                 selected_features = self._granger_causality_feature_selection(data, max_lag, significance_level)
             elif method == 'select_single':
-                selected_features = self._select_single(data, select_single)
+                if column is not None and column < len(data.columns):
+                    selected_features = [data.columns[column]]
+                else:
+                    raise ValueError(f"Invalid column index: {column}")
             elif method == 'select_multi':
-                selected_features = self._select_multi(data, select_multi)
+                if columns is not None and all(col < len(data.columns) for col in columns):
+                    selected_features = [data.columns[col] for col in columns]
+                else:
+                    raise ValueError(f"Invalid column indices: {columns}")
             else:
                 raise ValueError(f"Unknown feature selection method: {method}")
 
@@ -52,6 +59,7 @@ class Plugin:
                 with open(save_params, 'w') as f:
                     json.dump(self.feature_selection_params, f)
         else:
+            # Load the selected features from the parameters
             selected_features = self.feature_selection_params['selected_features']
 
         # Return the dataset with only the selected features
@@ -114,34 +122,3 @@ class Plugin:
                 if any(p_val < significance_level for p_val in p_values):
                     selected_features.append(column)
         return selected_features
-
-    def _select_single(self, data, column):
-        """
-        Select a single column from the dataset.
-
-        Args:
-            data (pd.DataFrame): The input data to be processed.
-            column (str): The column to select.
-
-        Returns:
-            list: List containing the single selected column.
-        """
-        if column not in data.columns:
-            raise ValueError(f"Column {column} not found in data.")
-        return [column]
-
-    def _select_multi(self, data, columns):
-        """
-        Select multiple columns from the dataset.
-
-        Args:
-            data (pd.DataFrame): The input data to be processed.
-            columns (list): The list of columns to select.
-
-        Returns:
-            list: List of selected columns.
-        """
-        for column in columns:
-            if column not in data.columns:
-                raise ValueError(f"Column {column} not found in data.")
-        return columns
