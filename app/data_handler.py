@@ -6,30 +6,30 @@ def load_csv(file_path, headers=False):
 
     Args:
         file_path (str): The path to the CSV file to be loaded.
-        headers (bool): Whether the CSV file contains headers.
+        headers (bool): Indicates if the CSV file contains headers.
 
     Returns:
         pd.DataFrame: The loaded data as a pandas DataFrame.
     """
     try:
-        # Read the file with or without headers
-        if headers:
-            data = pd.read_csv(file_path, sep=',', parse_dates=[0], dayfirst=True)
-        else:
-            data = pd.read_csv(file_path, header=None, sep=',', parse_dates=[0], dayfirst=True)
-            data.columns = ['date'] + [f'col_{i}' for i in range(1, len(data.columns))]
-        
-        # Check if the first column is a date column
-        if pd.api.types.is_datetime64_any_dtype(data.iloc[:, 0]):
-            data.set_index('date', inplace=True)
-        else:
-            data.columns = [f'col_{i}' for i in range(len(data.columns))]
+        # Determine if the file has headers
+        header_option = 0 if headers else None
+
+        # Read the file
+        data = pd.read_csv(file_path, header=header_option, sep=',', parse_dates=[0], dayfirst=True)
+
+        if not headers:
+            # Manually set column names if headers are not provided
+            if pd.api.types.is_datetime64_any_dtype(data.iloc[:, 0]):
+                data.columns = ['date'] + [f'col_{i}' for i in range(1, len(data.columns))]
+            else:
+                data.columns = [f'col_{i}' for i in range(len(data.columns))]
 
         # Convert numeric columns to appropriate data types
         for col in data.columns:
             if col != 'date':
                 data[col] = pd.to_numeric(data[col], errors='coerce')
-                
+
     except FileNotFoundError:
         print(f"Error: The file {file_path} does not exist.")
         raise
@@ -52,7 +52,7 @@ def write_csv(file_path, data, headers=False):
     Args:
         file_path (str): The path to the CSV file to be written.
         data (pd.DataFrame): The data to be written to the CSV file.
-        headers (bool): Whether to include headers in the output CSV.
+        headers (bool): Indicates if the CSV file should contain headers.
 
     Returns:
         None

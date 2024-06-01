@@ -9,16 +9,16 @@ class Plugin:
 
     def process(self, data, method='missing_values', period=5, outlier_threshold=None, solve_missing=False, delete_outliers=False, interpolate_outliers=False, delete_nan=False, interpolate_nan=False, save_params=None, load_params=None):
         """
-        Clean the data using the specified method (missing values or outlier detection).
+        Clean the data using the specified method (handling missing values or outliers).
 
         Args:
             data (pd.DataFrame): The input data to be processed.
             method (str): The method to use for cleaning ('missing_values' or 'outlier').
-            period (int): The period in minutes for continuity checking.
+            period (int): The expected period in minutes for continuity checking.
             outlier_threshold (float): The threshold for outlier detection.
-            solve_missing (bool): Whether to solve missing values.
-            delete_outliers (bool): Whether to delete outliers.
-            interpolate_outliers (bool): Whether to interpolate outliers.
+            solve_missing (bool): Whether to solve missing values by interpolation.
+            delete_outliers (bool): Whether to delete outlier rows.
+            interpolate_outliers (bool): Whether to interpolate outlier values.
             delete_nan (bool): Whether to delete rows with NaN values.
             interpolate_nan (bool): Whether to interpolate NaN values.
             save_params (str): Path to save the parameters.
@@ -32,6 +32,7 @@ class Plugin:
         print(f"Solve missing: {solve_missing}, Delete outliers: {delete_outliers}, Interpolate outliers: {interpolate_outliers}")
         print(f"Delete NaN: {delete_nan}, Interpolate NaN: {interpolate_nan}")
 
+        # Load parameters if provided
         if load_params and os.path.exists(load_params):
             with open(load_params, 'r') as f:
                 self.params = json.load(f)
@@ -53,85 +54,86 @@ class Plugin:
                     json.dump(self.params, f)
             print("Saved parameters:", self.params)
 
+        # Apply the selected cleaning method
         if method == 'missing_values':
-            print(f"Handling missing values with period: {period} minutes, Solve missing: {solve_missing}")
             cleaned_data = self._handle_missing_values(data, period, solve_missing)
         elif method == 'outlier':
-            print(f"Handling outliers with threshold: {outlier_threshold}, Delete outliers: {delete_outliers}, Interpolate outliers: {interpolate_outliers}")
             cleaned_data = self._handle_outliers(data, outlier_threshold, delete_outliers, interpolate_outliers, delete_nan, interpolate_nan)
         else:
             raise ValueError(f"Unknown method: {method}")
 
-        print("Processing complete. Returning cleaned data.")
+        print("Cleaning complete. Returning cleaned data.")
         return cleaned_data
 
     def _handle_missing_values(self, data, period, solve_missing):
         """
-        Handle missing values based on the specified period.
+        Handle missing values in the data.
 
         Args:
             data (pd.DataFrame): The input data to be processed.
-            period (int): The period in minutes for continuity checking.
-            solve_missing (bool): Whether to solve missing values.
+            period (int): The expected period in minutes for continuity checking.
+            solve_missing (bool): Whether to solve missing values by interpolation.
 
         Returns:
-            pd.DataFrame: The data with missing values handled.
+            pd.DataFrame: The data with handled missing values.
         """
-        data['date'] = pd.to_datetime(data['date'], format='%m/%d/%Y %H:%M')
-        data = data.set_index('date').sort_index()
-        full_index = pd.date_range(start=data.index[0], end=data.index[-1], freq=f'{period}T')
-        missing_ticks = full_index.difference(data.index)
+        print(f"Handling missing values with period: {period} minutes, Solve missing: {solve_missing}")
 
-        if len(missing_ticks) > 0:
-            print(f"Missing ticks found: {len(missing_ticks)}")
-            if not self.params['quiet_mode']:
-                print("Missing ticks:")
-                for missing_tick in missing_ticks:
-                    print(missing_tick)
-        
-        if solve_missing:
-            print("Solving missing ticks...")
-            for missing_tick in missing_ticks:
-                prev_tick = data[:missing_tick].iloc[-1]
-                next_tick = data[missing_tick:].iloc[0]
-                new_row = (prev_tick + next_tick) / 2
-                new_row.name = missing_tick
-                data = data.append(new_row).sort_index()
+        # Convert 'date' column to datetime
+        data['date'] = pd.to_datetime(data.index, format='%m/%d/%Y %H:%M')
+        data.set_index('date', inplace=True)
+
+        # Generate a full date range based on the period
+        full_range = pd.date_range(start=data.index.min(), end=data.index.max(), freq=f'{period}T')
+
+        # Identify and report missing values
+        missing = full_range.difference(data.index)
+        if not missing.empty:
+            print(f"Missing timestamps found: {missing}")
+            if solve_missing:
+                print("Solving missing values by interpolation.")
+                missing_df = pd.DataFrame(index=missing, columns=data.columns)
+                data = pd.concat([data, missing_df]).sort_index()
+                data.interpolate(method='linear', inplace=True)
 
         return data
 
-    def _handle_outliers(self, data, threshold, delete_outliers, interpolate_outliers, delete_nan, interpolate_nan):
+    def _handle_outliers(self, data, outlier_threshold, delete_outliers, interpolate_outliers, delete_nan, interpolate_nan):
         """
-        Handle outliers based on the specified threshold.
+        Handle outliers in the data.
 
         Args:
             data (pd.DataFrame): The input data to be processed.
-            threshold (float): The threshold for outlier detection.
-            delete_outliers (bool): Whether to delete outliers.
-            interpolate_outliers (bool): Whether to interpolate outliers.
+            outlier_threshold (float): The threshold for outlier detection.
+            delete_outliers (bool): Whether to delete outlier rows.
+            interpolate_outliers (bool): Whether to interpolate outlier values.
             delete_nan (bool): Whether to delete rows with NaN values.
             interpolate_nan (bool): Whether to interpolate NaN values.
 
         Returns:
-            pd.DataFrame: The data with outliers handled.
+            pd.DataFrame: The data with handled outliers.
         """
-        numeric_columns = data.select_dtypes(include=[np.number]).columns.tolist()
-        for col in numeric_columns:
-            col_mean = data[col].mean()
-            col_std = data[col].std()
-            outliers = (data[col] - col_mean).abs() > (threshold * col_std)
-            
-            if outliers.any():
-                print(f"Outliers detected in column {col}: {outliers.sum()}")
-                if delete_outliers:
-                    data = data[~outliers]
-                elif interpolate_outliers:
-                    data[col] = data[col].mask(outliers).interpolate()
+        print(f"Handling outliers with threshold: {outlier_threshold}, Delete outliers: {delete_outliers}, Interpolate outliers: {interpolate_outliers}")
+        print(f"Delete NaN: {delete_nan}, Interpolate NaN: {interpolate_nan}")
 
-        if delete_nan:
-            data = data.dropna()
+        for col in data.columns:
+            if col != 'date':
+                if outlier_threshold is not None:
+                    # Identify outliers
+                    mean = data[col].mean()
+                    std = data[col].std()
+                    outliers = (data[col] - mean).abs() > outlier_threshold * std
 
-        if interpolate_nan:
-            data = data.interpolate()
+                    if outliers.any():
+                        print(f"Outliers detected in column {col}: {data[col][outliers]}")
+                        if delete_outliers:
+                            data = data[~outliers]
+                        elif interpolate_outliers:
+                            data[col][outliers] = np.nan
+
+                if delete_nan:
+                    data.dropna(inplace=True)
+                elif interpolate_nan:
+                    data.interpolate(method='linear', inplace=True)
 
         return data
