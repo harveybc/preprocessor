@@ -10,8 +10,6 @@ parent_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
 if parent_dir not in sys.path:
     sys.path.append(parent_dir)
 
-print("Modified Python path:", sys.path)
-
 from app.cli import parse_args
 from app.config import (
     CSV_INPUT_PATH,
@@ -48,6 +46,9 @@ def load_remote_config(remote_config_url):
 
 def main():
     args = parse_args()
+    
+    # Debugging: Print parsed arguments
+    print("Parsed arguments:", args)
 
     config = {
         'csv_file': args.csv_file,
@@ -77,12 +78,15 @@ def main():
         'interpolate_outliers': args.interpolate_outliers,
         'delete_nan': args.delete_nan,
         'interpolate_nan': args.interpolate_nan,
+        'method': args.method,
         'single': args.single,
         'multi': args.multi,
-        'headers': args.headers,
         'force_date': args.force_date,
-        'method': args.method  # Ensure method is included in the config
+        'headers': args.headers
     }
+
+    # Debugging: Print configuration
+    print("Configuration:", config)
 
     if args.remote_config:
         remote_config = load_remote_config(args.remote_config)
@@ -98,48 +102,32 @@ def main():
             print(f"Error: The file {args.load_config} does not exist.")
             raise
 
-    # Modify the 'force_date' parameter based on the selected method
-    if config['method'] == 'select_single' or config['method'] == 'select_multi':
-        config['force_date'] = args.force_date if args.force_date else False
-
-
     data = load_csv(config['csv_file'], headers=config['headers'])
+
+    # Debugging: Print loaded data
+    print("Loaded data:\n", data.head())
 
     plugin_class = load_plugin(config['plugin_name'])
     if plugin_class is None:
-        print(f"Plugin {config['plugin_name']} could not be loaded. Exiting.")
+        print(f"Error: The plugin {config['plugin_name']} could not be loaded.")
         return
 
     plugin = plugin_class()
+    processed_data = plugin.process(data, method=config['method'], save_params=config['save_config'], load_params=config['load_config'], single=config['single'], multi=config['multi'])
 
-    print("Force date:", config['force_date'])  # Debug print
+    # Debugging: Print processed data
+    print("Processed data:\n", processed_data.head())
 
-    
-    if config['method'] in ['select_single', 'select_multi']:
-        # Set force_date to False directly when using select_single or select_multi
-        force_date = False
-    else:
-        force_date = config['force_date']
+    # Determine if date column should be included in the output
+    include_date = config['force_date'] or not (config['method'] in ['select_single', 'select_multi'])
 
-    processed_data = plugin.process(data, method=config['method'], save_params=config['save_config'], load_params=config['load_config'], single=config['single'], multi=config['multi'], force_date=config['force_date'])
+    if not config['quiet_mode']:
+        print("Processing complete. Writing output...")
 
-    # Pass the 'force_date' parameter to the write_csv function
-    write_csv(config['output_file'], processed_data, headers=config['headers'], force_date=force_date)
+    write_csv(config['output_file'], processed_data, include_date=include_date, headers=config['headers'])
 
-    
-    print("After writing CSV, force_date:", config['force_date'])  # Debug print
-    if config['save_config']:
-        with open(config['save_config'], 'w') as f:
-            json.dump(config, f)
+    if not config['quiet_mode']:
+        print(f"Output written to {config['output_file']}")
 
-    if 'remote_log' in config and config['remote_log']:
-        try:
-            response = requests.post(config['remote_log'], json={'message': 'Processing complete', 'output_file': config['output_file']})
-            if not config['quiet_mode']:
-                print(f"Remote log response: {response.text}")
-        except requests.RequestException as e:
-            if not config['quiet_mode']:
-                print(f"Failed to send remote log: {e}", file=sys.stderr)
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
