@@ -16,4 +16,5 @@ numpy
 scikit-learn
 joblib
 scipy==1.0
+build
 #
