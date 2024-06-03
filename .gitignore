@@ -57,6 +57,7 @@ MANIFEST
 tests/test_output.csv
 .pypirc
 tests/data/test_output.csv
+!tests/data/EURUSD_5m_2006_2007.csv
 test_output.csv
 *.462506
 .coverage (Carmencita's conflicted copy 2020-04-29)
