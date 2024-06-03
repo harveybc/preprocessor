@@ -28,18 +28,41 @@ To install and set up the Preprocessor application, follow these steps:
 
 3. **Install Dependencies**:
     ```bash
+    pip install --upgrade pip
     pip install -r requirements.txt
     ```
 
-4. **Install the Preprocessor Package**:
+4. **Build the Package**:
     ```bash
-    python setup.py install
+    python -m build
     ```
 
-5. **Verify the Installation**:
+5. **Install the Package**:
+    ```bash
+    pip install .
+    ```
+
+6. **Run the Preprocessor**:
+    - On Windows, Run the following command to ensure the setup is correct:
+        ```bash
+        preprocessor.bat tests\data\EURUSD_5m_2006_2007.csv --plugin feature_selector --method select_single --single 0
+        ```
+
+    - On Linux, run:
+        ```bash
+        sh preprocessor.sh tests\data\EURUSD_5m_2006_2007.csv --plugin feature_selector --method select_single --single 0
+        ```
+
+7. **Run Tests (Optional)**:
     - Run the following command to ensure the setup is correct:
         ```bash
-        preprocessor.bat  --help
+        pytest
+        ```
+
+8. **Generate Documentation (Optional)**:
+    - Run the following command to ensure the setup is correct:
+        ```bash
+        pdoc --html -o docs app
         ```
 
 This command should display the help message for the Preprocessor application, confirming that the installation was successful.

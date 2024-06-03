@@ -18,4 +18,8 @@ joblib
 scipy==1.0
 build
 pytest
+pdoc3
+boruta
+tensorflow
+keras
 #
