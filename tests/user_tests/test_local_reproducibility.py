@@ -1,11 +1,12 @@
 import os
 import subprocess
 import pandas as pd
+import pytest
 
 def test_local_reproducibility():
-    input_file = 'tests/datasets/EURUSD_5m_2006_2007.csv'
-    output_file_1 = 'tests/datasets/output_1.csv'
-    output_file_2 = 'tests/datasets/output_2.csv'
+    input_file = 'tests/data/EURUSD_5m_2006_2007.csv'
+    output_file_1 = 'tests/data/output_1.csv'
+    output_file_2 = 'tests/data/output_2.csv'
     config_file = 'tests/config_out.json'
     
     # Run the preprocessor with the initial parameters
@@ -38,4 +39,4 @@ def test_local_reproducibility():
     os.remove(config_file)
 
 if __name__ == "__main__":
-    test_local_reproducibility()
+    pytest.main()
