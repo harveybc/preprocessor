@@ -2,7 +2,7 @@ import argparse
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Preprocessor for CSV data.")
-    parser.add_argument('csv_file', type=str, help='Path to the input CSV file.')
+    parser.add_argument('csv_file', type=str, nargs='?', help='Path to the input CSV file.')  # Changed to optional
     parser.add_argument('-sc', '--save_config', type=str, help='Path to save the configuration file.')
     parser.add_argument('-lc', '--load_config', type=str, help='Path to load the configuration file.')
     parser.add_argument('-p', '--plugin', type=str, help='Plugin to use for processing the data.')
