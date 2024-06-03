@@ -43,7 +43,7 @@ To install and set up the Preprocessor application, follow these steps:
     ```
 
 6. **Run the Preprocessor**:
-    - On Windows, Run the following command to ensure the setup is correct:
+    - On Windows, run the following command to ensure the setup is correct:
         ```bash
         preprocessor.bat tests\data\EURUSD_5m_2006_2007.csv --plugin feature_selector --method select_single --single 0
         ```
@@ -54,8 +54,16 @@ To install and set up the Preprocessor application, follow these steps:
         ```
 
 7. **Run Tests (Optional)**:
+    - On Windows, run the following command to run the tests:
     - Run the following command to ensure the setup is correct:
         ```bash
+        set_env.bat
+        pytest
+        ```
+
+    - On Linux, run:
+        ```bash
+        sh ./set_env.sh
         pytest
         ```
 
