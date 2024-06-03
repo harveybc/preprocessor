@@ -129,16 +129,9 @@ def main():
     if not config['quiet_mode']:
         print(f"Output written to {config['output_file']}")
 
-    # Print the content of the config file if it was saved
+    # Print the filename of the saved config file if it was saved
     if config['save_config']:
-        try:
-            with open(config['save_config'], 'r') as f:
-                saved_config = json.load(f)
-            print("Saved Configuration:")
-            print(json.dumps(saved_config, indent=4))
-        except FileNotFoundError:
-            print(f"Error: The file {config['save_config']} could not be found.")
-            raise
+        print(f"Configuration saved to {config['save_config']}")
 
 if __name__ == '__main__':
     main()
