@@ -102,6 +102,15 @@ def main():
             print(f"Error: The file {args.load_config} does not exist.")
             raise
 
+    # Override config CSV file with command line argument if provided
+    if args.csv_file:
+        config['csv_file'] = args.csv_file
+
+    # Ensure CSV file is specified
+    if not config.get('csv_file'):
+        print("Error: No CSV file specified.", file=sys.stderr)
+        return
+
     data = load_csv(config['csv_file'], headers=config['headers'])
 
     # Debugging: Print loaded data
@@ -128,9 +137,6 @@ def main():
 
     if not config['quiet_mode']:
         print(f"Output written to {config['output_file']}")
-
-    # Print the filename of the saved config file if it was saved
-    if config['save_config']:
         print(f"Configuration saved to {config['save_config']}")
 
 if __name__ == '__main__':
