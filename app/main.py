@@ -44,6 +44,13 @@ def load_remote_config(remote_config_url):
         print(f"Failed to load remote configuration: {e}", file=sys.stderr)
         return None
 
+def save_config(config, path):
+    try:
+        with open(path, 'w') as f:
+            json.dump(config, f, indent=4)
+    except Exception as e:
+        print(f"Error saving configuration: {e}", file=sys.stderr)
+
 def main():
     args = parse_args()
     
@@ -84,6 +91,9 @@ def main():
         'force_date': args.force_date,
         'headers': args.headers
     }
+
+    # Save only the user-specified parameters
+    user_config = {k: v for k, v in vars(args).items() if v is not None}
 
     # Debugging: Print configuration
     print("Configuration:", config)
@@ -128,6 +138,11 @@ def main():
 
     if not config['quiet_mode']:
         print(f"Output written to {config['output_file']}")
+
+    if args.save_config:
+        save_config(user_config, args.save_config)
+        if not config['quiet_mode']:
+            print(f"Configuration saved to {args.save_config}")
 
 if __name__ == '__main__':
     main()

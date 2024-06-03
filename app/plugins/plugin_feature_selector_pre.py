@@ -26,16 +26,19 @@ class Plugin:
         Returns:
             pd.DataFrame: The dataset with only the selected features.
         """
+        # Load parameters if load_params path is provided
+        if load_params and os.path.exists(load_params):
+            with open(load_params, 'r') as f:
+                self.feature_selection_params = json.load(f)
+            selected_features = self.feature_selection_params.get('selected_features', data.columns.tolist())
+
+        # If the method is select_single or select_multi, handle accordingly
         if method == 'select_single' and single is not None:
             selected_features = [data.columns[single]]
         elif method == 'select_multi' and multi is not None:
             selected_features = [data.columns[i] for i in multi]
         else:
-            if load_params and os.path.exists(load_params):
-                with open(load_params, 'r') as f:
-                    self.feature_selection_params = json.load(f)
-                selected_features = self.feature_selection_params.get('selected_features', data.columns.tolist())
-
+            # If feature selection parameters are not loaded or not provided
             if self.feature_selection_params is None:
                 if method == 'acf':
                     selected_features = self._acf_feature_selection(data, significance_level)
@@ -46,16 +49,28 @@ class Plugin:
                 else:
                     raise ValueError(f"Unknown feature selection method: {method}")
 
+                # Save the selected features if save_params path is provided
                 self.feature_selection_params = {'method': method, 'selected_features': selected_features}
                 if save_params:
                     with open(save_params, 'w') as f:
                         json.dump(self.feature_selection_params, f)
             else:
+                # Load the selected features from the parameters
                 selected_features = self.feature_selection_params['selected_features']
 
         return data[selected_features]
 
     def _acf_feature_selection(self, data, significance_level):
+        """
+        Select features based on Autocorrelation Function (ACF).
+
+        Args:
+            data (pd.DataFrame): The input data to be processed.
+            significance_level (float): Significance level for ACF.
+
+        Returns:
+            list: List of selected features.
+        """
         selected_features = []
         for column in data.columns:
             acf_values = [abs(val) for val in np.correlate(data[column], data[column], mode='full')]
@@ -64,6 +79,16 @@ class Plugin:
         return selected_features
 
     def _pacf_feature_selection(self, data, significance_level):
+        """
+        Select features based on Partial Autocorrelation Function (PACF).
+
+        Args:
+            data (pd.DataFrame): The input data to be processed.
+            significance_level (float): Significance level for PACF.
+
+        Returns:
+            list: List of selected features.
+        """
         selected_features = []
         for column in data.columns:
             pacf_values = [abs(val) for val in np.correlate(data[column], data[column], mode='full')]
@@ -72,8 +97,19 @@ class Plugin:
         return selected_features
 
     def _granger_causality_feature_selection(self, data, max_lag, significance_level):
+        """
+        Select features based on Granger Causality Test.
+
+        Args:
+            data (pd.DataFrame): The input data to be processed.
+            max_lag (int): Maximum lag for the Granger causality test.
+            significance_level (float): Significance level for the Granger causality test.
+
+        Returns:
+            list: List of selected features.
+        """
         selected_features = []
-        target_column = 'eur_usd_rate'
+        target_column = 'eur_usd_rate'  # Assuming 'eur_usd_rate' is the target column
         for column in data.columns:
             if column != target_column:
                 test_result = grangercausalitytests(data[[target_column, column]], max_lag, verbose=False)
