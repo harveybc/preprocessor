@@ -47,6 +47,9 @@ def load_remote_config(remote_config_url):
 def main():
     args = parse_args()
     
+    # Debugging: Print parsed arguments
+    print("Parsed arguments:", args)
+
     config = {
         'csv_file': args.csv_file,
         'output_file': args.output_file if args.output_file else CSV_OUTPUT_PATH,
@@ -82,8 +85,8 @@ def main():
         'headers': args.headers
     }
 
-    # Remove keys with None values
-    config = {k: v for k, v in config.items() if v is not None}
+    # Debugging: Print configuration
+    print("Configuration:", config)
 
     if args.remote_config:
         remote_config = load_remote_config(args.remote_config)
@@ -99,7 +102,10 @@ def main():
             print(f"Error: The file {args.load_config} does not exist.")
             raise
 
-    data = load_csv(config['csv_file'], headers=config.get('headers', False))
+    data = load_csv(config['csv_file'], headers=config['headers'])
+
+    # Debugging: Print loaded data
+    print("Loaded data:\n", data.head())
 
     plugin_class = load_plugin(config['plugin_name'])
     if plugin_class is None:
@@ -107,27 +113,32 @@ def main():
         return
 
     plugin = plugin_class()
-    processed_data = plugin.process(data, 
-                                    method=config.get('method'), 
-                                    save_params=config.get('save_config'), 
-                                    load_params=config.get('load_config'), 
-                                    single=config.get('single'), 
-                                    multi=config.get('multi'))
+    processed_data = plugin.process(data, method=config['method'], save_params=config['save_config'], load_params=config['load_config'], single=config['single'], multi=config['multi'])
 
-    include_date = config.get('force_date', False) or not (config.get('method') in ['select_single', 'select_multi'])
+    # Debugging: Print processed data
+    print("Processed data:\n", processed_data.head())
 
-    if not config.get('quiet_mode', False):
+    # Determine if date column should be included in the output
+    include_date = config['force_date'] or not (config['method'] in ['select_single', 'select_multi'])
+
+    if not config['quiet_mode']:
         print("Processing complete. Writing output...")
 
-    write_csv(config['output_file'], processed_data, include_date=include_date, headers=config.get('headers', False))
+    write_csv(config['output_file'], processed_data, include_date=include_date, headers=config['headers'])
 
-    if not config.get('quiet_mode', False):
+    if not config['quiet_mode']:
         print(f"Output written to {config['output_file']}")
 
-    # Save configuration if requested
-    if args.save_config:
-        with open(args.save_config, 'w') as f:
-            json.dump(config, f, indent=4)
+    # Print the content of the config file if it was saved
+    if config['save_config']:
+        try:
+            with open(config['save_config'], 'r') as f:
+                saved_config = json.load(f)
+            print("Saved Configuration:")
+            print(json.dumps(saved_config, indent=4))
+        except FileNotFoundError:
+            print(f"Error: The file {config['save_config']} could not be found.")
+            raise
 
 if __name__ == '__main__':
     main()
