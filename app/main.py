@@ -44,19 +44,9 @@ def load_remote_config(remote_config_url):
         print(f"Failed to load remote configuration: {e}", file=sys.stderr)
         return None
 
-def save_config(config, path):
-    try:
-        with open(path, 'w') as f:
-            json.dump(config, f, indent=4)
-    except Exception as e:
-        print(f"Error saving configuration: {e}", file=sys.stderr)
-
 def main():
     args = parse_args()
     
-    # Debugging: Print parsed arguments
-    print("Parsed arguments:", args)
-
     config = {
         'csv_file': args.csv_file,
         'output_file': args.output_file if args.output_file else CSV_OUTPUT_PATH,
@@ -92,11 +82,8 @@ def main():
         'headers': args.headers
     }
 
-    # Save only the user-specified parameters
-    user_config = {k: v for k, v in vars(args).items() if v is not None}
-
-    # Debugging: Print configuration
-    print("Configuration:", config)
+    # Remove keys with None values
+    config = {k: v for k, v in config.items() if v is not None}
 
     if args.remote_config:
         remote_config = load_remote_config(args.remote_config)
@@ -112,10 +99,7 @@ def main():
             print(f"Error: The file {args.load_config} does not exist.")
             raise
 
-    data = load_csv(config['csv_file'], headers=config['headers'])
-
-    # Debugging: Print loaded data
-    print("Loaded data:\n", data.head())
+    data = load_csv(config['csv_file'], headers=config.get('headers', False))
 
     plugin_class = load_plugin(config['plugin_name'])
     if plugin_class is None:
@@ -123,26 +107,27 @@ def main():
         return
 
     plugin = plugin_class()
-    processed_data = plugin.process(data, method=config['method'], save_params=config['save_config'], load_params=config['load_config'], single=config['single'], multi=config['multi'])
+    processed_data = plugin.process(data, 
+                                    method=config.get('method'), 
+                                    save_params=config.get('save_config'), 
+                                    load_params=config.get('load_config'), 
+                                    single=config.get('single'), 
+                                    multi=config.get('multi'))
 
-    # Debugging: Print processed data
-    print("Processed data:\n", processed_data.head())
+    include_date = config.get('force_date', False) or not (config.get('method') in ['select_single', 'select_multi'])
 
-    # Determine if date column should be included in the output
-    include_date = config['force_date'] or not (config['method'] in ['select_single', 'select_multi'])
-
-    if not config['quiet_mode']:
+    if not config.get('quiet_mode', False):
         print("Processing complete. Writing output...")
 
-    write_csv(config['output_file'], processed_data, include_date=include_date, headers=config['headers'])
+    write_csv(config['output_file'], processed_data, include_date=include_date, headers=config.get('headers', False))
 
-    if not config['quiet_mode']:
+    if not config.get('quiet_mode', False):
         print(f"Output written to {config['output_file']}")
 
+    # Save configuration if requested
     if args.save_config:
-        save_config(user_config, args.save_config)
-        if not config['quiet_mode']:
-            print(f"Configuration saved to {args.save_config}")
+        with open(args.save_config, 'w') as f:
+            json.dump(config, f, indent=4)
 
 if __name__ == '__main__':
     main()

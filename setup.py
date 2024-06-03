@@ -16,10 +16,12 @@ setup(
     install_requires=[
         'pandas',
         'numpy',
-        'requests',  # Added for potential remote logging and config loading
+        'requests',
         'statsmodels'
     ],
+    tests_require=['pytest'],
     author='Harvey Bastidas',
     author_email='your.email@example.com',
-    description='A preprocessing system that supports dynamic loading of plugins for processing CSV data.'
+    description='A preprocessing system that supports dynamic loading of plugins for processing CSV data.',
+    test_suite='tests',
 )
