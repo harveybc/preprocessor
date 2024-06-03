@@ -5,6 +5,9 @@ setup(
     version='0.1.0',
     packages=find_packages(),
     entry_points={
+        'console_scripts': [
+            'preprocessor=app.main:main'
+        ],
         'preprocessor.plugins': [
             'default_plugin=app.default_plugin:DefaultPlugin',
             'unbiaser=app.plugins.plugin_unbiaser:Plugin',
@@ -19,10 +22,7 @@ setup(
         'requests',
         'statsmodels'
     ],
-    extras_require={
-        'testing': ['pytest'],
-    },
     author='Harvey Bastidas',
     author_email='your.email@example.com',
-    description='A preprocessing system that supports dynamic loading of plugins for processing CSV data.',
+    description='A preprocessing system that supports dynamic loading of plugins for processing CSV data.'
 )

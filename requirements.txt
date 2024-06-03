@@ -20,6 +20,4 @@ build
 pytest
 pdoc3
 boruta
-tensorflow
-keras
 #
