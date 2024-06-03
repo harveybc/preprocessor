@@ -43,7 +43,7 @@ To install and set up the Preprocessor application, follow these steps:
     ```
 
 6. **Run the Preprocessor**:
-    - On Windows, run the following command to ensure the setup is correct:
+    - On Windows, run the following command to verify installation (it generates an example output file csv_output.csv):
         ```bash
         preprocessor.bat tests\data\EURUSD_5m_2006_2007.csv --plugin feature_selector --method select_single --single 0
         ```
@@ -55,7 +55,6 @@ To install and set up the Preprocessor application, follow these steps:
 
 7. **Run Tests (Optional)**:
     - On Windows, run the following command to run the tests:
-    - Run the following command to ensure the setup is correct:
         ```bash
         set_env.bat
         pytest
@@ -68,7 +67,7 @@ To install and set up the Preprocessor application, follow these steps:
         ```
 
 8. **Generate Documentation (Optional)**:
-    - Run the following command to ensure the setup is correct:
+    - Run the following command to generate code documentation in HTML format in the docs directory:
         ```bash
         pdoc --html -o docs app
         ```
