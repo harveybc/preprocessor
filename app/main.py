@@ -26,7 +26,7 @@ from app.config import (
 )
 from app.data_handler import load_csv, write_csv
 from app.default_plugin import DefaultPlugin
-from app.config_handler import load_config, save_config, save_debug_info, default_values  # Add default_values import
+from app.config_handler import load_config, save_config, save_debug_info, load_remote_config, default_values
 
 def load_plugin(plugin_name):
     try:
@@ -59,7 +59,16 @@ def main():
         "processed_data": ""
     }
 
-    config = load_config(args)
+    if args.remote_load_config:
+        remote_config = load_remote_config(args.remote_load_config, args.remote_username, args.remote_password)
+        if remote_config:
+            config = remote_config
+        else:
+            print("Error: Failed to load remote configuration.", file=sys.stderr)
+            return
+    else:
+        config = load_config(args)
+    
     debug_info["configuration"] = str(config)
 
     if not config.get('csv_file'):
