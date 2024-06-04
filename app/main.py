@@ -3,6 +3,7 @@ import os
 import json
 import requests
 import pkg_resources
+import time
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
@@ -49,6 +50,23 @@ def save_remote_config(config, url, username, password):
         print(f"Failed to save remote configuration: {e}", file=sys.stderr)
         return False
 
+def log_remote_info(config, debug_info, url, username, password):
+    try:
+        data = {
+            'json_config': json.dumps(config),
+            'json_result': json.dumps(debug_info)
+        }
+        response = requests.post(
+            url,
+            auth=(username, password),
+            data=data
+        )
+        response.raise_for_status()
+        return True
+    except requests.RequestException as e:
+        print(f"Failed to log remote information: {e}", file=sys.stderr)
+        return False
+
 def main():
     args = parse_args()
 
@@ -56,9 +74,12 @@ def main():
         "parsed_arguments": str(args),
         "configuration": "",
         "loaded_data": "",
-        "processed_data": ""
+        "processed_data": "",
+        "execution_time": ""
     }
 
+    start_time = time.time()
+    
     config = load_config(args)
     debug_info["configuration"] = str(config)
 
@@ -97,10 +118,15 @@ def main():
         print(f"Configuration saved to {os.path.basename(config['save_config'])}")
 
     config_filename = save_config(config)
+
+    execution_time = time.time() - start_time
+    debug_info["execution_time"] = execution_time
+
     save_debug_info(debug_info, args.debug_file)
 
     if not config['quiet_mode']:
         print(f"Debug info saved to {args.debug_file}")
+        print(f"Execution time: {execution_time} seconds")
 
     if args.remote_save_config:
         filtered_config = {k: v for k, v in config.items() if v is not None and v != default_values.get(k)}
@@ -108,6 +134,12 @@ def main():
             print(f"Configuration successfully saved to remote URL {args.remote_save_config}")
         else:
             print(f"Failed to save configuration to remote URL {args.remote_save_config}")
+
+    if args.remote_log:
+        if log_remote_info(config, debug_info, args.remote_log, args.remote_username, args.remote_password):
+            print(f"Debug information successfully logged to remote URL {args.remote_log}")
+        else:
+            print(f"Failed to log debug information to remote URL {args.remote_log}")
 
 if __name__ == '__main__':
     main()
