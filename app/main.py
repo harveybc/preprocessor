@@ -26,7 +26,7 @@ from app.config import (
 )
 from app.data_handler import load_csv, write_csv
 from app.default_plugin import DefaultPlugin
-from app.config_handler import load_config, save_config, load_remote_config
+from app.config_handler import load_config, save_config, save_debug_info
 
 def load_plugin(plugin_name):
     try:
@@ -35,6 +35,19 @@ def load_plugin(plugin_name):
     except StopIteration:
         print(f"Plugin {plugin_name} not found.", file=sys.stderr)
         return None
+
+def save_remote_config(config, url, username, password):
+    try:
+        response = requests.post(
+            url,
+            auth=(username, password),
+            data={'json_config': json.dumps(config)}
+        )
+        response.raise_for_status()
+        return True
+    except requests.RequestException as e:
+        print(f"Failed to save remote configuration: {e}", file=sys.stderr)
+        return False
 
 def main():
     args = parse_args()
@@ -46,7 +59,6 @@ def main():
         "processed_data": ""
     }
 
-    # Load configuration
     config = load_config(args)
     debug_info["configuration"] = str(config)
 
@@ -54,7 +66,6 @@ def main():
         print("Error: No CSV file specified.", file=sys.stderr)
         return
 
-    # Load data
     data = load_csv(config['csv_file'], headers=config['headers'])
     debug_info["loaded_data"] = str(data.head())
 
@@ -74,7 +85,6 @@ def main():
     )
     debug_info["processed_data"] = str(processed_data.head())
 
-    # Determine if date column should be included in the output
     include_date = config['force_date'] or not (config['method'] in ['select_single', 'select_multi'])
 
     if not config['quiet_mode']:
@@ -92,9 +102,11 @@ def main():
     if not config['quiet_mode']:
         print(f"Debug info saved to {args.debug_file}")
 
-def save_debug_info(debug_info, debug_file):
-    with open(debug_file, 'w') as f:
-        json.dump(debug_info, f, indent=4)
+    if args.remote_save_config:
+        if save_remote_config(config, args.remote_save_config, args.remote_username, args.remote_password):
+            print(f"Configuration successfully saved to remote URL {args.remote_save_config}")
+        else:
+            print(f"Failed to save configuration to remote URL {args.remote_save_config}")
 
 if __name__ == '__main__':
     main()
