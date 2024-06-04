@@ -2,7 +2,7 @@ import argparse
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Preprocessor for CSV data.")
-    parser.add_argument('csv_file', type=str, nargs='?', help='Path to the input CSV file.')  # Changed to optional
+    parser.add_argument('csv_file', type=str, nargs='?', help='Path to the input CSV file.')
     parser.add_argument('-sc', '--save_config', type=str, help='Path to save the configuration file.')
     parser.add_argument('-lc', '--load_config', type=str, help='Path to load the configuration file.')
     parser.add_argument('-p', '--plugin', type=str, help='Plugin to use for processing the data.')
@@ -36,4 +36,5 @@ def parse_args():
     parser.add_argument('--multi', type=int, nargs='+', help='Multiple columns to select.')
     parser.add_argument('--force_date', action='store_true', help='Force inclusion of the date column in the output.')
     parser.add_argument('--headers', action='store_true', help='Indicate if the input CSV has headers.')
+    parser.add_argument('--debug_file', type=str, default='debug_out.json', help='Path to save the debug information.')
     return parser.parse_args()

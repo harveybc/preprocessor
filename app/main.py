@@ -86,11 +86,14 @@ def main():
         print(f"Output written to {config['output_file']}")
         print(f"Configuration saved to {os.path.basename(config['save_config'])}")
 
-    save_config(config)
-    save_debug_info(debug_info)
+    config_filename = save_config(config)
+    save_debug_info(debug_info, args.debug_file)
 
-def save_debug_info(debug_info):
-    with open('debug_out.json', 'w') as f:
+    if not config['quiet_mode']:
+        print(f"Debug info saved to {args.debug_file}")
+
+def save_debug_info(debug_info, debug_file):
+    with open(debug_file, 'w') as f:
         json.dump(debug_info, f, indent=4)
 
 if __name__ == '__main__':
