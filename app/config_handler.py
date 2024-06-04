@@ -109,14 +109,14 @@ def save_config(config):
     }
 
     plugin_name = config['plugin_name'] if config['plugin_name'] != 'default_plugin' else 'normalizer'
-    general_params = ['csv_file', 'plugin_name', 'output_file', 'save_config', 'quiet_mode', 'headers', 'force_date']
+    general_params = ['csv_file', 'plugin_name', 'output_file', 'save_config', 'quiet_mode', 'headers', 'force_date', 'remote_log']
     selected_plugin_params = plugin_specific_params.get(plugin_name, [])
     filtered_params = {k: v for k, v in config.items() if (k in general_params or k in selected_plugin_params) and v is not None and v != default_values.get(k)}
 
     config_filename = config['save_config'] if config['save_config'] else 'config_output.json'
     with open(config_filename, 'w') as f:
         json.dump(filtered_params, f, indent=4)
-    return config_filename
+    return filtered_params
 
 def load_remote_config(remote_config_url, username, password):
     try:

@@ -38,12 +38,11 @@ def load_plugin(plugin_name):
         return None
 
 def save_remote_config(config, url, username, password):
-    filtered_config = {k: v for k, v in config.items() if v is not None and v != default_values.get(k)}
     try:
         response = requests.post(
             url,
             auth=(username, password),
-            data={'json_config': json.dumps(filtered_config)}
+            data={'json_config': json.dumps(config)}
         )
         response.raise_for_status()
         return True
@@ -52,10 +51,9 @@ def save_remote_config(config, url, username, password):
         return False
 
 def log_remote_info(config, debug_info, url, username, password):
-    filtered_config = {k: v for k, v in config.items() if v is not None and v != default_values.get(k)}
     try:
         data = {
-            'json_config': json.dumps(filtered_config),
+            'json_config': json.dumps(config),
             'json_result': json.dumps(debug_info)
         }
         response = requests.post(
@@ -129,10 +127,10 @@ def main():
         print(f"Output written to {config['output_file']}")
         print(f"Configuration saved to {os.path.basename(config['save_config'])}")
 
-    config_filename = save_config(config)
-
     execution_time = time.time() - start_time
     debug_info["execution_time"] = execution_time
+
+    config_filename = save_config(config)
 
     save_debug_info(debug_info, args.debug_file)
 
