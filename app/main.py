@@ -68,18 +68,15 @@ def log_remote_info(config, debug_info, url, username, password):
         return False
 
 def main():
+    # Start the timer
+    start_time = time.time()
     args = parse_args()
-
     debug_info = {
         "execution_time": "",
         "loaded_data": "",
         "processed_data": ""
     }
-
-    start_time = time.time()
-    
     config = load_config(args)
-
     if not config.get('csv_file'):
         print("Error: No CSV file specified.", file=sys.stderr)
         return
