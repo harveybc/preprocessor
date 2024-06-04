@@ -49,9 +49,7 @@ default_values = {
 }
 
 def load_config(args):
-    """Load configuration from a file and command line arguments."""
     config = {}
-    
     if args.load_config:
         try:
             with open(args.load_config, 'r') as f:
@@ -60,7 +58,6 @@ def load_config(args):
             print(f"Error: The file {args.load_config} does not exist.")
             raise
 
-    # Override config values with command line arguments if provided
     config['csv_file'] = args.csv_file if args.csv_file else config.get('csv_file', CSV_INPUT_PATH)
     config['output_file'] = args.output_file if args.output_file else config.get('output_file', CSV_OUTPUT_PATH)
     config['plugin_name'] = args.plugin if args.plugin else config.get('plugin_name', DEFAULT_PLUGIN)
@@ -97,7 +94,6 @@ def load_config(args):
     return config
 
 def save_config(config):
-    """Save the configuration to a file."""
     plugin_specific_params = {
         'normalizer': ['norm_method', 'range'],
         'unbiaser': ['window_size', 'ema_alpha'],
@@ -117,7 +113,6 @@ def save_config(config):
     return config_filename
 
 def load_remote_config(remote_config_url):
-    """Load configuration from a remote URL."""
     try:
         response = requests.get(remote_config_url)
         response.raise_for_status()
