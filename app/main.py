@@ -69,6 +69,13 @@ def log_remote_info(config, debug_info, url, username, password):
         print(f"Failed to log remote information: {e}", file=sys.stderr)
         return False
 
+def merge_config(config, args):
+    cli_args = vars(args)
+    for key, value in cli_args.items():
+        if value is not None:
+            config[key] = value
+    return config
+
 def main():
     args = parse_args()
 
@@ -79,8 +86,9 @@ def main():
     }
 
     start_time = time.time()
-    
+
     config = load_config(args)
+    config = merge_config(config, args)
 
     if not config.get('csv_file'):
         print("Error: No CSV file specified.", file=sys.stderr)
