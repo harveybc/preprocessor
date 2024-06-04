@@ -13,6 +13,41 @@ from app.config import (
     DEFAULT_QUIET_MODE
 )
 
+default_values = {
+    'csv_file': CSV_INPUT_PATH,
+    'output_file': CSV_OUTPUT_PATH,
+    'plugin_name': DEFAULT_PLUGIN,
+    'norm_method': DEFAULT_NORMALIZATION_METHOD,
+    'range': DEFAULT_NORMALIZATION_RANGE,
+    'save_config': CONFIG_SAVE_PATH,
+    'load_config': CONFIG_LOAD_PATH,
+    'quiet_mode': DEFAULT_QUIET_MODE,
+    'window_size': None,
+    'ema_alpha': None,
+    'remove_rows': None,
+    'remove_columns': None,
+    'max_lag': None,
+    'significance_level': None,
+    'alpha': None,
+    'l1_ratio': None,
+    'model_type': None,
+    'timesteps': None,
+    'features': None,
+    'clean_method': None,
+    'period': None,
+    'outlier_threshold': None,
+    'solve_missing': False,
+    'delete_outliers': False,
+    'interpolate_outliers': False,
+    'delete_nan': False,
+    'interpolate_nan': False,
+    'method': None,
+    'single': 0,
+    'multi': [0],
+    'force_date': False,
+    'headers': False
+}
+
 def load_config(args):
     """Load configuration from a file and command line arguments."""
     config = {}
