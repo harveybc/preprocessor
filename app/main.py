@@ -26,7 +26,7 @@ from app.config import (
 )
 from app.data_handler import load_csv, write_csv
 from app.default_plugin import DefaultPlugin
-from app.config_handler import load_config, save_config, save_debug_info
+from app.config_handler import load_config, save_config, save_debug_info, default_values  # Add default_values import
 
 def load_plugin(plugin_name):
     try:
