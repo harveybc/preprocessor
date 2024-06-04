@@ -10,6 +10,7 @@ setup(
         ],
         'preprocessor.plugins': [
             'default_plugin=app.default_plugin:DefaultPlugin',
+            'normalizer=app.default_plugin:DefaultPlugin',
             'unbiaser=app.plugins.plugin_unbiaser:Plugin',
             'trimmer=app.plugins.plugin_trimmer:Plugin',
             'feature_selector=app.plugins.plugin_feature_selector_pre:Plugin',
