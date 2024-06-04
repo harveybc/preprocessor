@@ -45,7 +45,7 @@ default_values = {
     'single': 0,
     'multi': [0],
     'force_date': False,
-    'headers': False
+    'headers': False  # Ensure headers has a default value
 }
 
 def load_config(args):
@@ -57,6 +57,11 @@ def load_config(args):
         except FileNotFoundError:
             print(f"Error: The file {args.load_config} does not exist.")
             raise
+
+    if args.remote_load_config:
+        remote_config = load_remote_config(args.remote_load_config, args.remote_username, args.remote_password)
+        if remote_config:
+            config.update(remote_config)
 
     config['csv_file'] = args.csv_file if args.csv_file else config.get('csv_file', CSV_INPUT_PATH)
     config['output_file'] = args.output_file if args.output_file else config.get('output_file', CSV_OUTPUT_PATH)

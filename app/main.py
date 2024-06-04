@@ -59,16 +59,7 @@ def main():
         "processed_data": ""
     }
 
-    if args.remote_load_config:
-        remote_config = load_remote_config(args.remote_load_config, args.remote_username, args.remote_password)
-        if remote_config:
-            config = remote_config
-        else:
-            print("Error: Failed to load remote configuration.", file=sys.stderr)
-            return
-    else:
-        config = load_config(args)
-    
+    config = load_config(args)
     debug_info["configuration"] = str(config)
 
     if not config.get('csv_file'):
