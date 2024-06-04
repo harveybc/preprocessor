@@ -134,11 +134,12 @@ def main():
     # Save configuration to file
     config_filename = config['save_config'] if config['save_config'] else 'config_output.json'
     with open(config_filename, 'w') as f:
-    json.dump({k: v for k, v in config.items() if v is not None}, f, indent=4)
+        json.dump({k: v for k, v in config.items() if v is not None}, f, indent=4)
 
-if not config['quiet_mode']:
-    print(f"Output written to {config['output_file']}")
-    print(f"Configuration saved to {os.path.basename(config_filename)}")
+    # print debug messages
+    if not config['quiet_mode']:
+        print(f"Output written to {config['output_file']}")
+        print(f"Configuration saved to {os.path.basename(config_filename)}")
 
 
 if __name__ == '__main__':
