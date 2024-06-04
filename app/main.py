@@ -37,12 +37,12 @@ def load_plugin(plugin_name):
         print(f"Plugin {plugin_name} not found.", file=sys.stderr)
         return None
 
-def save_remote_config(config_str, url, username, password):
+def save_remote_config(config, url, username, password):
     try:
         response = requests.post(
             url,
             auth=(username, password),
-            data={'json_config': config_str}
+            data={'json_config': json.dumps(config)}
         )
         response.raise_for_status()
         return True
@@ -50,10 +50,10 @@ def save_remote_config(config_str, url, username, password):
         print(f"Failed to save remote configuration: {e}", file=sys.stderr)
         return False
 
-def log_remote_info(config_str, debug_info, url, username, password):
+def log_remote_info(config, debug_info, url, username, password):
     try:
         data = {
-            'json_config': config_str,
+            'json_config': json.dumps(config),
             'json_result': json.dumps(debug_info)
         }
         response = requests.post(
@@ -127,10 +127,10 @@ def main():
         print(f"Output written to {config['output_file']}")
         print(f"Configuration saved to {os.path.basename(config['save_config'])}")
 
-    config_str, config_filename = save_config(config)
-
     execution_time = time.time() - start_time
     debug_info["execution_time"] = execution_time
+
+    config_filename = save_config(config)
 
     save_debug_info(debug_info, args.debug_file)
 
@@ -139,13 +139,13 @@ def main():
         print(f"Execution time: {execution_time} seconds")
 
     if args.remote_save_config:
-        if save_remote_config(config_str, args.remote_save_config, args.remote_username, args.remote_password):
+        if save_remote_config(config, args.remote_save_config, args.remote_username, args.remote_password):
             print(f"Configuration successfully saved to remote URL {args.remote_save_config}")
         else:
             print(f"Failed to save configuration to remote URL {args.remote_save_config}")
 
     if args.remote_log:
-        if log_remote_info(config_str, debug_info, args.remote_log, args.remote_username, args.remote_password):
+        if log_remote_info(config, debug_info, args.remote_log, args.remote_username, args.remote_password):
             print(f"Debug information successfully logged to remote URL {args.remote_log}")
         else:
             print(f"Failed to log debug information to remote URL {args.remote_log}")
