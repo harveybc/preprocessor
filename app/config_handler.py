@@ -58,7 +58,7 @@ def load_config(args):
             print(f"Error: The file {args.load_config} does not exist.")
             raise
 
-    if args.remote_load_config:
+    if hasattr(args, 'remote_load_config') and args.remote_load_config:
         remote_config, success = load_remote_config(args.remote_load_config, args.remote_username, args.remote_password)
         if success:
             config.update(remote_config)
