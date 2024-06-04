@@ -38,11 +38,12 @@ def load_plugin(plugin_name):
         return None
 
 def save_remote_config(config, url, username, password):
+    filtered_config = {k: v for k, v in config.items() if v is not None and v != default_values.get(k)}
     try:
         response = requests.post(
             url,
             auth=(username, password),
-            data={'json_config': json.dumps(config)}
+            data={'json_config': json.dumps(filtered_config)}
         )
         response.raise_for_status()
         return True
@@ -51,9 +52,10 @@ def save_remote_config(config, url, username, password):
         return False
 
 def log_remote_info(config, debug_info, url, username, password):
+    filtered_config = {k: v for k, v in config.items() if v is not None and v != default_values.get(k)}
     try:
         data = {
-            'json_config': json.dumps(config),
+            'json_config': json.dumps(filtered_config),
             'json_result': json.dumps(debug_info)
         }
         response = requests.post(
@@ -68,15 +70,18 @@ def log_remote_info(config, debug_info, url, username, password):
         return False
 
 def main():
-    # Start the timer
-    start_time = time.time()
     args = parse_args()
+
     debug_info = {
         "execution_time": "",
         "loaded_data": "",
         "processed_data": ""
     }
+
+    start_time = time.time()
+    
     config = load_config(args)
+
     if not config.get('csv_file'):
         print("Error: No CSV file specified.", file=sys.stderr)
         return
@@ -123,8 +128,7 @@ def main():
         print(f"Execution time: {execution_time} seconds")
 
     if args.remote_save_config:
-        filtered_config = {k: v for k, v in config.items() if v is not None and v != default_values.get(k)}
-        if save_remote_config(filtered_config, args.remote_save_config, args.remote_username, args.remote_password):
+        if save_remote_config(config, args.remote_save_config, args.remote_username, args.remote_password):
             print(f"Configuration successfully saved to remote URL {args.remote_save_config}")
         else:
             print(f"Failed to save configuration to remote URL {args.remote_save_config}")
