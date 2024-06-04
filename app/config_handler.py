@@ -45,7 +45,7 @@ default_values = {
     'single': 0,
     'multi': [0],
     'force_date': False,
-    'headers': False  # Ensure headers has a default value
+    'headers': False
 }
 
 def load_config(args):
@@ -59,9 +59,10 @@ def load_config(args):
             raise
 
     if args.remote_load_config:
-        remote_config = load_remote_config(args.remote_load_config, args.remote_username, args.remote_password)
-        if remote_config:
+        remote_config, success = load_remote_config(args.remote_load_config, args.remote_username, args.remote_password)
+        if success:
             config.update(remote_config)
+            print(f"Downloaded configuration from {args.remote_load_config}")
 
     config['csv_file'] = args.csv_file if args.csv_file else config.get('csv_file', CSV_INPUT_PATH)
     config['output_file'] = args.output_file if args.output_file else config.get('output_file', CSV_OUTPUT_PATH)
@@ -123,13 +124,13 @@ def load_remote_config(remote_config_url, username, password):
         response.raise_for_status()
         remote_config = response.json()
         if 'json_config' in remote_config:
-            return json.loads(remote_config['json_config'])
+            return json.loads(remote_config['json_config']), True
         else:
             print("Error: 'json_config' not found in the response.", file=sys.stderr)
-            return None
+            return None, False
     except requests.RequestException as e:
         print(f"Failed to load remote configuration: {e}", file=sys.stderr)
-        return None
+        return None, False
 
 def save_debug_info(debug_info, debug_file):
     with open(debug_file, 'w') as f:
