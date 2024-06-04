@@ -103,7 +103,8 @@ def main():
         print(f"Debug info saved to {args.debug_file}")
 
     if args.remote_save_config:
-        if save_remote_config(config, args.remote_save_config, args.remote_username, args.remote_password):
+        filtered_config = {k: v for k, v in config.items() if v is not None and v != default_values.get(k)}
+        if save_remote_config(filtered_config, args.remote_save_config, args.remote_username, args.remote_password):
             print(f"Configuration successfully saved to remote URL {args.remote_save_config}")
         else:
             print(f"Failed to save configuration to remote URL {args.remote_save_config}")
