@@ -109,8 +109,7 @@ def save_config(config):
     plugin_name = config['plugin_name'] if config['plugin_name'] != 'default_plugin' else 'normalizer'
     general_params = ['csv_file', 'plugin_name', 'output_file', 'save_config', 'quiet_mode', 'headers', 'force_date']
     selected_plugin_params = plugin_specific_params.get(plugin_name, [])
-    filtered_params = {k: v for k, v in config.items() if k in general_params and v is not None and v != default_values.get(k)}
-    filtered_params['plugin_specific'] = {k: v for k, v in config.items() if k in selected_plugin_params and v is not None and v != default_values.get(k)}
+    filtered_params = {k: v for k, v in config.items() if (k in general_params or k in selected_plugin_params) and v is not None and v != default_values.get(k)}
 
     config_filename = config['save_config'] if config['save_config'] else 'config_output.json'
     with open(config_filename, 'w') as f:
