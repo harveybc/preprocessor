@@ -45,10 +45,7 @@ default_values = {
     'single': 0,
     'multi': [0],
     'force_date': False,
-    'headers': False,
-    'remote_log': None,
-    'remote_username': 'test',
-    'remote_password': 'pass'
+    'headers': False
 }
 
 def load_config(args):
@@ -99,9 +96,6 @@ def load_config(args):
     config['multi'] = args.multi if args.multi else config.get('multi', [0])
     config['force_date'] = args.force_date if args.force_date else config.get('force_date', False)
     config['headers'] = args.headers if args.headers else config.get('headers', False)
-    config['remote_log'] = args.remote_log if args.remote_log else config.get('remote_log')
-    config['remote_username'] = args.remote_username if args.remote_username else config.get('remote_username', 'test')
-    config['remote_password'] = args.remote_password if args.remote_password else config.get('remote_password', 'pass')
 
     return config
 
@@ -115,7 +109,7 @@ def save_config(config):
     }
 
     plugin_name = config['plugin_name'] if config['plugin_name'] != 'default_plugin' else 'normalizer'
-    general_params = ['csv_file', 'plugin_name', 'output_file', 'save_config', 'quiet_mode', 'headers', 'force_date', 'remote_log', 'remote_username', 'remote_password']
+    general_params = ['csv_file', 'plugin_name', 'output_file', 'save_config', 'quiet_mode', 'headers', 'force_date']
     selected_plugin_params = plugin_specific_params.get(plugin_name, [])
     filtered_params = {k: v for k, v in config.items() if (k in general_params or k in selected_plugin_params) and v is not None and v != default_values.get(k)}
 
