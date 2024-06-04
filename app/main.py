@@ -81,8 +81,10 @@ def main():
 
     debug_info = {
         "execution_time": "",
-        "loaded_data": "",
-        "processed_data": ""
+        "input_rows": 0,
+        "output_rows": 0,
+        "input_columns": 0,
+        "output_columns": 0
     }
 
     start_time = time.time()
@@ -95,7 +97,8 @@ def main():
         return
 
     data = load_csv(config['csv_file'], headers=config['headers'])
-    debug_info["loaded_data"] = str(data.head())
+    debug_info["input_rows"] = len(data)
+    debug_info["input_columns"] = len(data.columns)
 
     plugin_class = load_plugin(config['plugin_name'])
     if plugin_class is None:
@@ -111,7 +114,9 @@ def main():
         single=config['single'],
         multi=config['multi']
     )
-    debug_info["processed_data"] = str(processed_data.head())
+
+    debug_info["output_rows"] = len(processed_data)
+    debug_info["output_columns"] = len(processed_data.columns)
 
     include_date = config['force_date'] or not (config['method'] in ['select_single', 'select_multi'])
 
