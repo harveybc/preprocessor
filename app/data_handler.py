@@ -19,7 +19,7 @@ def load_csv(file_path, headers=False):
             data = pd.read_csv(file_path, header=None, sep=',', parse_dates=[0], dayfirst=True)
             # Check if the first column is a date column
             if pd.api.types.is_datetime64_any_dtype(data.iloc[:, 0]):
-                data.columns = ['date'] + [f'col_{i}' for i in range(1, len(data.columns))]
+                data.columns = ['date'] + [f'col_{i-1}' for i in range(1, len(data.columns))]
                 data.set_index('date', inplace=True)
             else:
                 # Manually set column names if the first column is not a date
