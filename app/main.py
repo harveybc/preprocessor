@@ -71,17 +71,14 @@ def main():
     args = parse_args()
 
     debug_info = {
-        "parsed_arguments": str(args),
-        "configuration": "",
+        "execution_time": "",
         "loaded_data": "",
-        "processed_data": "",
-        "execution_time": ""
+        "processed_data": ""
     }
 
     start_time = time.time()
     
     config = load_config(args)
-    debug_info["configuration"] = str(config)
 
     if not config.get('csv_file'):
         print("Error: No CSV file specified.", file=sys.stderr)
