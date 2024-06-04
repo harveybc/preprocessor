@@ -112,11 +112,14 @@ def save_config(config):
         json.dump(filtered_params, f, indent=4)
     return config_filename
 
-def load_remote_config(remote_config_url):
+def save_debug_info(debug_info, debug_file):
+    with open(debug_file, 'w') as f:
+        json.dump(debug_info, f, indent=4)
+
+def save_remote_config(remote_config_url, config, username, password):
     try:
-        response = requests.get(remote_config_url)
+        response = requests.post(remote_config_url, auth=(username, password), data={'json_config': json.dumps(config)})
         response.raise_for_status()
-        return response.json()
+        print("Remote configuration saved successfully.")
     except requests.RequestException as e:
-        print(f"Failed to load remote configuration: {e}", file=sys.stderr)
-        return None
+        print(f"Failed to save remote configuration: {e}", file=sys.stderr)
