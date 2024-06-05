@@ -106,11 +106,7 @@ def main():
     plugin = plugin_class()
     processed_data = plugin.process(
         data,
-        method=config['method'],
-        save_params=config['save_config'],
-        load_params=config['load_config'],
-        single=config['single'],
-        multi=config['multi']
+        **{k: v for k, v in config.items() if k not in default_values or v != default_values[k]}
     )
 
     debug_info["output_rows"] = len(processed_data)
@@ -138,21 +134,17 @@ def main():
         print(f"Debug info saved to {args.debug_file}")
         print(f"Execution time: {execution_time} seconds")
 
-    # Remote save config if requested
-    if args.remote_save_config or 'remote_save_config' in config:
-        remote_save_url = args.remote_save_config or config['remote_save_config']
-        if save_remote_config(config_str, remote_save_url, args.remote_username, args.remote_password):
-            print(f"Configuration successfully saved to remote URL {remote_save_url}")
+    if args.remote_save_config:
+        if save_remote_config(config_str, args.remote_save_config, args.remote_username, args.remote_password):
+            print(f"Configuration successfully saved to remote URL {args.remote_save_config}")
         else:
-            print(f"Failed to save configuration to remote URL {remote_save_url}")
+            print(f"Failed to save configuration to remote URL {args.remote_save_config}")
 
-    # Remote log if requested
-    remote_log_url = args.remote_log or config.get('remote_log')
-    if remote_log_url:
-        if log_remote_info(config_str, debug_info, remote_log_url, args.remote_username, args.remote_password):
-            print(f"Debug information successfully logged to remote URL {remote_log_url}")
+    if args.remote_log:
+        if log_remote_info(config_str, debug_info, args.remote_log, args.remote_username, args.remote_password):
+            print(f"Debug information successfully logged to remote URL {args.remote_log}")
         else:
-            print(f"Failed to log debug information to remote URL {remote_log_url}")
+            print(f"Failed to log debug information to remote URL {args.remote_log}")
 
 if __name__ == '__main__':
     main()
