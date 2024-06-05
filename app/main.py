@@ -117,7 +117,7 @@ def main():
 
     plugin = plugin_class()
     filtered_params = filter_plugin_params(config['plugin_name'], config)
-    processed_data = plugin.process(**filtered_params)
+    processed_data = plugin.process(data, **filtered_params)
 
     debug_info["output_rows"] = len(processed_data)
     debug_info["output_columns"] = len(processed_data.columns)
