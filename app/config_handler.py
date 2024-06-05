@@ -54,11 +54,11 @@ default_values = {
 }
 
 def load_config(args, required_params):
-    config = {}
+    config = default_values.copy()
     if args.load_config:
         try:
             with open(args.load_config, 'r') as f:
-                config = json.load(f)
+                config.update(json.load(f))
         except FileNotFoundError:
             print(f"Error: The file {args.load_config} does not exist.")
             raise
