@@ -2,24 +2,23 @@ import pandas as pd
 import numpy as np
 
 class Plugin:
-    def __init__(self):
-        # Initialize the unbiasing parameters to None
-        self.unbiasing_params = None
+    plugin_params = ['method', 'window_size', 'ema_alpha']
 
-    def process(self, data, method='ma', window_size=5, ema_alpha=0.1):
+    def __init__(self):
+        self.params = {}
+
+    def set_params(self, **params):
+        self.params.update(params)
+
+    def process(self, data):
         """
         Unbias the data using the specified method (moving average or EMA).
         Only numeric columns after the date column are processed.
-
-        Args:
-            data (pd.DataFrame): The input data to be processed.
-            method (str): The method for unbiasing ('ma' for moving average, 'ema' for exponential moving average).
-            window_size (int): The window size for moving average.
-            ema_alpha (float): The alpha value for exponential moving average.
-
-        Returns:
-            pd.DataFrame: The dataset with unbiasing applied to the numeric columns.
         """
+        method = self.params.get('method', 'ma')
+        window_size = self.params.get('window_size', 5)
+        ema_alpha = self.params.get('ema_alpha', 0.1)
+
         print("Starting the process method.")
         print(f"Method: {method}, Window size: {window_size}, EMA alpha: {ema_alpha}")
 
@@ -43,13 +42,6 @@ class Plugin:
     def _moving_average_unbias(self, data, window_size):
         """
         Apply moving average unbiasing to the data.
-
-        Args:
-            data (pd.DataFrame): The input data to be processed.
-            window_size (int): The window size for moving average.
-
-        Returns:
-            pd.DataFrame: The dataset with moving average unbiasing applied.
         """
         print(f"Applying moving average with window size: {window_size}")
         unbiassed_data = data.astype(float).copy()  # Ensure all data is float
@@ -66,13 +58,6 @@ class Plugin:
     def _ema_unbias(self, data, alpha):
         """
         Apply exponential moving average unbiasing to the data.
-
-        Args:
-            data (pd.DataFrame): The input data to be processed.
-            alpha (float): The alpha value for exponential moving average.
-
-        Returns:
-            pd.DataFrame: The dataset with exponential moving average unbiasing applied.
         """
         print(f"Applying exponential moving average with alpha: {alpha}")
         ema = data.ewm(alpha=alpha).mean()
