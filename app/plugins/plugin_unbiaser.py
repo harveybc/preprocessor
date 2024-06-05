@@ -14,8 +14,9 @@ class Plugin:
 
     def set_params(self, **kwargs):
         for key, value in kwargs.items():
-            if key in self.params:
+            if key in self.params and value is not None:
                 self.params[key] = value
+        print(f"Set parameters: {self.params}")
 
     def process(self, data):
         method = self.params.get('method', 'ma')

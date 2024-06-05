@@ -6,7 +6,7 @@ import pkg_resources
 import time
 from plugin_loader import load_plugin
 from app.cli import parse_args
-from app.config_handler import load_config, save_config, save_debug_info, load_remote_config, default_values
+from app.config_handler import load_config, save_config, save_debug_info, load_remote_config
 from app.data_handler import load_csv, write_csv
 
 def save_remote_config(config, url, username, password):
@@ -36,7 +36,7 @@ def log_remote_info(config, debug_info, url, username, password):
         response.raise_for_status()
         return True
     except requests.RequestException as e:
-        print(f"Failed to log remote information: {e}", file.sys.stderr)
+        print(f"Failed to log remote information: {e}", file=sys.stderr)
         return False
 
 def merge_config(config, args):
@@ -70,11 +70,12 @@ def main():
     debug_info["input_rows"] = len(data)
     debug_info["input_columns"] = len(data.columns)
 
-    plugin, required_params = load_plugin(config['plugin_name'])
-    if plugin is None:
+    plugin_class, required_params = load_plugin(config['plugin_name'])
+    if plugin_class is None:
         print(f"Error: The plugin {config['plugin_name']} could not be loaded.")
         return
 
+    plugin = plugin_class()
     plugin_params = {param: config[param] for param in required_params if param in config}
     plugin.set_params(**plugin_params)
 
