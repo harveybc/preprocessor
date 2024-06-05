@@ -1,3 +1,5 @@
+# app/main.py
+
 import sys
 import os
 import json
@@ -106,7 +108,11 @@ def main():
     plugin = plugin_class()
     processed_data = plugin.process(
         data,
-        **{k: v for k, v in config.items() if k not in default_values or v != default_values[k]}
+        method=config['method'],
+        save_params=config['save_config'],
+        load_params=config['load_config'],
+        single=config['single'],
+        multi=config['multi']
     )
 
     debug_info["output_rows"] = len(processed_data)
