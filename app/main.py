@@ -1,11 +1,47 @@
 import sys
 import time
 import json
-from plugin_loader import load_plugin
+from plugin_loader import load_plugin, set_plugin_params
 from app.cli import parse_args
 from app.config_handler import load_config, save_config, save_debug_info
 from app.data_handler import load_csv, write_csv
-from app.plugin_handler import set_plugin_params
+
+def save_remote_config(config, url, username, password):
+    try:
+        response = requests.post(
+            url,
+            auth=(username, password),
+            data={'json_config': config}
+        )
+        response.raise_for_status()
+        return True
+    except requests.RequestException as e:
+        print(f"Failed to save remote configuration: {e}", file=sys.stderr)
+        return False
+
+def log_remote_info(config, debug_info, url, username, password):
+    try:
+        data = {
+            'json_config': config,
+            'json_result': json.dumps(debug_info)
+        }
+        response = requests.post(
+            url,
+            auth=(username, password),
+            data=data
+        )
+        response.raise_for_status()
+        return True
+    except requests.RequestException as e:
+        print(f"Failed to log remote information: {e}", file=sys.stderr)
+        return False
+
+def merge_config(config, args):
+    cli_args = vars(args)
+    for key, value in cli_args.items():
+        if value is not None:
+            config[key] = value
+    return config
 
 def main():
     args = parse_args()
@@ -21,6 +57,7 @@ def main():
     start_time = time.time()
 
     config = load_config(args)
+    config = merge_config(config, args)
 
     if not config.get('csv_file'):
         print("Error: No CSV file specified.", file=sys.stderr)
