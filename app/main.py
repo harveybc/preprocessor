@@ -3,7 +3,7 @@ import os
 import json
 import requests
 import time
-from plugin_loader import load_plugin
+from plugin_loader import load_plugin, load_plugin_fallback
 from app.cli import parse_args
 from app.config_handler import load_config, save_config, save_debug_info, load_remote_config
 from app.data_handler import load_csv, write_csv
@@ -61,6 +61,8 @@ def main():
     config = load_config(args)
     config = merge_config(config, args)
 
+    print(f"Configuration loaded: {config}")  # Debug message
+
     if not config.get('csv_file'):
         print("Error: No CSV file specified.", file=sys.stderr)
         return
@@ -69,15 +71,18 @@ def main():
     debug_info["input_rows"] = len(data)
     debug_info["input_columns"] = len(data.columns)
 
-    print(f"Attempting to load plugin: {config['plugin_name']}")
+    print(f"Attempting to load plugin: {config['plugin_name']}")  # Debug message
     plugin_class, required_params = load_plugin(config['plugin_name'])
     if plugin_class is None:
         print(f"Error: The plugin {config['plugin_name']} could not be loaded.")
         return
 
+    if plugin_class == load_plugin_fallback(config['plugin_name'])[0]:
+        print("Falling back to default plugin.")  # Debug message
+
     plugin = plugin_class()
     plugin_params = {param: config[param] for param in required_params if param in config}
-    print(f"Setting plugin parameters: {plugin_params}")
+    print(f"Setting plugin parameters: {plugin_params}")  # Debug message
     plugin.set_params(**plugin_params)
 
     processed_data = plugin.process(data)
