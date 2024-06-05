@@ -108,7 +108,8 @@ def main():
     execution_time = time.time() - start_time
     debug_info["execution_time"] = execution_time
 
-    save_debug_info(debug_info, args.debug_file)
+    if args.debug_file:  # Ensure debug_file is present
+        save_debug_info(debug_info, args.debug_file)
 
     if not config['quiet_mode']:
         print(f"Debug info saved to {args.debug_file}")
