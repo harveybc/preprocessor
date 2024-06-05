@@ -138,17 +138,21 @@ def main():
         print(f"Debug info saved to {args.debug_file}")
         print(f"Execution time: {execution_time} seconds")
 
-    if args.remote_save_config:
-        if save_remote_config(config_str, args.remote_save_config, args.remote_username, args.remote_password):
-            print(f"Configuration successfully saved to remote URL {args.remote_save_config}")
+    # Remote save config if requested
+    if args.remote_save_config or 'remote_save_config' in config:
+        remote_save_url = args.remote_save_config or config['remote_save_config']
+        if save_remote_config(config_str, remote_save_url, args.remote_username, args.remote_password):
+            print(f"Configuration successfully saved to remote URL {remote_save_url}")
         else:
-            print(f"Failed to save configuration to remote URL {args.remote_save_config}")
+            print(f"Failed to save configuration to remote URL {remote_save_url}")
 
-    if args.remote_log:
-        if log_remote_info(config_str, debug_info, args.remote_log, args.remote_username, args.remote_password):
-            print(f"Debug information successfully logged to remote URL {args.remote_log}")
+    # Remote log if requested
+    remote_log_url = args.remote_log or config.get('remote_log')
+    if remote_log_url:
+        if log_remote_info(config_str, debug_info, remote_log_url, args.remote_username, args.remote_password):
+            print(f"Debug information successfully logged to remote URL {remote_log_url}")
         else:
-            print(f"Failed to log debug information to remote URL {args.remote_log}")
+            print(f"Failed to log debug information to remote URL {remote_log_url}")
 
 if __name__ == '__main__':
     main()
