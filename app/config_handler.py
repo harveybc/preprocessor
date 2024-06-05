@@ -72,7 +72,9 @@ def load_config(args, required_params):
     for param in required_params:
         if hasattr(args, param):
             config[param] = getattr(args, param, default_values.get(param))
+            print(f"Loaded parameter {param} from args with value: {config[param]}")
 
+    print(f"Final config after merging: {config}")
     return config
 
 def save_config(config):
@@ -93,6 +95,7 @@ def save_config(config):
     with open(config_filename, 'w') as f:
         config_str = json.dumps(filtered_params, indent=4)
         f.write(config_str)
+    print(f"Saved config to {config_filename} with content: {config_str}")
     return config_str, config_filename
 
 def load_remote_config(remote_config_url, username, password):
@@ -101,6 +104,7 @@ def load_remote_config(remote_config_url, username, password):
         response.raise_for_status()
         remote_config = response.json()
         if 'json_config' in remote_config:
+            print(f"Loaded remote config: {remote_config['json_config']}")
             return json.loads(remote_config['json_config']), True
         else:
             print("Error: 'json_config' not found in the response.", file=sys.stderr)
@@ -112,3 +116,4 @@ def load_remote_config(remote_config_url, username, password):
 def save_debug_info(debug_info, debug_file):
     with open(debug_file, 'w') as f:
         json.dump(debug_info, f, indent=4)
+    print(f"Saved debug info to {debug_file}")
