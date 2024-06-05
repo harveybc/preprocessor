@@ -1,5 +1,4 @@
 import argparse
-import pkg_resources
 from plugin_loader import load_plugin
 
 def parse_args():
