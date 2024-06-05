@@ -5,13 +5,6 @@ import requests
 import pkg_resources
 import time
 from plugin_loader import load_plugin
-
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
-
-if parent_dir not in sys.path:
-    sys.path.append(parent_dir)
-
 from app.cli import parse_args
 from app.config_handler import load_config, save_config, save_debug_info, load_remote_config, default_values
 
@@ -81,7 +74,7 @@ def main():
         print(f"Error: The plugin {config['plugin_name']} could not be loaded.")
         return
 
-    plugin_params = {param: config[param] for param in required_params}
+    plugin_params = {param: config[param] for param in required_params if param in config}
     plugin.set_params(**plugin_params)
 
     processed_data = plugin.process(data)
@@ -89,7 +82,7 @@ def main():
     debug_info["output_rows"] = len(processed_data)
     debug_info["output_columns"] = len(processed_data.columns)
 
-    include_date = config['force_date'] or not (config['method'] in ['select_single', 'select_multi'])
+    include_date = config['force_date'] or not (config.get('method') in ['select_single', 'select_multi'])
 
     if not config['quiet_mode']:
         print("Processing complete. Writing output...")
