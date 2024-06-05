@@ -67,7 +67,7 @@ def main():
         print("Error: No CSV file specified.", file=sys.stderr)
         return
 
-    data = load_csv(config['csv_file'], headers=config['headers'])
+    data = load_csv(config['csv_file'], headers=config.get('headers', False))
     debug_info["input_rows"] = len(data)
     debug_info["input_columns"] = len(data.columns)
 
@@ -82,7 +82,7 @@ def main():
     if not config['quiet_mode']:
         print("Processing complete. Writing output...")
 
-    write_csv(config['output_file'], processed_data, include_date=include_date, headers=config['headers'])
+    write_csv(config['output_file'], processed_data, include_date=include_date, headers=config.get('headers', False))
 
     if not config['quiet_mode']:
         print(f"Output written to {config['output_file']}")

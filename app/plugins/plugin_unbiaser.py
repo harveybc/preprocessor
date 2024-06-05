@@ -18,9 +18,9 @@ class Plugin:
                 self.params[key] = value
 
     def process(self, data):
-        method = self.params.get('method')
-        window_size = self.params.get('window_size')
-        ema_alpha = self.params.get('ema_alpha')
+        method = self.params.get('method', 'ma')
+        window_size = self.params.get('window_size', 5)
+        ema_alpha = self.params.get('ema_alpha', 0.1)
 
         print("Starting the process method.")
         print(f"Method: {method}, Window size: {window_size}, EMA alpha: {ema_alpha}")
