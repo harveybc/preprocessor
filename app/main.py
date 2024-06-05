@@ -1,6 +1,5 @@
 import sys
 import time
-import json
 from plugin_loader import load_plugin, set_plugin_params
 from app.cli import parse_args
 from app.config_handler import load_config, save_config, save_debug_info
@@ -46,6 +45,14 @@ def merge_config(config, args):
 def main():
     args = parse_args()
 
+    plugin, required_params = load_plugin(args.plugin)
+    if plugin is None:
+        print(f"Error: The plugin {args.plugin} could not be loaded.")
+        return
+
+    config = load_config(args, required_params)
+    config = merge_config(config, args)
+
     debug_info = {
         "execution_time": "",
         "input_rows": 0,
@@ -56,9 +63,6 @@ def main():
 
     start_time = time.time()
 
-    config = load_config(args)
-    config = merge_config(config, args)
-
     if not config.get('csv_file'):
         print("Error: No CSV file specified.", file=sys.stderr)
         return
@@ -67,13 +71,7 @@ def main():
     debug_info["input_rows"] = len(data)
     debug_info["input_columns"] = len(data.columns)
 
-    plugin, required_params = load_plugin(config['plugin_name'])
-    if plugin is None:
-        print(f"Error: The plugin {config['plugin_name']} could not be loaded.")
-        return
-
     set_plugin_params(plugin, config, required_params)
-
     processed_data = plugin.process(data)
 
     debug_info["output_rows"] = len(processed_data)
