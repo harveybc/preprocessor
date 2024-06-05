@@ -43,7 +43,10 @@ def merge_config(config, args):
     print(f"CLI arguments: {cli_args}")  # Debug message
     for key, value in cli_args.items():
         if value is not None:
-            config[key] = value
+            if key == 'plugin':  # Special handling for 'plugin' argument
+                config['plugin_name'] = value
+            else:
+                config[key] = value
     print(f"Config after merge: {config}")  # Debug message
     return config
 
