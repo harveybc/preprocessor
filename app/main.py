@@ -3,7 +3,7 @@ import os
 import json
 import requests
 import time
-from plugin_loader import load_plugin, load_plugin_fallback
+from plugin_loader import load_plugin
 from app.cli import parse_args
 from app.config_handler import load_config, save_config, save_debug_info, load_remote_config
 from app.data_handler import load_csv, write_csv
@@ -40,9 +40,11 @@ def log_remote_info(config, debug_info, url, username, password):
 
 def merge_config(config, args):
     cli_args = vars(args)
+    print(f"CLI arguments: {cli_args}")  # Debug message
     for key, value in cli_args.items():
         if value is not None:
             config[key] = value
+    print(f"Config after merge: {config}")  # Debug message
     return config
 
 def main():
@@ -59,9 +61,9 @@ def main():
     start_time = time.time()
 
     config = load_config(args)
+    print(f"Initial loaded config: {config}")  # Debug message
     config = merge_config(config, args)
-
-    print(f"Configuration loaded: {config}")  # Debug message
+    print(f"Final config after merge: {config}")  # Debug message
 
     if not config.get('csv_file'):
         print("Error: No CSV file specified.", file=sys.stderr)
@@ -76,9 +78,6 @@ def main():
     if plugin_class is None:
         print(f"Error: The plugin {config['plugin_name']} could not be loaded.")
         return
-
-    if plugin_class == load_plugin_fallback(config['plugin_name'])[0]:
-        print("Falling back to default plugin.")  # Debug message
 
     plugin = plugin_class()
     plugin_params = {param: config[param] for param in required_params if param in config}
