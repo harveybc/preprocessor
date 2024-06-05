@@ -2,7 +2,6 @@ import sys
 import os
 import json
 import requests
-import pkg_resources
 import time
 from plugin_loader import load_plugin
 from app.cli import parse_args
@@ -70,6 +69,7 @@ def main():
     debug_info["input_rows"] = len(data)
     debug_info["input_columns"] = len(data.columns)
 
+    print(f"Attempting to load plugin: {config['plugin_name']}")
     plugin_class, required_params = load_plugin(config['plugin_name'])
     if plugin_class is None:
         print(f"Error: The plugin {config['plugin_name']} could not be loaded.")
@@ -77,6 +77,7 @@ def main():
 
     plugin = plugin_class()
     plugin_params = {param: config[param] for param in required_params if param in config}
+    print(f"Setting plugin parameters: {plugin_params}")
     plugin.set_params(**plugin_params)
 
     processed_data = plugin.process(data)
