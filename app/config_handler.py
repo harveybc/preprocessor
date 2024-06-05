@@ -53,6 +53,14 @@ default_values = {
     'remote_password': 'pass'
 }
 
+plugin_params = {
+    'normalizer': ['method', 'norm_method', 'range'],
+    'unbiaser': ['method', 'window_size', 'ema_alpha'],
+    'trimmer': ['method', 'remove_rows', 'remove_columns'],
+    'feature_selector': ['method', 'single', 'multi', 'max_lag', 'significance_level'],
+    'cleaner': ['method', 'clean_method', 'period', 'outlier_threshold', 'solve_missing', 'delete_outliers', 'interpolate_outliers', 'delete_nan', 'interpolate_nan']
+}
+
 def load_config(args):
     config = {}
     if args.load_config:
@@ -111,11 +119,11 @@ def load_config(args):
 
 def save_config(config):
     plugin_specific_params = {
-        'normalizer': ['norm_method', 'range'],
-        'unbiaser': ['window_size', 'ema_alpha'],
-        'trimmer': ['remove_rows', 'remove_columns'],
+        'normalizer': ['method', 'norm_method', 'range'],
+        'unbiaser': ['method', 'window_size', 'ema_alpha'],
+        'trimmer': ['method', 'remove_rows', 'remove_columns'],
         'feature_selector': ['method', 'single', 'multi', 'max_lag', 'significance_level'],
-        'cleaner': ['clean_method', 'period', 'outlier_threshold', 'solve_missing', 'delete_outliers', 'interpolate_outliers', 'delete_nan', 'interpolate_nan'],
+        'cleaner': ['method', 'clean_method', 'period', 'outlier_threshold', 'solve_missing', 'delete_outliers', 'interpolate_outliers', 'delete_nan', 'interpolate_nan'],
     }
 
     plugin_name = config['plugin_name'] if config['plugin_name'] != 'default_plugin' else 'normalizer'
