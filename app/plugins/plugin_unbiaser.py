@@ -1,16 +1,24 @@
 import pandas as pd
 import numpy as np
-import json
-import os
 
 class Plugin:
     def __init__(self):
-        self.params = None
+        # Initialize the unbiasing parameters to None
+        self.unbiasing_params = None
 
-    def process(self, data, method='ma', window_size=5, ema_alpha=0.1, save_params=None, load_params=None):
+    def process(self, data, method='ma', window_size=5, ema_alpha=0.1):
         """
         Unbias the data using the specified method (moving average or EMA).
         Only numeric columns after the date column are processed.
+
+        Args:
+            data (pd.DataFrame): The input data to be processed.
+            method (str): The method for unbiasing ('ma' for moving average, 'ema' for exponential moving average).
+            window_size (int): The window size for moving average.
+            ema_alpha (float): The alpha value for exponential moving average.
+
+        Returns:
+            pd.DataFrame: The dataset with unbiasing applied to the numeric columns.
         """
         print("Starting the process method.")
         print(f"Method: {method}, Window size: {window_size}, EMA alpha: {ema_alpha}")
@@ -18,19 +26,6 @@ class Plugin:
         # Identify numeric columns excluding the date column which should be at index 0
         numeric_columns = data.select_dtypes(include=[np.number]).columns.tolist()
         print(f"Numeric columns identified for processing: {numeric_columns}")
-
-        # Load or save parameters as needed
-        if load_params and os.path.exists(load_params):
-            with open(load_params, 'r') as f:
-                self.params = json.load(f)
-            print("Loaded parameters:", self.params)
-
-        if self.params is None:
-            self.params = {'method': method, 'window_size': window_size, 'ema_alpha': ema_alpha}
-            if save_params:
-                with open(save_params, 'w') as f:
-                    json.dump(self.params, f)
-            print("Saved parameters:", self.params)
 
         # Apply the selected unbiasing method
         if method == 'ma':
@@ -48,6 +43,13 @@ class Plugin:
     def _moving_average_unbias(self, data, window_size):
         """
         Apply moving average unbiasing to the data.
+
+        Args:
+            data (pd.DataFrame): The input data to be processed.
+            window_size (int): The window size for moving average.
+
+        Returns:
+            pd.DataFrame: The dataset with moving average unbiasing applied.
         """
         print(f"Applying moving average with window size: {window_size}")
         unbiassed_data = data.astype(float).copy()  # Ensure all data is float
@@ -64,6 +66,13 @@ class Plugin:
     def _ema_unbias(self, data, alpha):
         """
         Apply exponential moving average unbiasing to the data.
+
+        Args:
+            data (pd.DataFrame): The input data to be processed.
+            alpha (float): The alpha value for exponential moving average.
+
+        Returns:
+            pd.DataFrame: The dataset with exponential moving average unbiasing applied.
         """
         print(f"Applying exponential moving average with alpha: {alpha}")
         ema = data.ewm(alpha=alpha).mean()
@@ -72,5 +81,3 @@ class Plugin:
         print("Exponential moving average values:\n", ema.head())
         print("Unbiassed data (first 5 rows):\n", unbiassed_data.head())
         return unbiassed_data
-
-# Remember to ensure this plugin's code also checks whether parameters like 'window_size' and 'ema_alpha' are set appropriately before use.
