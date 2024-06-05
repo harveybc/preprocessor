@@ -1,49 +1,11 @@
 import sys
-import os
-import json
-import requests
-import pkg_resources
 import time
+import json
 from plugin_loader import load_plugin
 from app.cli import parse_args
-from app.config_handler import load_config, save_config, save_debug_info, load_remote_config, default_values
-
-def save_remote_config(config, url, username, password):
-    try:
-        response = requests.post(
-            url,
-            auth=(username, password),
-            data={'json_config': config}
-        )
-        response.raise_for_status()
-        return True
-    except requests.RequestException as e:
-        print(f"Failed to save remote configuration: {e}", file=sys.stderr)
-        return False
-
-def log_remote_info(config, debug_info, url, username, password):
-    try:
-        data = {
-            'json_config': config,
-            'json_result': json.dumps(debug_info)
-        }
-        response = requests.post(
-            url,
-            auth=(username, password),
-            data=data
-        )
-        response.raise_for_status()
-        return True
-    except requests.RequestException as e:
-        print(f"Failed to log remote information: {e}", file=sys.stderr)
-        return False
-
-def merge_config(config, args):
-    cli_args = vars(args)
-    for key, value in cli_args.items():
-        if value is not None:
-            config[key] = value
-    return config
+from app.config_handler import load_config, save_config, save_debug_info
+from app.data_handler import load_csv, write_csv
+from app.plugin_handler import set_plugin_params
 
 def main():
     args = parse_args()
@@ -59,7 +21,6 @@ def main():
     start_time = time.time()
 
     config = load_config(args)
-    config = merge_config(config, args)
 
     if not config.get('csv_file'):
         print("Error: No CSV file specified.", file=sys.stderr)
@@ -74,8 +35,7 @@ def main():
         print(f"Error: The plugin {config['plugin_name']} could not be loaded.")
         return
 
-    plugin_params = {param: config[param] for param in required_params if param in config}
-    plugin.set_params(**plugin_params)
+    set_plugin_params(plugin, config, required_params)
 
     processed_data = plugin.process(data)
 
@@ -91,7 +51,7 @@ def main():
 
     if not config['quiet_mode']:
         print(f"Output written to {config['output_file']}")
-        print(f"Configuration saved to {os.path.basename(config['save_config'])}")
+        print(f"Configuration saved to {config['save_config']}")
 
     config_str, config_filename = save_config(config)
 
@@ -104,17 +64,17 @@ def main():
         print(f"Debug info saved to {args.debug_file}")
         print(f"Execution time: {execution_time} seconds")
 
-    if args.remote_save_config:
-        if save_remote_config(config_str, args.remote_save_config, args.remote_username, args.remote_password):
-            print(f"Configuration successfully saved to remote URL {args.remote_save_config}")
+    if config.get('remote_save_config'):
+        if save_remote_config(config_str, config['remote_save_config'], config['remote_username'], config['remote_password']):
+            print(f"Configuration successfully saved to remote URL {config['remote_save_config']}")
         else:
-            print(f"Failed to save configuration to remote URL {args.remote_save_config}")
+            print(f"Failed to save configuration to remote URL {config['remote_save_config']}")
 
-    if args.remote_log:
-        if log_remote_info(config_str, debug_info, args.remote_log, args.remote_username, args.remote_password):
-            print(f"Debug information successfully logged to remote URL {args.remote_log}")
+    if config.get('remote_log'):
+        if log_remote_info(config_str, debug_info, config['remote_log'], config['remote_username'], config['remote_password']):
+            print(f"Debug information successfully logged to remote URL {config['remote_log']}")
         else:
-            print(f"Failed to log debug information to remote URL {args.remote_log}")
+            print(f"Failed to log debug information to remote URL {config['remote_log']}")
 
 if __name__ == '__main__':
     main()
