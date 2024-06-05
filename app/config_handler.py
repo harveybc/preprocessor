@@ -22,6 +22,28 @@ default_values = {
     'save_config': CONFIG_SAVE_PATH,
     'load_config': CONFIG_LOAD_PATH,
     'quiet_mode': DEFAULT_QUIET_MODE,
+    'window_size': None,
+    'ema_alpha': None,
+    'remove_rows': None,
+    'remove_columns': None,
+    'max_lag': None,
+    'significance_level': None,
+    'alpha': None,
+    'l1_ratio': None,
+    'model_type': None,
+    'timesteps': None,
+    'features': None,
+    'clean_method': None,
+    'period': None,
+    'outlier_threshold': None,
+    'solve_missing': False,
+    'delete_outliers': False,
+    'interpolate_outliers': False,
+    'delete_nan': False,
+    'interpolate_nan': False,
+    'method': None,
+    'single': 0,
+    'multi': [0],
     'force_date': False,
     'headers': False,
     'remote_log': None,
@@ -31,7 +53,7 @@ default_values = {
     'remote_password': 'pass'
 }
 
-def load_config(args):
+def load_config(args, plugin_params):
     config = {}
     if args.load_config:
         try:
@@ -47,16 +69,18 @@ def load_config(args):
             config.update(remote_config)
             print(f"Downloaded configuration from {args.remote_load_config}")
 
-    for key in vars(args):
-        if getattr(args, key) is not None:
-            config[key] = getattr(args, key)
+    for param in plugin_params:
+        config[param] = getattr(args, param, config.get(param, default_values.get(param)))
 
     return config
 
 def save_config(config):
-    config_filename = config.get('save_config', 'config_output.json')
+    general_params = ['csv_file', 'plugin_name', 'output_file', 'save_config', 'quiet_mode', 'headers', 'force_date', 'remote_log', 'remote_save_config', 'remote_load_config']
+    filtered_params = {k: v for k, v in config.items() if v is not None and v != default_values.get(k)}
+
+    config_filename = config['save_config'] if config['save_config'] else 'config_output.json'
     with open(config_filename, 'w') as f:
-        config_str = json.dumps(config, indent=4)
+        config_str = json.dumps(filtered_params, indent=4)
         f.write(config_str)
     return config_str, config_filename
 
