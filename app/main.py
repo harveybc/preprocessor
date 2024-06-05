@@ -4,6 +4,7 @@ import json
 import requests
 import pkg_resources
 import time
+from plugin_loader import load_plugin
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
@@ -12,30 +13,7 @@ if parent_dir not in sys.path:
     sys.path.append(parent_dir)
 
 from app.cli import parse_args
-from app.config import (
-    CSV_INPUT_PATH,
-    CSV_OUTPUT_PATH,
-    CONFIG_SAVE_PATH,
-    CONFIG_LOAD_PATH,
-    DEFAULT_PLUGIN,
-    REMOTE_LOG_URL,
-    REMOTE_CONFIG_URL,
-    PLUGIN_DIRECTORY,
-    DEFAULT_NORMALIZATION_METHOD,
-    DEFAULT_NORMALIZATION_RANGE,
-    DEFAULT_QUIET_MODE
-)
-from app.data_handler import load_csv, write_csv
-from app.default_plugin import DefaultPlugin
 from app.config_handler import load_config, save_config, save_debug_info, load_remote_config, default_values
-
-def load_plugin(plugin_name):
-    try:
-        entry_point = next(pkg_resources.iter_entry_points('preprocessor.plugins', plugin_name))
-        return entry_point.load()
-    except StopIteration:
-        print(f"Plugin {plugin_name} not found.", file=sys.stderr)
-        return None
 
 def save_remote_config(config, url, username, password):
     try:
@@ -98,32 +76,15 @@ def main():
     debug_info["input_rows"] = len(data)
     debug_info["input_columns"] = len(data.columns)
 
-    plugin_class = load_plugin(config['plugin_name'])
-    if plugin_class is None:
+    plugin, required_params = load_plugin(config['plugin_name'])
+    if plugin is None:
         print(f"Error: The plugin {config['plugin_name']} could not be loaded.")
         return
 
-    plugin = plugin_class()
-    processed_data = plugin.process(
-        data,
-        method=config['method'],
-        save_params=config['save_config'],
-        load_params=config['load_config'],
-        window_size=config['window_size'],
-        ema_alpha=config['ema_alpha'],
-        single=config['single'],
-        multi=config['multi'],
-        max_lag=config['max_lag'],
-        significance_level=config['significance_level'],
-        clean_method=config['clean_method'],
-        period=config['period'],
-        outlier_threshold=config['outlier_threshold'],
-        solve_missing=config['solve_missing'],
-        delete_outliers=config['delete_outliers'],
-        interpolate_outliers=config['interpolate_outliers'],
-        delete_nan=config['delete_nan'],
-        interpolate_nan=config['interpolate_nan']
-    )
+    plugin_params = {param: config[param] for param in required_params}
+    plugin.set_params(**plugin_params)
+
+    processed_data = plugin.process(data)
 
     debug_info["output_rows"] = len(processed_data)
     debug_info["output_columns"] = len(processed_data.columns)
