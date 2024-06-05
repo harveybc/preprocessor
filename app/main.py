@@ -37,12 +37,12 @@ def load_plugin(plugin_name):
         print(f"Plugin {plugin_name} not found.", file=sys.stderr)
         return None
 
-def save_remote_config(config_str, url, username, password):
+def save_remote_config(config, url, username, password):
     try:
         response = requests.post(
             url,
             auth=(username, password),
-            data={'json_config': config_str}
+            data={'json_config': config}
         )
         response.raise_for_status()
         return True
@@ -50,10 +50,10 @@ def save_remote_config(config_str, url, username, password):
         print(f"Failed to save remote configuration: {e}", file=sys.stderr)
         return False
 
-def log_remote_info(config_str, debug_info, url, username, password):
+def log_remote_info(config, debug_info, url, username, password):
     try:
         data = {
-            'json_config': config_str,
+            'json_config': config,
             'json_result': json.dumps(debug_info)
         }
         response = requests.post(
@@ -73,18 +73,6 @@ def merge_config(config, args):
         if value is not None:
             config[key] = value
     return config
-
-def filter_plugin_params(plugin_name, config):
-    plugin_params = {
-        'normalizer': ['method', 'norm_method', 'range'],
-        'unbiaser': ['method', 'window_size', 'ema_alpha'],
-        'trimmer': ['method', 'remove_rows', 'remove_columns'],
-        'feature_selector': ['method', 'single', 'multi', 'max_lag', 'significance_level'],
-        'cleaner': ['method', 'clean_method', 'period', 'outlier_threshold', 'solve_missing', 'delete_outliers', 'interpolate_outliers', 'delete_nan', 'interpolate_nan']
-    }
-    general_params = ['csv_file', 'plugin_name', 'output_file', 'save_config', 'quiet_mode', 'headers', 'force_date', 'remote_log', 'remote_save_config', 'remote_load_config']
-    selected_plugin_params = plugin_params.get(plugin_name, [])
-    return {k: v for k, v in config.items() if (k in general_params or k in selected_plugin_params)}
 
 def main():
     args = parse_args()
@@ -116,8 +104,26 @@ def main():
         return
 
     plugin = plugin_class()
-    filtered_params = filter_plugin_params(config['plugin_name'], config)
-    processed_data = plugin.process(data, **filtered_params)
+    processed_data = plugin.process(
+        data,
+        method=config['method'],
+        save_params=config['save_config'],
+        load_params=config['load_config'],
+        window_size=config['window_size'],
+        ema_alpha=config['ema_alpha'],
+        single=config['single'],
+        multi=config['multi'],
+        max_lag=config['max_lag'],
+        significance_level=config['significance_level'],
+        clean_method=config['clean_method'],
+        period=config['period'],
+        outlier_threshold=config['outlier_threshold'],
+        solve_missing=config['solve_missing'],
+        delete_outliers=config['delete_outliers'],
+        interpolate_outliers=config['interpolate_outliers'],
+        delete_nan=config['delete_nan'],
+        interpolate_nan=config['interpolate_nan']
+    )
 
     debug_info["output_rows"] = len(processed_data)
     debug_info["output_columns"] = len(processed_data.columns)
@@ -150,11 +156,11 @@ def main():
         else:
             print(f"Failed to save configuration to remote URL {args.remote_save_config}")
 
-    if config.get('remote_log'):
-        if log_remote_info(config_str, debug_info, config['remote_log'], args.remote_username, args.remote_password):
-            print(f"Debug information successfully logged to remote URL {config['remote_log']}")
+    if args.remote_log:
+        if log_remote_info(config_str, debug_info, args.remote_log, args.remote_username, args.remote_password):
+            print(f"Debug information successfully logged to remote URL {args.remote_log}")
         else:
-            print(f"Failed to log debug information to remote URL {config['remote_log']}")
+            print(f"Failed to log debug information to remote URL {args.remote_log}")
 
 if __name__ == '__main__':
     main()
