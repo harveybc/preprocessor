@@ -31,5 +31,5 @@ def set_plugin_params(plugin, config, required_params):
     Returns:
         None
     """
-    plugin_params = {param: config[param] for param in required_params if param in config}
+    plugin_params = {param: config.get(param, plugin.plugin_params[param]) for param in required_params}
     plugin.set_params(**plugin_params)
