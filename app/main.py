@@ -40,6 +40,7 @@ def merge_config(config, args):
     for key, value in cli_args.items():
         if value is not None:
             config[key] = value
+    print(f"Config after merging with CLI args: {config}")
     return config
 
 def main():
