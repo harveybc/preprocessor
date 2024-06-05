@@ -16,7 +16,7 @@ from app.config import (
 default_values = {
     'csv_file': CSV_INPUT_PATH,
     'output_file': CSV_OUTPUT_PATH,
-    'plugin_name': DEFAULT_PLUGIN,
+    'plugin': DEFAULT_PLUGIN,
     'norm_method': DEFAULT_NORMALIZATION_METHOD,
     'range': DEFAULT_NORMALIZATION_RANGE,
     'save_config': CONFIG_SAVE_PATH,
@@ -53,7 +53,7 @@ default_values = {
     'remote_password': 'pass'
 }
 
-def load_config(args, plugin_params):
+def load_config(args, required_params):
     config = {}
     if args.load_config:
         try:
@@ -69,14 +69,25 @@ def load_config(args, plugin_params):
             config.update(remote_config)
             print(f"Downloaded configuration from {args.remote_load_config}")
 
-    for param in plugin_params:
-        config[param] = getattr(args, param, config.get(param, default_values.get(param)))
+    for param in required_params:
+        if hasattr(args, param):
+            config[param] = getattr(args, param, default_values.get(param))
 
     return config
 
 def save_config(config):
-    general_params = ['csv_file', 'plugin_name', 'output_file', 'save_config', 'quiet_mode', 'headers', 'force_date', 'remote_log', 'remote_save_config', 'remote_load_config']
-    filtered_params = {k: v for k, v in config.items() if v is not None and v != default_values.get(k)}
+    plugin_specific_params = {
+        'normalizer': ['method', 'norm_method', 'range'],
+        'unbiaser': ['method', 'window_size', 'ema_alpha'],
+        'trimmer': ['method', 'remove_rows', 'remove_columns'],
+        'feature_selector': ['method', 'single', 'multi', 'max_lag', 'significance_level'],
+        'cleaner': ['method', 'clean_method', 'period', 'outlier_threshold', 'solve_missing', 'delete_outliers', 'interpolate_outliers', 'delete_nan', 'interpolate_nan'],
+    }
+
+    plugin_name = config['plugin'] if config['plugin'] != 'default_plugin' else 'normalizer'
+    general_params = ['csv_file', 'plugin', 'output_file', 'save_config', 'quiet_mode', 'headers', 'force_date', 'remote_log', 'remote_save_config', 'remote_load_config']
+    selected_plugin_params = plugin_specific_params.get(plugin_name, [])
+    filtered_params = {k: v for k, v in config.items() if (k in general_params or k in selected_plugin_params) and v is not None and v != default_values.get(k)}
 
     config_filename = config['save_config'] if config['save_config'] else 'config_output.json'
     with open(config_filename, 'w') as f:
