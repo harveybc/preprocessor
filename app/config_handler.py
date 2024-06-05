@@ -115,8 +115,9 @@ def save_config(config):
 
     config_filename = config['save_config'] if config['save_config'] else 'config_output.json'
     with open(config_filename, 'w') as f:
-        json.dump(filtered_params, f, indent=4)
-    return filtered_params
+        config_str = json.dumps(filtered_params, indent=4)
+        f.write(config_str)
+    return config_str, config_filename
 
 def load_remote_config(remote_config_url, username, password):
     try:
