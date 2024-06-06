@@ -1,3 +1,5 @@
+# app/plugins/default_plugin.py
+
 import pandas as pd
 import json
 import os
@@ -5,23 +7,25 @@ import numpy as np
 
 class DefaultPlugin:
     """
-    Normalizer Plugin to apply normalization methods to the dataset.
+    Default Plugin to normalize the dataset using various methods.
     """
-
     # Define the parameters for this plugin and their default values
     plugin_params = {
         'method': 'min-max',
+        'range': (-1, 1),
         'save_params': 'normalization_params.json',
-        'load_params': None,
-        'range': (-1, 1)
+        'load_params': None
     }
+
+    # Define the debug variables for this plugin
+    plugin_debug_vars = ['min_val', 'max_val', 'mean', 'std']
 
     def __init__(self):
         """
         Initialize the Plugin with default parameters.
         """
-        self.normalization_params = None
         self.params = self.plugin_params.copy()
+        self.normalization_params = None
 
     def set_params(self, **kwargs):
         """
@@ -39,27 +43,12 @@ class DefaultPlugin:
         Get debug information for the plugin.
 
         Returns:
-            dict: Debug information including min_val and max_val for min-max normalization, 
-                  and mean and std for z-score normalization.
+            dict: Debug information including min_val, max_val, mean, and std.
         """
-        debug_info = {}
-        if self.params['method'] == 'min-max':
-            debug_info['min_val'] = self.normalization_params['min'] if self.normalization_params else None
-            debug_info['max_val'] = self.normalization_params['max'] if self.normalization_params else None
-        elif self.params['method'] == 'z-score':
-            debug_info['mean'] = self.normalization_params['mean'] if self.normalization_params else None
-            debug_info['std'] = self.normalization_params['std'] if self.normalization_params else None
+        debug_info = {var: self.params.get(var) for var in self.plugin_debug_vars}
+        if self.normalization_params:
+            debug_info.update(self.normalization_params)
         return debug_info
-
-    def add_debug_info(self, debug_info):
-        """
-        Add plugin-specific debug information to the existing debug info.
-
-        Args:
-            debug_info (dict): The existing debug information dictionary.
-        """
-        plugin_debug_info = self.get_debug_info()
-        debug_info.update(plugin_debug_info)
 
     def process(self, data):
         """
@@ -71,10 +60,10 @@ class DefaultPlugin:
         Returns:
             pd.DataFrame: The normalized data.
         """
-        method = self.params['method'] or 'min-max'
-        save_params = self.params['save_params']
-        load_params = self.params['load_params']
-        range_vals = self.params['range']
+        method = self.params.get('method', 'min-max')
+        save_params = self.params.get('save_params', 'normalization_params.json')
+        load_params = self.params.get('load_params')
+        range_vals = self.params.get('range', (-1, 1))
 
         # Retain the date column
         date_column = data.select_dtypes(include=[np.datetime64]).columns
@@ -87,7 +76,7 @@ class DefaultPlugin:
             with open(load_params, 'r') as f:
                 self.normalization_params = json.load(f)
 
-        if self.normalization_params == None:
+        if self.normalization_params is None:
             if method == 'z-score':
                 mean = numeric_data.mean()
                 std = numeric_data.std()
