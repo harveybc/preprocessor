@@ -1,12 +1,11 @@
 import sys
 import os
 import json
-import requests
 import time
-from plugin_loader import load_plugin
 from app.cli import parse_args
-from app.config_handler import load_config, save_config, save_debug_info, load_remote_config
+from app.config_handler import load_config, save_config, save_debug_info, merge_config
 from app.data_handler import load_csv, write_csv
+from plugin_loader import load_plugin
 
 def save_remote_config(config, url, username, password):
     try:
@@ -38,64 +37,41 @@ def log_remote_info(config, debug_info, url, username, password):
         print(f"Failed to log remote information: {e}", file=sys.stderr)
         return False
 
-def merge_config(config, args):
-    cli_args = vars(args)
-    print(f"CLI arguments: {cli_args}")  # Debug message
-    for key, value in cli_args.items():
-        if value is not None:
-            if key == 'plugin':  # Special handling for 'plugin' argument
-                config['plugin_name'] = value
-            else:
-                config[key] = value
-    print(f"Config after merge: {config}")  # Debug message
-    return config
-
 def main():
     args = parse_args()
-
-    debug_info = {
-        "execution_time": "",
-        "input_rows": 0,
-        "output_rows": 0,
-        "input_columns": 0,
-        "output_columns": 0
-    }
-
-    start_time = time.time()
-
     config = load_config(args)
-    print(f"Initial loaded config: {config}")  # Debug message
     config = merge_config(config, args)
-    print(f"Final config after merge: {config}")  # Debug message
 
     if not config.get('csv_file'):
         print("Error: No CSV file specified.", file=sys.stderr)
         return
 
     data = load_csv(config['csv_file'], headers=config['headers'])
-    debug_info["input_rows"] = len(data)
-    debug_info["input_columns"] = len(data.columns)
-
-    print(f"Attempting to load plugin: {config['plugin_name']}")  # Debug message
-    plugin_class, required_params = load_plugin(config['plugin_name'])
-    if plugin_class is None:
+    
+    plugin, required_params = load_plugin(config['plugin_name'])
+    if plugin is None:
         print(f"Error: The plugin {config['plugin_name']} could not be loaded.")
         return
 
-    plugin = plugin_class()
     plugin_params = {param: config[param] for param in required_params if param in config}
-    print(f"Setting plugin parameters: {plugin_params}")  # Debug message
+    print(f"Setting plugin parameters: {plugin_params}")
     plugin.set_params(**plugin_params)
 
+    debug_info = {
+        "execution_time": "",
+        "input_rows": len(data),
+        "output_rows": 0,
+        "input_columns": len(data.columns),
+        "output_columns": 0
+    }
+    
+    start_time = time.time()
     processed_data = plugin.process(data)
-
     debug_info["output_rows"] = len(processed_data)
     debug_info["output_columns"] = len(processed_data.columns)
-
-    # Include plugin-specific debug information
-    plugin_debug_info = plugin.get_debug_info()
-    print(f"Plugin-specific debug info: {plugin_debug_info}")  # Debug message
-    debug_info.update(plugin_debug_info)
+    execution_time = time.time() - start_time
+    debug_info["execution_time"] = execution_time
+    debug_info.update(plugin.get_debug_info())
 
     include_date = config['force_date'] or not (config.get('method') in ['select_single', 'select_multi'])
 
@@ -109,13 +85,7 @@ def main():
         print(f"Configuration saved to {os.path.basename(config['save_config'])}")
 
     config_str, config_filename = save_config(config)
-
-    execution_time = time.time() - start_time
-    debug_info["execution_time"] = execution_time
-
-    print(f"Debug info to be saved: {debug_info}")  # Debug message
-    if args.debug_file:  # Ensure debug_file is present
-        save_debug_info(debug_info, args.debug_file)
+    save_debug_info(debug_info, args.debug_file)
 
     if not config['quiet_mode']:
         print(f"Debug info saved to {args.debug_file}")
