@@ -84,12 +84,8 @@ def main():
     config = merge_config(config, cli_args)
     print(f"Config after merging with CLI args: {config}")
 
-    # Ensure default plugin and parameters are set
-    if 'plugin' not in config:
-        config['plugin'] = 'default_plugin'
-    if 'method' not in config:
-        config['method'] = 'min-max'
-
+    # Merge unknown arguments (plugin-specific parameters)
+    config.update(unknown_args_dict)
     print(f"Final merged config: {config}")
 
     debug_info = {
