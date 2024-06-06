@@ -5,41 +5,51 @@ import os
 from statsmodels.tsa.stattools import grangercausalitytests
 
 class Plugin:
+    # Define the parameters for this plugin and their default values
+    plugin_params = {
+        'method': 'select_single',
+        'max_lag': 5,
+        'significance_level': 0.05,
+        'single': 1,
+        'multi': None
+    }
+
     def __init__(self):
-        # Initialize the feature selection parameters to None
+        self.params = self.plugin_params.copy()
         self.feature_selection_params = None
 
-    def process(self, data, method='granger', save_params=None, load_params=None, max_lag=5, significance_level=0.05, single=None, multi=None):
-        """
-        Perform feature selection on the dataset using the specified method.
+    def set_params(self, **kwargs):
+        for key, value in kwargs.items():
+            if key in self.params:
+                self.params[key] = value
 
-        Args:
-            data (pd.DataFrame): The input data to be processed.
-            method (str): The method for feature selection ('acf', 'pacf', 'granger', 'select_single', 'select_multi').
-            save_params (str): Path to save the feature selection parameters.
-            load_params (str): Path to load the feature selection parameters.
-            max_lag (int): Maximum lag for the Granger causality test.
-            significance_level (float): Significance level for the statistical tests.
-            single (int): Index of the single column to select.
-            multi (list): List of indices of the columns to select.
+    def get_debug_info(self):
+        # Provide plugin-specific debug information
+        return {
+            'method': self.params.get('method'),
+            'max_lag': self.params.get('max_lag'),
+            'significance_level': self.params.get('significance_level'),
+            'single': self.params.get('single'),
+            'multi': self.params.get('multi')
+        }
 
-        Returns:
-            pd.DataFrame: The dataset with only the selected features.
-        """
+    def process(self, data):
+        method = self.params.get('method', 'select_single')
+        max_lag = self.params.get('max_lag', 5)
+        significance_level = self.params.get('significance_level', 0.05)
+        single = self.params.get('single', 1)
+        multi = self.params.get('multi')
+
+        print("Starting the process method.")
+        print(f"Method: {method}, Max Lag: {max_lag}, Significance Level: {significance_level}, Single: {single}, Multi: {multi}")
+
         if method == 'select_single':
-            if single is None:
-                single = 0
             selected_features = [data.columns[single]]
         elif method == 'select_multi':
             if multi is None:
                 multi = [0]
             selected_features = [data.columns[i] for i in multi]
         else:
-            if load_params and os.path.exists(load_params):
-                with open(load_params, 'r') as f:
-                    self.feature_selection_params = json.load(f)
-                selected_features = self.feature_selection_params.get('selected_features', data.columns.tolist())
-
             if self.feature_selection_params is None:
                 if method == 'acf':
                     selected_features = self._acf_feature_selection(data, significance_level)
@@ -51,9 +61,6 @@ class Plugin:
                     raise ValueError(f"Unknown feature selection method: {method}")
 
                 self.feature_selection_params = {'method': method, 'selected_features': selected_features}
-                if save_params:
-                    with open(save_params, 'w') as f:
-                        json.dump(self.feature_selection_params, f)
             else:
                 selected_features = self.feature_selection_params['selected_features']
 
