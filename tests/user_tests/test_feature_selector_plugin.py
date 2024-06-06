@@ -63,4 +63,4 @@ def test_feature_selector_plugin_multi():
 
 if __name__ == '__main__':
     test_feature_selector_plugin_single()
-    test_feature_selector_plugin_multi()
+    #test_feature_selector_plugin_multi()
