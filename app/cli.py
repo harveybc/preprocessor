@@ -1,13 +1,8 @@
-# app/cli.py
-
 import argparse
-from plugin_loader import get_plugin_params
 
 def parse_args():
-    print("Parsing initial arguments...")
     parser = argparse.ArgumentParser(description='Preprocessor CLI')
-
-    # Standard arguments
+    
     parser.add_argument('csv_file', type=str, help='Path to the CSV file')
     parser.add_argument('--save_config', type=str, help='Path to save the configuration')
     parser.add_argument('--load_config', type=str, help='Path to load the configuration')
@@ -22,10 +17,6 @@ def parse_args():
     parser.add_argument('--force_date', action='store_true', help='Force date inclusion')
     parser.add_argument('--headers', action='store_true', help='Indicate if CSV has headers')
     parser.add_argument('--debug_file', type=str, help='Path to save debug information')
-
-    # Parse known and unknown args separately
+    
     args, unknown = parser.parse_known_args()
-    print(f"Initial args: {args}")
-    print(f"Unknown args: {unknown}")
-
     return args, unknown
