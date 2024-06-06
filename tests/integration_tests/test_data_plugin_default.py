@@ -2,6 +2,7 @@ import pytest
 import pandas as pd
 import os
 from app.data_handler import load_csv, write_csv
+from app.plugin_loader import load_plugin
 
 def test_load_csv():
     data = load_csv('tests/data/EURUSD_5m_2006_2007.csv')
