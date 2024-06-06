@@ -34,7 +34,8 @@ def test_code_remote_save_config():
 def test_code_remote_load_config():
     args = [
         'app.main',
-        '--load_config', 'http://localhost:60500/preprocessor/feature_selector/detail/1',
+        'tests/data/EURUSD_5m_2006_2007.csv',  # Add the CSV file here
+        '--remote_load_config', 'http://localhost:60500/preprocessor/feature_selector/detail/1',
         '--remote_username', 'test',
         '--remote_password', 'pass'
     ]
