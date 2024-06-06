@@ -4,19 +4,19 @@ import sys
 import os
 import json
 import requests
-import pkg_resources
 import time
 from plugin_loader import load_plugin
 from app.cli import parse_args
 from app.config_handler import load_config, save_config, save_debug_info, merge_config
-from app.data_handler import load_csv, write_csv
+from app.data_handler import load_csv, write_csv  # Importing required functions
 
 def save_remote_config(config, url, username, password):
-    """
-    Save the configuration to a remote URL.
-    """
     try:
-        response = requests.post(url, auth=(username, password), data={'json_config': config})
+        response = requests.post(
+            url,
+            auth=(username, password),
+            data={'json_config': config}
+        )
         response.raise_for_status()
         return True
     except requests.RequestException as e:
@@ -24,12 +24,16 @@ def save_remote_config(config, url, username, password):
         return False
 
 def log_remote_info(config, debug_info, url, username, password):
-    """
-    Log debug information to a remote URL.
-    """
     try:
-        data = {'json_config': config, 'json_result': json.dumps(debug_info)}
-        response = requests.post(url, auth=(username, password), data=data)
+        data = {
+            'json_config': config,
+            'json_result': json.dumps(debug_info)
+        }
+        response = requests.post(
+            url,
+            auth=(username, password),
+            data=data
+        )
         response.raise_for_status()
         return True
     except requests.RequestException as e:
@@ -37,15 +41,25 @@ def log_remote_info(config, debug_info, url, username, password):
         return False
 
 def main():
-    """
-    Main function to run the preprocessor with the specified configuration and plugin.
-    """
     print("Parsing initial arguments...")
-    args = parse_args()
+    args, unknown_args = parse_args()
     print(f"Initial args: {args}")
+    print(f"Unknown args: {unknown_args}")
 
     cli_args = vars(args)
     print(f"CLI arguments: {cli_args}")
+
+    # Convert unknown args to a dictionary
+    unknown_args_dict = {}
+    for arg in unknown_args:
+        if arg.startswith('--'):
+            key = arg[2:]
+            unknown_args_dict[key] = None
+        else:
+            if key in unknown_args_dict and unknown_args_dict[key] is None:
+                unknown_args_dict[key] = arg
+
+    print(f"Unknown args as dict: {unknown_args_dict}")
 
     print("Loading configuration...")
     config = load_config(args)
@@ -53,9 +67,20 @@ def main():
 
     print("Merging configuration with CLI arguments...")
     config = merge_config(config, cli_args)
-    print(f"Config after merge: {config}")
+    print(f"Config after merging with CLI args: {config}")
 
-    debug_info = {"execution_time": "", "input_rows": 0, "output_rows": 0, "input_columns": 0, "output_columns": 0}
+    # Merge plugin-specific arguments
+    config.update(unknown_args_dict)
+    print(f"Final merged config: {config}")
+
+    debug_info = {
+        "execution_time": "",
+        "input_rows": 0,
+        "output_rows": 0,
+        "input_columns": 0,
+        "output_columns": 0
+    }
+
     start_time = time.time()
 
     if not config.get('csv_file'):
@@ -66,7 +91,6 @@ def main():
     debug_info["input_rows"] = len(data)
     debug_info["input_columns"] = len(data.columns)
 
-    print(f"Attempting to load plugin: {config['plugin_name']}")
     plugin_class, required_params = load_plugin(config['plugin_name'])
     if plugin_class is None:
         print(f"Error: The plugin {config['plugin_name']} could not be loaded.")
