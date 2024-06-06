@@ -80,12 +80,28 @@ def load_config(args):
 
     return config
 
+
 def merge_config(config, args):
-    cli_args = vars(args)
+    """
+    Merge command line arguments into the existing configuration.
+
+    Args:
+        config (dict): Existing configuration.
+        args (Namespace or dict): Command line arguments.
+
+    Returns:
+        dict: Merged configuration.
+    """
+    if not isinstance(args, dict):
+        cli_args = vars(args)
+    else:
+        cli_args = args
+
     for key, value in cli_args.items():
         if value is not None:
             config[key] = value
     return config
+
 
 def save_config(config):
     plugin_specific_params = {
