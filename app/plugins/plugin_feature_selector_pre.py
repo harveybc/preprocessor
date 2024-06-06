@@ -6,14 +6,10 @@ from statsmodels.tsa.stattools import grangercausalitytests
 
 class Plugin:
     """
-    A plugin for feature selection on a dataset.
-
-    Attributes:
-        plugin_params (dict): Default parameters for the plugin.
-        params (dict): Parameters for the current instance of the plugin.
-        feature_selection_params (dict): Parameters for feature selection methods.
+    Feature Selector Plugin to perform feature selection on the dataset using various methods.
     """
 
+    # Define the parameters for this plugin and their default values
     plugin_params = {
         'method': 'select_single',
         'save_params': None,
@@ -26,17 +22,16 @@ class Plugin:
 
     def __init__(self):
         """
-        Initialize the plugin with default parameters.
+        Initialize the Plugin with default parameters.
         """
         self.params = self.plugin_params.copy()
-        self.feature_selection_params = None
 
     def set_params(self, **kwargs):
         """
-        Set parameters for the plugin.
+        Set the parameters for the plugin.
 
         Args:
-            **kwargs: Arbitrary keyword arguments for setting parameters.
+            **kwargs: Arbitrary keyword arguments for plugin parameters.
         """
         for key, value in kwargs.items():
             if key in self.params:
@@ -91,14 +86,14 @@ class Plugin:
 
     def _acf_feature_selection(self, data, significance_level):
         """
-        Perform ACF-based feature selection.
+        Apply ACF feature selection to the data.
 
         Args:
-            data (pd.DataFrame): The input data.
-            significance_level (float): The significance level for feature selection.
+            data (pd.DataFrame): The input data to be processed.
+            significance_level (float): Significance level for the statistical tests.
 
         Returns:
-            list: List of selected features.
+            list: List of selected feature names.
         """
         selected_features = []
         for column in data.columns:
@@ -109,14 +104,14 @@ class Plugin:
 
     def _pacf_feature_selection(self, data, significance_level):
         """
-        Perform PACF-based feature selection.
+        Apply PACF feature selection to the data.
 
         Args:
-            data (pd.DataFrame): The input data.
-            significance_level (float): The significance level for feature selection.
+            data (pd.DataFrame): The input data to be processed.
+            significance_level (float): Significance level for the statistical tests.
 
         Returns:
-            list: List of selected features.
+            list: List of selected feature names.
         """
         selected_features = []
         for column in data.columns:
@@ -127,15 +122,15 @@ class Plugin:
 
     def _granger_causality_feature_selection(self, data, max_lag, significance_level):
         """
-        Perform Granger causality-based feature selection.
+        Apply Granger causality feature selection to the data.
 
         Args:
-            data (pd.DataFrame): The input data.
+            data (pd.DataFrame): The input data to be processed.
             max_lag (int): Maximum lag for the Granger causality test.
             significance_level (float): Significance level for the statistical tests.
 
         Returns:
-            list: List of selected features.
+            list: List of selected feature names.
         """
         selected_features = []
         target_column = 'eur_usd_rate'
@@ -147,18 +142,17 @@ class Plugin:
                     selected_features.append(column)
         return selected_features
 
-    def add_debug_info(self, debug_info):
+    def get_debug_info(self):
         """
-        Add plugin-specific debug information.
+        Get debug information for the plugin.
 
-        Args:
-            debug_info (dict): The main debug information dictionary.
+        Returns:
+            dict: Debug information including method, max_lag, significance_level, single, and multi.
         """
-        debug_info.update({
+        return {
             "method": self.params['method'],
             "max_lag": self.params['max_lag'],
             "significance_level": self.params['significance_level'],
             "single": self.params['single'],
             "multi": self.params['multi']
-        })
-
+        }
