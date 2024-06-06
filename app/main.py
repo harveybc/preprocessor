@@ -113,9 +113,10 @@ def main():
         return
 
     plugin = plugin_class()
-    plugin_params = {param: config[param] for param in required_params if param in config}
-    print(f"Setting plugin parameters: {plugin_params}")
-    plugin.set_params(**plugin_params)
+    # No longer setting plugin parameters directly from main script
+    # plugin_params = {param: config[param] for param in required_params if param in config}
+    # print(f"Setting plugin parameters: {plugin_params}")
+    # plugin.set_params(**plugin_params)
 
     processed_data = plugin.process(data)
 
