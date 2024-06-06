@@ -25,7 +25,7 @@ def test_unbiaser_plugin_default():
     assert set(config.keys()) == expected_config_keys, f"Unexpected keys in config: {set(config.keys()) - expected_config_keys}"
 
     # Assertions for the debug file
-    expected_debug_keys = {"execution_time", "input_rows", "output_rows", "input_columns", "output_columns"}
+    expected_debug_keys = {"execution_time", "input_rows", "output_rows", "input_columns", "output_columns", "method", "window_size", "ema_alpha"}
     assert set(debug_info.keys()) == expected_debug_keys, f"Unexpected keys in debug info: {set(debug_info.keys()) - expected_debug_keys}"
 
 def test_unbiaser_plugin_window_size_512():
@@ -54,7 +54,7 @@ def test_unbiaser_plugin_window_size_512():
     assert set(config.keys()) == expected_config_keys, f"Unexpected keys in config: {set(config.keys()) - expected_config_keys}"
 
     # Assertions for the debug file
-    expected_debug_keys = {"execution_time", "input_rows", "output_rows", "input_columns", "output_columns"}
+    expected_debug_keys = {"execution_time", "input_rows", "output_rows", "input_columns", "output_columns", "method", "window_size", "ema_alpha"}
     assert set(debug_info.keys()) == expected_debug_keys, f"Unexpected keys in debug info: {set(debug_info.keys()) - expected_debug_keys}"
 
 def test_unbiaser_plugin_ema():
@@ -70,9 +70,9 @@ def test_unbiaser_plugin_ema():
     subprocess.run(command, check=True)
 
     # Load the generated config and debug files
-    with open('config_out.json', 'r') as f:
+    with open('config_out.json', 'r') as f):
         config = json.load(f)
-    with open('debug_out.json', 'r') as f:
+    with open('debug_out.json', 'r') as f):
         debug_info = json.load(f)
 
     # Assertions for the config file
@@ -83,7 +83,7 @@ def test_unbiaser_plugin_ema():
     assert set(config.keys()) == expected_config_keys, f"Unexpected keys in config: {set(config.keys()) - expected_config_keys}"
 
     # Assertions for the debug file
-    expected_debug_keys = {"execution_time", "input_rows", "output_rows", "input_columns", "output_columns"}
+    expected_debug_keys = {"execution_time", "input_rows", "output_rows", "input_columns", "output_columns", "method", "window_size", "ema_alpha"}
     assert set(debug_info.keys()) == expected_debug_keys, f"Unexpected keys in debug info: {set(debug_info.keys()) - expected_debug_keys}"
 
 if __name__ == '__main__':
