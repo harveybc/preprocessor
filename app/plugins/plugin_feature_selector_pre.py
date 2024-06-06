@@ -52,13 +52,13 @@ class Plugin:
         load_params = self.params['load_params']
         max_lag = self.params['max_lag']
         significance_level = self.params['significance_level']
-        single = self.params['single']
+        single = int(self.params['single'])  # Ensure 'single' is treated as an integer
         multi = self.params['multi']
 
         if method == 'select_single':
             selected_features = [data.columns[single]]
         elif method == 'select_multi':
-            selected_features = [data.columns[i] for i in multi]
+            selected_features = [data.columns[int(i)] for i in multi]
         else:
             if load_params and os.path.exists(load_params):
                 with open(load_params, 'r') as f:
