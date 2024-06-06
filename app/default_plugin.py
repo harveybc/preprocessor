@@ -13,8 +13,6 @@ class DefaultPlugin:
     plugin_params = {
         'method': 'min-max',
         'range': (-1, 1),
-        'save_params': 'normalization_params.json',
-        'load_params': None
     }
 
     # Define the debug variables for this plugin
