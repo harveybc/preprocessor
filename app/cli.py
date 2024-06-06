@@ -25,6 +25,7 @@ def parse_args():
     # First pass parse to get the plugin name
     args, unknown = parser.parse_known_args()
     print(f"Initial args: {args}")
+    print(f"Unknown args: {unknown}")
 
     # Dynamically add plugin parameters if a plugin is specified
     if args.plugin:
@@ -34,4 +35,8 @@ def parse_args():
         for param, default in plugin_params.items():
             parser.add_argument(f'--{param}', type=type(default), default=default, help=f'{param} for the plugin {args.plugin}')
     
-    return parser.parse_args()
+    # Parse again to include dynamically added plugin parameters
+    args = parser.parse_args()
+    print(f"Final args: {args}")
+
+    return args

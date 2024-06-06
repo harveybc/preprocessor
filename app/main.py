@@ -31,6 +31,9 @@ def log_remote_info(config, debug_info, url, username, password):
         return False
 
 def main():
+    """
+    Main function to run the preprocessor with the specified configuration and plugin.
+    """
     print("Parsing initial arguments...")
     args = parse_args()
     print(f"Initial args: {args}")
