@@ -21,11 +21,9 @@ def parse_args():
     parser.add_argument('--force_date', action='store_true', help='Force date inclusion')
     parser.add_argument('--headers', action='store_true', help='Indicate if CSV has headers')
     parser.add_argument('--debug_file', type=str, help='Path to save debug information')
-    parser.add_argument('--method', type=str, help='Method to use for the plugin')
 
     args, unknown = parser.parse_known_args()
     print(f"Initial args: {args}")
     print(f"Unknown args: {unknown}")
 
-    # Returning parsed arguments and unknown arguments for dynamic handling
     return args, unknown
