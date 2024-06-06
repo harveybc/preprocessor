@@ -34,6 +34,7 @@ def test_cli_remote_save_config():
 def test_cli_remote_load_config():
     command = [
         'python', '-m', 'app.main',
+        'tests/data/EURUSD_5m_2006_2007.csv',  # Add the default CSV file here
         '--load_config', 'http://localhost:60500/preprocessor/feature_selector/detail/1',
         '--remote_username', 'test',
         '--remote_password', 'pass'
