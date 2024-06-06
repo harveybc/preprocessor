@@ -9,14 +9,19 @@ class Plugin:
         'ema_alpha': 0.1
     }
 
+    # Define the debug variables for this plugin
+    plugin_debug_vars = ['method', 'window_size', 'ema_alpha']
+
     def __init__(self):
         self.params = self.plugin_params.copy()
 
     def set_params(self, **kwargs):
         for key, value in kwargs.items():
-            if key in self.params and value is not None:
+            if key in self.params:
                 self.params[key] = value
-        print(f"Set parameters: {self.params}")
+
+    def get_debug_info(self):
+        return {var: self.params[var] for var in self.plugin_debug_vars}
 
     def process(self, data):
         method = self.params.get('method', 'ma')
