@@ -1,12 +1,13 @@
 import subprocess
 import json
 
-def test_unbiaser_plugin_default():
-    # Define the command to use the unbiaser plugin with default values
+def test_feature_selector_plugin_single():
+    # Define the command to use the feature selector plugin with single selection
     command = [
         'python', '-m', 'app.main',
         'tests/data/EURUSD_5m_2006_2007.csv',
-        '--plugin', 'unbiaser'
+        '--plugin', 'feature_selector',
+        '--single', '3'
     ]
 
     # Run the command
@@ -20,21 +21,23 @@ def test_unbiaser_plugin_default():
 
     # Assertions for the config file
     assert config['csv_file'] == 'tests/data/EURUSD_5m_2006_2007.csv'
-    assert config['plugin'] == 'unbiaser'
-    expected_config_keys = {"csv_file", "plugin"}
+    assert config['plugin'] == 'feature_selector'
+    assert int(config['single']) == 3  # Ensure single is treated as integer
+    expected_config_keys = {"csv_file", "plugin", "single"}
     assert set(config.keys()) == expected_config_keys, f"Unexpected keys in config: {set(config.keys()) - expected_config_keys}"
 
     # Assertions for the debug file
-    expected_debug_keys = {"execution_time", "input_rows", "output_rows", "input_columns", "output_columns", "method", "window_size", "ema_alpha"}
+    expected_debug_keys = {"execution_time", "input_rows", "output_rows", "input_columns", "output_columns", "method", "max_lag", "significance_level", "single", "multi"}
     assert set(debug_info.keys()) == expected_debug_keys, f"Unexpected keys in debug info: {set(debug_info.keys()) - expected_debug_keys}"
 
-def test_unbiaser_plugin_window_size_512():
-    # Define the command to use the unbiaser plugin with window_size 512
+def test_feature_selector_plugin_multi():
+    # Define the command to use the feature selector plugin with multiple selection
     command = [
         'python', '-m', 'app.main',
         'tests/data/EURUSD_5m_2006_2007.csv',
-        '--plugin', 'unbiaser',
-        '--window_size', '512'
+        '--plugin', 'feature_selector',
+        '--method', 'select_multi',
+        '--multi', '1,2,3'
     ]
 
     # Run the command
@@ -48,45 +51,16 @@ def test_unbiaser_plugin_window_size_512():
 
     # Assertions for the config file
     assert config['csv_file'] == 'tests/data/EURUSD_5m_2006_2007.csv'
-    assert config['plugin'] == 'unbiaser'
-    assert int(config['window_size']) == 512  # Ensure window_size is treated as integer
-    expected_config_keys = {"csv_file", "plugin", "window_size"}
+    assert config['plugin'] == 'feature_selector'
+    assert config['method'] == 'select_multi'
+    assert config['multi'] == [1, 2, 3]  # Ensure multi is treated as list of integers
+    expected_config_keys = {"csv_file", "plugin", "method", "multi"}
     assert set(config.keys()) == expected_config_keys, f"Unexpected keys in config: {set(config.keys()) - expected_config_keys}"
 
     # Assertions for the debug file
-    expected_debug_keys = {"execution_time", "input_rows", "output_rows", "input_columns", "output_columns", "method", "window_size", "ema_alpha"}
-    assert set(debug_info.keys()) == expected_debug_keys, f"Unexpected keys in debug info: {set(debug_info.keys()) - expected_debug_keys}"
-
-def test_unbiaser_plugin_ema():
-    # Define the command to use the unbiaser plugin with ema method
-    command = [
-        'python', '-m', 'app.main',
-        'tests/data/EURUSD_5m_2006_2007.csv',
-        '--plugin', 'unbiaser',
-        '--method', 'ema'
-    ]
-
-    # Run the command
-    subprocess.run(command, check=True)
-
-    # Load the generated config and debug files
-    with open('config_out.json', 'r') as f:
-        config = json.load(f)
-    with open('debug_out.json', 'r') as f:
-        debug_info = json.load(f)
-
-    # Assertions for the config file
-    assert config['csv_file'] == 'tests/data/EURUSD_5m_2006_2007.csv'
-    assert config['plugin'] == 'unbiaser'
-    assert config['method'] == 'ema'
-    expected_config_keys = {"csv_file", "plugin", "method"}
-    assert set(config.keys()) == expected_config_keys, f"Unexpected keys in config: {set(config.keys()) - expected_config_keys}"
-
-    # Assertions for the debug file
-    expected_debug_keys = {"execution_time", "input_rows", "output_rows", "input_columns", "output_columns", "method", "window_size", "ema_alpha"}
+    expected_debug_keys = {"execution_time", "input_rows", "output_rows", "input_columns", "output_columns", "method", "max_lag", "significance_level", "single", "multi"}
     assert set(debug_info.keys()) == expected_debug_keys, f"Unexpected keys in debug info: {set(debug_info.keys()) - expected_debug_keys}"
 
 if __name__ == '__main__':
-    test_unbiaser_plugin_default()
-    test_unbiaser_plugin_window_size_512()
-    test_unbiaser_plugin_ema()
+    test_feature_selector_plugin_single()
+    test_feature_selector_plugin_multi()
