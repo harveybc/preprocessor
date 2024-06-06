@@ -4,23 +4,78 @@ import os
 import numpy as np
 
 class DefaultPlugin:
-    def __init__(self):
-        self.normalization_params = None
+    """
+    Normalizer Plugin to apply normalization methods to the dataset.
+    """
 
-    def process(self, data, method='z-score', save_params='normalization_params.json', load_params=None, range=(0, 1)):
+    # Define the parameters for this plugin and their default values
+    plugin_params = {
+        'method': 'min-max',
+        'save_params': 'normalization_params.json',
+        'load_params': None,
+        'range': (-1, 1)
+    }
+
+    def __init__(self):
+        """
+        Initialize the Plugin with default parameters.
+        """
+        self.normalization_params = None
+        self.params = self.plugin_params.copy()
+
+    def set_params(self, **kwargs):
+        """
+        Set the parameters for the plugin.
+
+        Args:
+            **kwargs: Arbitrary keyword arguments for plugin parameters.
+        """
+        for key, value in kwargs.items():
+            if key in self.params:
+                self.params[key] = value
+
+    def get_debug_info(self):
+        """
+        Get debug information for the plugin.
+
+        Returns:
+            dict: Debug information including min_val and max_val for min-max normalization, 
+                  and mean and std for z-score normalization.
+        """
+        debug_info = {}
+        if self.params['method'] == 'min-max':
+            debug_info['min_val'] = self.normalization_params['min'] if self.normalization_params else None
+            debug_info['max_val'] = self.normalization_params['max'] if self.normalization_params else None
+        elif self.params['method'] == 'z-score':
+            debug_info['mean'] = self.normalization_params['mean'] if self.normalization_params else None
+            debug_info['std'] = self.normalization_params['std'] if self.normalization_params else None
+        return debug_info
+
+    def add_debug_info(self, debug_info):
+        """
+        Add plugin-specific debug information to the existing debug info.
+
+        Args:
+            debug_info (dict): The existing debug information dictionary.
+        """
+        plugin_debug_info = self.get_debug_info()
+        debug_info.update(plugin_debug_info)
+
+    def process(self, data):
         """
         Normalize the data using the specified parameters or calculate them if not provided.
 
         Args:
             data (pd.DataFrame): The input data to be processed.
-            method (str): The normalization method to use.
-            save_params (str): Path to save the normalization parameters.
-            load_params (str): Path to load the normalization parameters.
-            range (tuple): The range for min-max normalization.
 
         Returns:
             pd.DataFrame: The normalized data.
         """
+        method = self.params['method']
+        save_params = self.params['save_params']
+        load_params = self.params['load_params']
+        range_vals = self.params['range']
+
         # Retain the date column
         date_column = data.select_dtypes(include=[np.datetime64]).columns
         non_numeric_data = data[date_column]
@@ -32,7 +87,7 @@ class DefaultPlugin:
             with open(load_params, 'r') as f:
                 self.normalization_params = json.load(f)
 
-        if self.normalization_params is None:
+        if self.normalization_params == None:
             if method == 'z-score':
                 mean = numeric_data.mean()
                 std = numeric_data.std()
@@ -41,8 +96,8 @@ class DefaultPlugin:
             elif method == 'min-max':
                 min_val = numeric_data.min()
                 max_val = numeric_data.max()
-                self.normalization_params = {'method': 'min-max', 'min': min_val.to_dict(), 'max': max_val.to_dict(), 'range': range}
-                normalized_data = (numeric_data - min_val) / (max_val - min_val) * (range[1] - range[0]) + range[0]
+                self.normalization_params = {'method': 'min-max', 'min': min_val.to_dict(), 'max': max_val.to_dict(), 'range': range_vals}
+                normalized_data = (numeric_data - min_val) / (max_val - min_val) * (range_vals[1] - range_vals[0]) + range_vals[0]
             else:
                 raise ValueError(f"Unknown normalization method: {method}")
 
@@ -58,8 +113,8 @@ class DefaultPlugin:
             elif self.normalization_params['method'] == 'min-max':
                 min_val = pd.Series(self.normalization_params['min'])
                 max_val = pd.Series(self.normalization_params['max'])
-                range = self.normalization_params.get('range', (0, 1))
-                normalized_data = (numeric_data - min_val) / (max_val - min_val) * (range[1] - range[0]) + range[0]
+                range_vals = self.normalization_params.get('range', (-1, 1))
+                normalized_data = (numeric_data - min_val) / (max_val - min_val) * (range_vals[1] - range_vals[0]) + range_vals[0]
             else:
                 raise ValueError(f"Unknown normalization method: {self.normalization_params['method']}")
 
