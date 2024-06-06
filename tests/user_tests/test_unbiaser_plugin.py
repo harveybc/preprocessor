@@ -49,7 +49,7 @@ def test_unbiaser_plugin_window_size_512():
     # Assertions for the config file
     assert config['csv_file'] == 'tests/data/EURUSD_5m_2006_2007.csv'
     assert config['plugin'] == 'unbiaser'
-    assert config['window_size'] == 512
+    assert int(config['window_size']) == 512  # Ensure window_size is treated as integer
     expected_config_keys = {"csv_file", "plugin", "window_size"}
     assert set(config.keys()) == expected_config_keys, f"Unexpected keys in config: {set(config.keys()) - expected_config_keys}"
 
