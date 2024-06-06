@@ -1,4 +1,5 @@
 import argparse
+from plugin_loader import get_plugin_params
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Preprocessor CLI')
@@ -17,6 +18,7 @@ def parse_args():
     parser.add_argument('--force_date', action='store_true', help='Force date inclusion')
     parser.add_argument('--headers', action='store_true', help='Indicate if CSV has headers')
     parser.add_argument('--debug_file', type=str, help='Path to save debug information')
-    
+
     args, unknown = parser.parse_known_args()
     return args, unknown
+
