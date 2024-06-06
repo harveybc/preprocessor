@@ -71,7 +71,7 @@ class DefaultPlugin:
         Returns:
             pd.DataFrame: The normalized data.
         """
-        method = self.params['method']
+        method = self.params['method'] or 'min-max'
         save_params = self.params['save_params']
         load_params = self.params['load_params']
         range_vals = self.params['range']
