@@ -38,6 +38,7 @@ def parse_args():
         
         # Add plugin-specific arguments dynamically
         for param, default in plugin_params.items():
+            print(f"Adding argument --{param} with default value {default}")
             parser.add_argument(f'--{param}', type=type(default), default=default, help=f'{param} for the plugin {args.plugin}')
 
     # Parse all arguments including dynamically added ones
