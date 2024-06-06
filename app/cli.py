@@ -1,7 +1,13 @@
 import argparse
 from plugin_loader import get_plugin_params
 
-def parse_args():
+def setup_arg_parser():
+    """
+    Set up the argument parser with common parameters and dynamically add plugin-specific parameters.
+
+    Returns:
+        argparse.ArgumentParser: Configured argument parser.
+    """
     parser = argparse.ArgumentParser(description='Preprocessor CLI')
     
     parser.add_argument('csv_file', type=str, help='Path to the CSV file')
@@ -19,11 +25,25 @@ def parse_args():
     parser.add_argument('--headers', action='store_true', help='Indicate if CSV has headers')
     parser.add_argument('--debug_file', type=str, help='Path to save debug information')
     
-    # Dynamically add plugin-specific parameters if the plugin is specified
+    return parser
+
+def parse_args():
+    """
+    Parse the command line arguments, including dynamically added plugin-specific parameters.
+
+    Returns:
+        argparse.Namespace: Parsed command line arguments.
+    """
+    parser = setup_arg_parser()
+    
+    # First pass to get the plugin name
     args, unknown = parser.parse_known_args()
+
+    # Dynamically add plugin-specific parameters if the plugin is specified
     if args.plugin:
         plugin_params = get_plugin_params(args.plugin)
         for param, default in plugin_params.items():
             parser.add_argument(f'--{param}', type=type(default), default=default, help=f'{param} for the plugin {args.plugin}')
-
+    
+    # Final parse to include dynamically added arguments
     return parser.parse_args()
