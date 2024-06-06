@@ -156,3 +156,13 @@ class Plugin:
             "single": self.params['single'],
             "multi": self.params['multi']
         }
+
+    def add_debug_info(self, debug_info):
+        """
+        Add plugin-specific debug information to the existing debug info.
+
+        Args:
+            debug_info (dict): The existing debug information dictionary.
+        """
+        plugin_debug_info = self.get_debug_info()
+        debug_info.update(plugin_debug_info)
