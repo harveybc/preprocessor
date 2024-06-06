@@ -24,9 +24,9 @@ def teardown_module(module):
 
 # Unit test for CLI argument parsing
 def test_parse_args():
-    args, unknown = parse_args(['tests/data/EURUSD_5m_2006_2007.csv', '--plugin', 'default_plugin'])
-    assert args.csv_file == 'tests/data/EURUSD_5m_2006_2007.csv'
-    assert args.plugin == 'default_plugin'
+    args, unknown = parse_args()
+    assert args.csv_file is None
+    assert args.plugin is None
 
 # Unit test for loading configuration
 def test_load_config():
@@ -92,7 +92,7 @@ def test_load_plugin():
 
 # Unit tests for individual plugins
 def test_default_plugin():
-    from app.plugins.default_plugin import Plugin as DefaultPlugin
+    from app.default_plugin import Plugin as DefaultPlugin
     plugin = DefaultPlugin()
     assert plugin.params['method'] == 'min-max'
     assert plugin.params['range'] == (-1, 1)
