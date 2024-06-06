@@ -57,13 +57,6 @@ def main():
     config = merge_config(config, cli_args)
     print(f"Config after merging with CLI args: {config}")
 
-    # Set default plugin if not provided in CLI or config file
-    if 'plugin' not in config or not config['plugin']:
-        if args.plugin:
-            config['plugin'] = args.plugin
-        else:
-            config['plugin'] = 'default_plugin'
-
     print(f"Using plugin: {config['plugin']}")
 
     debug_info = {
@@ -80,7 +73,7 @@ def main():
         print("Error: No CSV file specified.", file=sys.stderr)
         return
 
-    data = load_csv(config['csv_file'], headers=config['headers'])
+    data = load_csv(config['csv_file'], headers=config.get('headers', False))
     debug_info["input_rows"] = len(data)
     debug_info["input_columns"] = len(data.columns)
 
@@ -101,10 +94,10 @@ def main():
     debug_info["output_rows"] = len(processed_data)
     debug_info["output_columns"] = len(processed_data.columns)
 
-    include_date = config['force_date'] or not (config.get('method') in ['select_single', 'select_multi'])
+    include_date = config.get('force_date', False) or not (config.get('method') in ['select_single', 'select_multi'])
 
     print("Processing complete. Writing output...")
-    write_csv(config['output_file'], processed_data, include_date=include_date, headers=config['headers'])
+    write_csv(config['output_file'], processed_data, include_date=include_date, headers=config.get('headers', False))
     print(f"Output written to {config['output_file']}")
 
     config_str, config_filename = save_config(config)
@@ -122,13 +115,13 @@ def main():
     print(f"Debug info saved to {config['debug_file']}")
     print(f"Execution time: {execution_time} seconds")
 
-    if config['remote_save_config']:
+    if config.get('remote_save_config'):
         if save_remote_config(config_str, config['remote_save_config'], config['remote_username'], config['remote_password']):
             print(f"Configuration successfully saved to remote URL {config['remote_save_config']}")
         else:
             print(f"Failed to save configuration to remote URL {config['remote_save_config']}")
 
-    if config['remote_log']:
+    if config.get('remote_log'):
         if log_remote_info(config_str, debug_info, config['remote_log'], config['remote_username'], config['remote_password']):
             print(f"Debug information successfully logged to remote URL {config['remote_log']}")
         else:
