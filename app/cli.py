@@ -1,6 +1,7 @@
 # app/cli.py
 
 import argparse
+from plugin_loader import get_plugin_params
 
 def parse_args():
     print("Parsing initial arguments...")
@@ -22,6 +23,7 @@ def parse_args():
     parser.add_argument('--headers', action='store_true', help='Indicate if CSV has headers')
     parser.add_argument('--debug_file', type=str, help='Path to save debug information')
 
+    # Parse known and unknown args separately
     args, unknown = parser.parse_known_args()
     print(f"Initial args: {args}")
     print(f"Unknown args: {unknown}")
