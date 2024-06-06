@@ -49,6 +49,33 @@ def main():
     cli_args = vars(args)
     print(f"CLI arguments: {cli_args}")
 
+    # Convert unknown args to a dictionary
+    unknown_args_dict = {}
+    current_key = None
+    for arg in unknown_args:
+        if arg.startswith('--'):
+            if current_key:
+                unknown_args_dict[current_key] = True  # Flags without values are treated as True
+            current_key = arg[2:]
+        else:
+            if current_key:
+                unknown_args_dict[current_key] = arg
+                current_key = None
+
+    if current_key:
+        unknown_args_dict[current_key] = True
+
+    print(f"Unknown args as dict: {unknown_args_dict}")
+
+    # Specific handling for --range argument
+    if 'range' in unknown_args_dict:
+        range_str = unknown_args_dict['range']
+        try:
+            unknown_args_dict['range'] = tuple(map(int, range_str.strip("()").split(',')))
+        except ValueError:
+            print(f"Error: Invalid format for --range argument: {range_str}", file=sys.stderr)
+            return
+
     print("Loading configuration...")
     config = load_config(args)
     print(f"Initial loaded config: {config}")
@@ -57,7 +84,13 @@ def main():
     config = merge_config(config, cli_args)
     print(f"Config after merging with CLI args: {config}")
 
-    print(f"Using plugin: {config['plugin']}")
+    # Ensure default plugin and parameters are set
+    if 'plugin' not in config:
+        config['plugin'] = 'default_plugin'
+    if 'method' not in config:
+        config['method'] = 'min-max'
+
+    print(f"Final merged config: {config}")
 
     debug_info = {
         "execution_time": "",
@@ -73,7 +106,7 @@ def main():
         print("Error: No CSV file specified.", file=sys.stderr)
         return
 
-    data = load_csv(config['csv_file'], headers=config.get('headers', False))
+    data = load_csv(config['csv_file'], headers=config['headers'])
     debug_info["input_rows"] = len(data)
     debug_info["input_columns"] = len(data.columns)
 
@@ -83,8 +116,6 @@ def main():
         return
 
     plugin = plugin_class()
-
-    # Set plugin parameters from config, no CLI override for plugin-specific params
     plugin_params = {param: config[param] for param in required_params if param in config}
     print(f"Setting plugin parameters: {plugin_params}")
     plugin.set_params(**plugin_params)
@@ -94,10 +125,10 @@ def main():
     debug_info["output_rows"] = len(processed_data)
     debug_info["output_columns"] = len(processed_data.columns)
 
-    include_date = config.get('force_date', False) or not (config.get('method') in ['select_single', 'select_multi'])
+    include_date = config['force_date'] or not (config.get('method') in ['select_single', 'select_multi'])
 
     print("Processing complete. Writing output...")
-    write_csv(config['output_file'], processed_data, include_date=include_date, headers=config.get('headers', False))
+    write_csv(config['output_file'], processed_data, include_date=include_date, headers=config['headers'])
     print(f"Output written to {config['output_file']}")
 
     config_str, config_filename = save_config(config)
@@ -105,6 +136,9 @@ def main():
 
     execution_time = time.time() - start_time
     debug_info["execution_time"] = execution_time
+
+    if 'debug_file' not in config or not config['debug_file']:
+        config['debug_file'] = 'debug_out.json'
 
     plugin.add_debug_info(debug_info)
     save_debug_info(debug_info, config['debug_file'])
