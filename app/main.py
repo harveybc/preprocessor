@@ -103,7 +103,7 @@ def main():
         return
 
     plugin = plugin_class()
-    plugin_params = {param: config[param] for param in required_params if param in config}
+    plugin_params = {param: config.get(param, plugin.params.get(param)) for param in required_params}
     print(f"Setting plugin parameters: {plugin_params}")
     plugin.set_params(**plugin_params)
 
