@@ -8,24 +8,21 @@ def test_normalization_plugin():
     # Define the command
     command = [
         'python', '-m', 'app.main',
-        'tests/data/EURUSD_5m_2006_2007.csv',
-        '--output_file', 'tests/data/normalized_output.csv',
-        '--save_config', 'tests/data/normalized_config.json',
-        '--debug_file', 'tests/data/normalized_debug.json'
+        'tests/data/EURUSD_5m_2006_2007.csv'
     ]
 
     # Run the command
     subprocess.run(command, check=True)
 
     # Load the generated config and debug files
-    with open('tests/data/normalized_config.json', 'r') as f:
+    with open('config_out.json', 'r') as f:
         config = json.load(f)
-    with open('tests/data/normalized_debug.json', 'r') as f:
+    with open('debug_out.json', 'r') as f:
         debug_info = json.load(f)
 
     # Assertions for the config file
     assert config['csv_file'] == 'tests/data/EURUSD_5m_2006_2007.csv'
-    assert config['output_file'] == 'tests/data/normalized_output.csv'
+    assert config['output_file'] == 'output.csv'
     assert config['plugin'] == 'default_plugin'
 
     # Assertions for the debug file
