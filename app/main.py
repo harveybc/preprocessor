@@ -93,7 +93,9 @@ def main():
     debug_info["output_columns"] = len(processed_data.columns)
 
     # Include plugin-specific debug information
-    debug_info.update(plugin.get_debug_info())
+    plugin_debug_info = plugin.get_debug_info()
+    print(f"Plugin-specific debug info: {plugin_debug_info}")  # Debug message
+    debug_info.update(plugin_debug_info)
 
     include_date = config['force_date'] or not (config.get('method') in ['select_single', 'select_multi'])
 
@@ -111,6 +113,7 @@ def main():
     execution_time = time.time() - start_time
     debug_info["execution_time"] = execution_time
 
+    print(f"Debug info to be saved: {debug_info}")  # Debug message
     if args.debug_file:  # Ensure debug_file is present
         save_debug_info(debug_info, args.debug_file)
 
