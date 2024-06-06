@@ -5,6 +5,15 @@ import os
 from statsmodels.tsa.stattools import grangercausalitytests
 
 class Plugin:
+    """
+    A plugin for feature selection on a dataset.
+
+    Attributes:
+        plugin_params (dict): Default parameters for the plugin.
+        params (dict): Parameters for the current instance of the plugin.
+        feature_selection_params (dict): Parameters for feature selection methods.
+    """
+
     plugin_params = {
         'method': 'select_single',
         'save_params': None,
@@ -16,14 +25,33 @@ class Plugin:
     }
 
     def __init__(self):
+        """
+        Initialize the plugin with default parameters.
+        """
         self.params = self.plugin_params.copy()
+        self.feature_selection_params = None
 
     def set_params(self, **kwargs):
+        """
+        Set parameters for the plugin.
+
+        Args:
+            **kwargs: Arbitrary keyword arguments for setting parameters.
+        """
         for key, value in kwargs.items():
             if key in self.params:
                 self.params[key] = value
 
     def process(self, data):
+        """
+        Perform feature selection on the dataset using the specified method.
+
+        Args:
+            data (pd.DataFrame): The input data to be processed.
+
+        Returns:
+            pd.DataFrame: The dataset with only the selected features.
+        """
         method = self.params['method']
         save_params = self.params['save_params']
         load_params = self.params['load_params']
@@ -62,6 +90,16 @@ class Plugin:
         return data[selected_features]
 
     def _acf_feature_selection(self, data, significance_level):
+        """
+        Perform ACF-based feature selection.
+
+        Args:
+            data (pd.DataFrame): The input data.
+            significance_level (float): The significance level for feature selection.
+
+        Returns:
+            list: List of selected features.
+        """
         selected_features = []
         for column in data.columns:
             acf_values = [abs(val) for val in np.correlate(data[column], data[column], mode='full')]
@@ -70,6 +108,16 @@ class Plugin:
         return selected_features
 
     def _pacf_feature_selection(self, data, significance_level):
+        """
+        Perform PACF-based feature selection.
+
+        Args:
+            data (pd.DataFrame): The input data.
+            significance_level (float): The significance level for feature selection.
+
+        Returns:
+            list: List of selected features.
+        """
         selected_features = []
         for column in data.columns:
             pacf_values = [abs(val) for val in np.correlate(data[column], data[column], mode='full')]
@@ -78,6 +126,17 @@ class Plugin:
         return selected_features
 
     def _granger_causality_feature_selection(self, data, max_lag, significance_level):
+        """
+        Perform Granger causality-based feature selection.
+
+        Args:
+            data (pd.DataFrame): The input data.
+            max_lag (int): Maximum lag for the Granger causality test.
+            significance_level (float): Significance level for the statistical tests.
+
+        Returns:
+            list: List of selected features.
+        """
         selected_features = []
         target_column = 'eur_usd_rate'
         for column in data.columns:
@@ -89,6 +148,12 @@ class Plugin:
         return selected_features
 
     def get_debug_info(self):
+        """
+        Get debug information for the plugin.
+
+        Returns:
+            dict: A dictionary containing debug information.
+        """
         return {
             "method": self.params['method'],
             "max_lag": self.params['max_lag'],
