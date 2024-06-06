@@ -50,7 +50,7 @@ def log_remote_info(config, debug_info, url, username, password):
     Returns:
         bool: True if the information is logged successfully, False otherwise.
     """
-    try {
+    try:
         data = {
             'json_config': config,
             'json_result': json.dumps(debug_info)
