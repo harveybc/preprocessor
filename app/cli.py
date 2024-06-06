@@ -1,10 +1,10 @@
 import argparse
-import sys
 from plugin_loader import get_plugin_params
 
 def parse_args():
+    print("Parsing initial arguments...")
     parser = argparse.ArgumentParser(description='Preprocessor CLI')
-
+    
     parser.add_argument('csv_file', type=str, help='Path to the CSV file')
     parser.add_argument('--save_config', type=str, help='Path to save the configuration')
     parser.add_argument('--load_config', type=str, help='Path to load the configuration')
@@ -20,16 +20,13 @@ def parse_args():
     parser.add_argument('--headers', action='store_true', help='Indicate if CSV has headers')
     parser.add_argument('--debug_file', type=str, help='Path to save debug information')
 
-    # Initial parse to get the plugin argument
-    initial_args, unknown = parser.parse_known_args()
-    print(f"Initial args: {initial_args}")
-    if initial_args.plugin:
-        plugin_params = get_plugin_params(initial_args.plugin)
+    args, unknown = parser.parse_known_args()
+    print(f"Initial args: {args}")
+    if args.plugin:
+        print(f"Getting plugin parameters for: {args.plugin}")
+        plugin_params = get_plugin_params(args.plugin)
         print(f"Retrieved plugin params: {plugin_params}")
         for param, default in plugin_params.items():
-            parser.add_argument(f'--{param}', type=type(default), default=default, help=f'{param} for the plugin {initial_args.plugin}')
-
-    final_args = parser.parse_args()
-    print(f"Final args: {final_args}")
-
-    return final_args
+            parser.add_argument(f'--{param}', type=type(default), default=default, help=f'{param} for the plugin {args.plugin}')
+    
+    return parser.parse_args()
