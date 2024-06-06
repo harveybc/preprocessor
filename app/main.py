@@ -67,6 +67,15 @@ def main():
 
     print(f"Unknown args as dict: {unknown_args_dict}")
 
+    # Specific handling for --range argument
+    if 'range' in unknown_args_dict:
+        range_str = unknown_args_dict['range']
+        try:
+            unknown_args_dict['range'] = tuple(map(int, range_str.strip("()").split(',')))
+        except ValueError:
+            print(f"Error: Invalid format for --range argument: {range_str}", file=sys.stderr)
+            return
+
     print("Loading configuration...")
     config = load_config(args)
     print(f"Initial loaded config: {config}")
@@ -103,8 +112,7 @@ def main():
         return
 
     plugin = plugin_class()
-    # Ensure that method and other parameters are set properly
-    plugin_params = {param: config.get(param, plugin.plugin_params.get(param)) for param in required_params}
+    plugin_params = {param: config[param] for param in required_params if param in config}
     print(f"Setting plugin parameters: {plugin_params}")
     plugin.set_params(**plugin_params)
 
