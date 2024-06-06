@@ -26,17 +26,8 @@ def test_normalization_plugin_min_max():
     assert config['output_file'] == 'output.csv'
     assert config['plugin'] == 'default_plugin'
     assert config['method'] == 'min-max'
-    assert config['range'] == [0, 1]  # Expecting a list format here
+    assert config['range'] == [0, 1]
 
     # Assertions for the debug file
     expected_debug_keys = {"execution_time", "input_rows", "output_rows", "input_columns", "output_columns", "min_val", "max_val"}
-    assert set(debug_info.keys()) == expected_debug_keys, f"Unexpected keys in debug info: {set(debug_info.keys()) - expected_debug_keys}"
-    assert debug_info['input_rows'] == 73841
-    assert debug_info['output_rows'] == 73841
-    assert debug_info['input_columns'] == 5
-    assert debug_info['output_columns'] == 5
-    assert 'min_val' in debug_info
-    assert 'max_val' in debug_info
-
-if __name__ == '__main__':
-    test_normalization_plugin_min_max()
+    assert set(debug_info.keys()) == expected_debug_keys

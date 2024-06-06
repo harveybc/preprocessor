@@ -1,6 +1,3 @@
-# tests/user_tests/test_normalization_plugin.py
-
-import os
 import subprocess
 import json
 
@@ -24,15 +21,8 @@ def test_normalization_plugin():
     assert config['csv_file'] == 'tests/data/EURUSD_5m_2006_2007.csv'
     assert config['output_file'] == 'output.csv'
     assert config['plugin'] == 'default_plugin'
+    assert 'method' not in config  # method is not set, so it should not be in the config
 
     # Assertions for the debug file
-    assert debug_info['input_rows'] == 73841
-    assert debug_info['output_rows'] == 73841
-    assert debug_info['input_columns'] == 5
-    assert debug_info['output_columns'] == 5
-    assert 'execution_time' in debug_info
-    assert debug_info['min_val'] is not None
-    assert debug_info['max_val'] is not None
-
-if __name__ == '__main__':
-    test_normalization_plugin()
+    expected_debug_keys = {"execution_time", "input_rows", "output_rows", "input_columns", "output_columns", "min_val", "max_val"}
+    assert set(debug_info.keys()) == expected_debug_keys

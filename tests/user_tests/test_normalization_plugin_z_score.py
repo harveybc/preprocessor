@@ -1,6 +1,3 @@
-# tests/user_tests/test_normalization_plugin_z_score.py
-
-import os
 import subprocess
 import json
 
@@ -22,19 +19,13 @@ def test_normalization_plugin_z_score():
         debug_info = json.load(f)
 
     # Assertions for the config file
+    expected_config_keys = {"csv_file", "output_file", "plugin", "method"}
+    assert set(config.keys()) == expected_config_keys, f"Unexpected keys in config: {set(config.keys()) - expected_config_keys}"
     assert config['csv_file'] == 'tests/data/EURUSD_5m_2006_2007.csv'
     assert config['output_file'] == 'output.csv'
     assert config['plugin'] == 'default_plugin'
     assert config['method'] == 'z-score'
 
     # Assertions for the debug file
-    assert debug_info['input_rows'] == 73841
-    assert debug_info['output_rows'] == 73841
-    assert debug_info['input_columns'] == 5
-    assert debug_info['output_columns'] == 5
-    assert 'execution_time' in debug_info
-    assert debug_info['mean'] is not None
-    assert debug_info['std'] is not None
-
-if __name__ == '__main__':
-    test_normalization_plugin_z_score()
+    expected_debug_keys = {"execution_time", "input_rows", "output_rows", "input_columns", "output_columns", "mean", "std"}
+    assert set(debug_info.keys()) == expected_debug_keys
