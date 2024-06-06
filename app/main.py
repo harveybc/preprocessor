@@ -9,7 +9,7 @@ import time
 from plugin_loader import load_plugin, get_plugin_params
 from app.cli import parse_args
 from app.config_handler import load_config, save_config, save_debug_info, merge_config
-from app.data_handler import load_csv, write_csv
+from app.data_handler import load_csv, write_csv  # Importing required functions
 
 def save_remote_config(config, url, username, password):
     """
@@ -50,7 +50,7 @@ def log_remote_info(config, debug_info, url, username, password):
     Returns:
         bool: True if the information is logged successfully, False otherwise.
     """
-    try:
+    try {
         data = {
             'json_config': config,
             'json_result': json.dumps(debug_info)
