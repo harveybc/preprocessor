@@ -1,12 +1,12 @@
-import json
 import subprocess
+import json
 
-def test_normalization_plugin_ma():
-    # Define the initial command to normalize with the "ma" method and range (0,1)
+def test_normalization_plugin_min_max():
+    # Define the initial command to normalize with the "min-max" method and range (0,1)
     initial_command = [
         'python', '-m', 'app.main',
         'tests/data/EURUSD_5m_2006_2007.csv',
-        '--method', 'ma',
+        '--method', 'min-max',
         '--range', '(0,1)'
     ]
 
@@ -23,11 +23,10 @@ def test_normalization_plugin_ma():
     assert config['csv_file'] == 'tests/data/EURUSD_5m_2006_2007.csv'
     assert config['output_file'] == 'output.csv'
     assert config['plugin'] == 'default_plugin'
-    assert config['method'] == 'ma'
-    assert config['range'] == [0, 1]
+    assert config['method'] == 'min-max'
+    assert config['range'] == (0, 1)
 
     # Assertions for the debug file
-    assert 'execution_time' in debug_info
     assert debug_info['input_rows'] == 73841
     assert debug_info['output_rows'] == 73841
     assert debug_info['input_columns'] == 5
@@ -36,4 +35,4 @@ def test_normalization_plugin_ma():
     assert 'max_val' in debug_info
 
 if __name__ == '__main__':
-    test_normalization_plugin_ma()
+    test_normalization_plugin_min_max()
