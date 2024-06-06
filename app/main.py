@@ -7,7 +7,7 @@ import requests
 import time
 from app.plugin_loader import load_plugin
 from app.cli import parse_args
-from app.config_handler import load_config, save_config, save_debug_info, merge_config
+from app.config_handler import load_config, save_config, save_debug_info, merge_config, DEFAULT_VALUES
 from app.data_handler import load_csv, write_csv
 
 def save_remote_config(config, url, username, password):
@@ -84,7 +84,7 @@ def main():
     config = merge_config(config, cli_args)
     print(f"Config after merging with CLI args: {config}")
 
-    # Merge unknown arguments (plugin-specific parameters)
+    # Merge plugin-specific arguments
     config.update(unknown_args_dict)
     print(f"Final merged config: {config}")
 
@@ -127,7 +127,7 @@ def main():
     write_csv(config['output_file'], processed_data, include_date=include_date, headers=config['headers'])
     print(f"Output written to {config['output_file']}")
 
-    config_str, config_filename = save_config(config)
+    config_str, config_filename = save_config({k: v for k, v in config.items() if k not in DEFAULT_VALUES or v != DEFAULT_VALUES[k]})
     print(f"Configuration saved to {config_filename}")
 
     execution_time = time.time() - start_time
