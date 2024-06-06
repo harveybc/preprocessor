@@ -14,22 +14,9 @@ from app.data_handler import load_csv, write_csv  # Importing required functions
 def save_remote_config(config, url, username, password):
     """
     Save the configuration to a remote URL.
-
-    Args:
-        config (str): The configuration string to be saved.
-        url (str): The remote URL to save the configuration.
-        username (str): The username for authentication.
-        password (str): The password for authentication.
-
-    Returns:
-        bool: True if the configuration is saved successfully, False otherwise.
     """
     try:
-        response = requests.post(
-            url,
-            auth=(username, password),
-            data={'json_config': config}
-        )
+        response = requests.post(url, auth=(username, password), data={'json_config': config})
         response.raise_for_status()
         return True
     except requests.RequestException as e:
@@ -39,27 +26,10 @@ def save_remote_config(config, url, username, password):
 def log_remote_info(config, debug_info, url, username, password):
     """
     Log debug information to a remote URL.
-
-    Args:
-        config (str): The configuration string.
-        debug_info (dict): The debug information dictionary.
-        url (str): The remote URL to log the information.
-        username (str): The username for authentication.
-        password (str): The password for authentication.
-
-    Returns:
-        bool: True if the information is logged successfully, False otherwise.
     """
     try:
-        data = {
-            'json_config': config,
-            'json_result': json.dumps(debug_info)
-        }
-        response = requests.post(
-            url,
-            auth=(username, password),
-            data=data
-        )
+        data = {'json_config': config, 'json_result': json.dumps(debug_info)}
+        response = requests.post(url, auth=(username, password), data=data)
         response.raise_for_status()
         return True
     except requests.RequestException as e:
@@ -74,41 +44,30 @@ def main():
     args = parse_args()
     print(f"Initial args: {args}")
 
-    # Convert parsed arguments to a dictionary
     cli_args = vars(args)
     print(f"CLI arguments: {cli_args}")
 
     print("Loading configuration...")
-    # Load configuration from file if specified
     config = load_config(args)
     print(f"Initial loaded config: {config}")
 
     print("Merging configuration with CLI arguments...")
-    # Merge configuration loaded from file with CLI arguments
     config = merge_config(config, cli_args)
     print(f"Config after merge: {config}")
 
-    # Initialize debug information
-    debug_info = {
-        "execution_time": "",
-        "input_rows": 0,
-        "output_rows": 0,
-        "input_columns": 0,
-        "output_columns": 0
-    }
+    debug_info = {"execution_time": "", "input_rows": 0, "output_rows": 0, "input_columns": 0, "output_columns": 0}
 
-    start_time = time.time()  # Start timer for execution time
+    start_time = time.time()
 
     if not config.get('csv_file'):
         print("Error: No CSV file specified.", file=sys.stderr)
         return
 
-    # Load CSV data
     data = load_csv(config['csv_file'], headers=config['headers'])
     debug_info["input_rows"] = len(data)
     debug_info["input_columns"] = len(data.columns)
 
-    # Load and initialize the specified plugin
+    print(f"Attempting to load plugin: {config['plugin_name']}")
     plugin_class, required_params = load_plugin(config['plugin_name'])
     if plugin_class is None:
         print(f"Error: The plugin {config['plugin_name']} could not be loaded.")
@@ -119,47 +78,38 @@ def main():
     print(f"Setting plugin parameters: {plugin_params}")
     plugin.set_params(**plugin_params)
 
-    # Process the data with the plugin
     processed_data = plugin.process(data)
 
     debug_info["output_rows"] = len(processed_data)
     debug_info["output_columns"] = len(processed_data.columns)
 
-    # Determine whether to include the date column in the output
     include_date = config['force_date'] or not (config.get('method') in ['select_single', 'select_multi'])
 
     print("Processing complete. Writing output...")
-    # Write the processed data to the output CSV file
     write_csv(config['output_file'], processed_data, include_date=include_date, headers=config['headers'])
     print(f"Output written to {config['output_file']}")
 
-    # Save the configuration to a file
     config_str, config_filename = save_config(config)
     print(f"Configuration saved to {config_filename}")
 
-    # Calculate and record execution time
     execution_time = time.time() - start_time
     debug_info["execution_time"] = execution_time
 
-    # Ensure the debug file path is set in the config
     if 'debug_file' not in config or not config['debug_file']:
         config['debug_file'] = 'debug_out.json'
 
-    # Add debug information from the plugin and save it
     plugin.add_debug_info(debug_info)
     save_debug_info(debug_info, config['debug_file'])
 
     print(f"Debug info saved to {config['debug_file']}")
     print(f"Execution time: {execution_time} seconds")
 
-    # Save the configuration to a remote URL if specified
     if config['remote_save_config']:
         if save_remote_config(config_str, config['remote_save_config'], config['remote_username'], config['remote_password']):
             print(f"Configuration successfully saved to remote URL {config['remote_save_config']}")
         else:
             print(f"Failed to save configuration to remote URL {config['remote_save_config']}")
 
-    # Log debug information to a remote URL if specified
     if config['remote_log']:
         if log_remote_info(config_str, debug_info, config['remote_log'], config['remote_username'], config['remote_password']):
             print(f"Debug information successfully logged to remote URL {config['remote_log']}")
