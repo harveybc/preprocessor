@@ -20,6 +20,8 @@ def test_normalization_plugin_min_max():
         debug_info = json.load(f)
 
     # Assertions for the config file
+    expected_config_keys = {"csv_file", "output_file", "plugin", "method", "range"}
+    assert set(config.keys()) == expected_config_keys, f"Unexpected keys in config: {set(config.keys()) - expected_config_keys}"
     assert config['csv_file'] == 'tests/data/EURUSD_5m_2006_2007.csv'
     assert config['output_file'] == 'output.csv'
     assert config['plugin'] == 'default_plugin'
@@ -27,6 +29,8 @@ def test_normalization_plugin_min_max():
     assert config['range'] == [0, 1]  # Expecting a list format here
 
     # Assertions for the debug file
+    expected_debug_keys = {"execution_time", "input_rows", "output_rows", "input_columns", "output_columns", "min_val", "max_val"}
+    assert set(debug_info.keys()) == expected_debug_keys, f"Unexpected keys in debug info: {set(debug_info.keys()) - expected_debug_keys}"
     assert debug_info['input_rows'] == 73841
     assert debug_info['output_rows'] == 73841
     assert debug_info['input_columns'] == 5
