@@ -7,8 +7,9 @@ def load_config(args):
     else:
         config = {}
 
-    if args.plugin:
-        config['plugin'] = args.plugin
+    # Ensure the plugin key is present
+    if 'plugin' not in config:
+        config['plugin'] = 'default_plugin'
 
     return config
 
@@ -19,7 +20,6 @@ def save_config(config, path='config_out.json'):
 
 def merge_config(config, cli_args):
     # Ensure mandatory keys are present and set default values if not
-    mandatory_keys = ['plugin', 'csv_file']
     default_values = {
         'plugin': 'default_plugin',
         'output_file': 'output.csv',
@@ -34,12 +34,9 @@ def merge_config(config, cli_args):
         'debug_file': 'debug_out.json'
     }
 
-    for key in mandatory_keys:
-        if key not in config:
-            if key in cli_args:
-                config[key] = cli_args[key]
-            else:
-                config[key] = default_values[key]
+    # Set default values
+    for key, value in default_values.items():
+        config.setdefault(key, value)
 
     # Merge CLI arguments, overriding config file values
     for key, value in cli_args.items():
