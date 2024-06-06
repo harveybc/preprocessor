@@ -23,7 +23,7 @@ def test_normalization_plugin():
     assert set(config.keys()) == expected_config_keys, f"Unexpected keys in config: {set(config.keys()) - expected_config_keys}"
 
     # Assertions for the debug file
-    expected_debug_keys = {"execution_time", "input_rows", "output_rows", "input_columns", "output_columns", "min_val", "max_val"}
+    expected_debug_keys = {"execution_time", "input_rows", "output_rows", "input_columns", "output_columns", "min_val", "max_val", "mean", "std"}
     assert set(debug_info.keys()) == expected_debug_keys, f"Unexpected keys in debug info: {set(debug_info.keys()) - expected_debug_keys}"
 
 def test_normalization_plugin_z_score():
