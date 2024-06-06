@@ -147,17 +147,18 @@ class Plugin:
                     selected_features.append(column)
         return selected_features
 
-    def get_debug_info(self):
+    def add_debug_info(self, debug_info):
         """
-        Get debug information for the plugin.
+        Add plugin-specific debug information.
 
-        Returns:
-            dict: A dictionary containing debug information.
+        Args:
+            debug_info (dict): The main debug information dictionary.
         """
-        return {
+        debug_info.update({
             "method": self.params['method'],
             "max_lag": self.params['max_lag'],
             "significance_level": self.params['significance_level'],
             "single": self.params['single'],
             "multi": self.params['multi']
-        }
+        })
+
