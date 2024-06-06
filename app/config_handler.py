@@ -53,27 +53,27 @@ default_values = {
     'remote_password': 'pass'
 }
 
+# Modify load_config to ensure 'plugin' argument is prioritized
 def load_config(args):
-    config = {}
+    config = default_values.copy()
+
+    # Load configuration from file if specified
     if args.load_config:
         try:
             with open(args.load_config, 'r') as f:
-                config = json.load(f)
+                config.update(json.load(f))
         except FileNotFoundError:
             print(f"Error: The file {args.load_config} does not exist.")
             raise
 
-    if hasattr(args, 'remote_load_config') and args.remote_load_config:
-        remote_config, success = load_remote_config(args.remote_load_config, args.remote_username, args.remote_password)
-        if success:
-            config.update(remote_config)
-            print(f"Downloaded configuration from {args.remote_load_config}")
+    # Ensure the CLI 'plugin' argument is prioritized
+    if args.plugin:
+        config['plugin_name'] = args.plugin
 
-    for key in default_values:
-        if hasattr(args, key) and getattr(args, key) is not None:
-            config[key] = getattr(args, key)
-        else:
-            config[key] = config.get(key, default_values[key])
+    # Merge remaining CLI arguments
+    for key, value in vars(args).items():
+        if value is not None:
+            config[key] = value
 
     return config
 
