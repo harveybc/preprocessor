@@ -5,9 +5,10 @@ import os
 from statsmodels.tsa.stattools import grangercausalitytests
 
 class Plugin:
-    # Define the parameters for this plugin and their default values
     plugin_params = {
         'method': 'select_single',
+        'save_params': None,
+        'load_params': None,
         'max_lag': 5,
         'significance_level': 0.05,
         'single': 1,
@@ -16,40 +17,31 @@ class Plugin:
 
     def __init__(self):
         self.params = self.plugin_params.copy()
-        self.feature_selection_params = None
 
     def set_params(self, **kwargs):
         for key, value in kwargs.items():
             if key in self.params:
                 self.params[key] = value
 
-    def get_debug_info(self):
-        # Provide plugin-specific debug information
-        return {
-            'method': self.params.get('method'),
-            'max_lag': self.params.get('max_lag'),
-            'significance_level': self.params.get('significance_level'),
-            'single': self.params.get('single'),
-            'multi': self.params.get('multi')
-        }
-
     def process(self, data):
-        method = self.params.get('method', 'select_single')
-        max_lag = self.params.get('max_lag', 5)
-        significance_level = self.params.get('significance_level', 0.05)
-        single = self.params.get('single', 1)
-        multi = self.params.get('multi')
-
-        print("Starting the process method.")
-        print(f"Method: {method}, Max Lag: {max_lag}, Significance Level: {significance_level}, Single: {single}, Multi: {multi}")
+        method = self.params['method']
+        save_params = self.params['save_params']
+        load_params = self.params['load_params']
+        max_lag = self.params['max_lag']
+        significance_level = self.params['significance_level']
+        single = self.params['single']
+        multi = self.params['multi']
 
         if method == 'select_single':
             selected_features = [data.columns[single]]
         elif method == 'select_multi':
-            if multi is None:
-                multi = [0]
             selected_features = [data.columns[i] for i in multi]
         else:
+            if load_params and os.path.exists(load_params):
+                with open(load_params, 'r') as f:
+                    self.feature_selection_params = json.load(f)
+                selected_features = self.feature_selection_params.get('selected_features', data.columns.tolist())
+
             if self.feature_selection_params is None:
                 if method == 'acf':
                     selected_features = self._acf_feature_selection(data, significance_level)
@@ -61,6 +53,9 @@ class Plugin:
                     raise ValueError(f"Unknown feature selection method: {method}")
 
                 self.feature_selection_params = {'method': method, 'selected_features': selected_features}
+                if save_params:
+                    with open(save_params, 'w') as f:
+                        json.dump(self.feature_selection_params, f)
             else:
                 selected_features = self.feature_selection_params['selected_features']
 
@@ -92,3 +87,12 @@ class Plugin:
                 if any(p_val < significance_level for p_val in p_values):
                     selected_features.append(column)
         return selected_features
+
+    def get_debug_info(self):
+        return {
+            "method": self.params['method'],
+            "max_lag": self.params['max_lag'],
+            "significance_level": self.params['significance_level'],
+            "single": self.params['single'],
+            "multi": self.params['multi']
+        }

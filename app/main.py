@@ -2,10 +2,10 @@ import sys
 import os
 import json
 import time
-from app.cli import parse_args
+from app.cli import parse_args, setup_arg_parser
 from app.config_handler import load_config, save_config, save_debug_info, merge_config
 from app.data_handler import load_csv, write_csv
-from plugin_loader import load_plugin
+from plugin_loader import load_plugin, add_plugin_params
 
 def save_remote_config(config, url, username, password):
     try:
@@ -38,16 +38,27 @@ def log_remote_info(config, debug_info, url, username, password):
         return False
 
 def main():
-    args = parse_args()
+    # Setup argument parser and parse arguments
+    parser = setup_arg_parser()
+    args = parser.parse_args()
+    
+    # Add plugin-specific arguments to parser
+    if args.plugin:
+        add_plugin_params(parser, args.plugin)
+        args = parser.parse_args()  # Reparse arguments to include plugin-specific ones
+
+    # Load and merge configuration
     config = load_config(args)
     config = merge_config(config, args)
+
+    print(f"Initial loaded config: {config}")
 
     if not config.get('csv_file'):
         print("Error: No CSV file specified.", file=sys.stderr)
         return
 
     data = load_csv(config['csv_file'], headers=config['headers'])
-    
+
     plugin, required_params = load_plugin(config['plugin_name'])
     if plugin is None:
         print(f"Error: The plugin {config['plugin_name']} could not be loaded.")
