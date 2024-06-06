@@ -70,9 +70,9 @@ def test_unbiaser_plugin_ema():
     subprocess.run(command, check=True)
 
     # Load the generated config and debug files
-    with open('config_out.json', 'r') as f):
+    with open('config_out.json', 'r') as f:
         config = json.load(f)
-    with open('debug_out.json', 'r') as f):
+    with open('debug_out.json', 'r') as f:
         debug_info = json.load(f)
 
     # Assertions for the config file
@@ -88,5 +88,5 @@ def test_unbiaser_plugin_ema():
 
 if __name__ == '__main__':
     test_unbiaser_plugin_default()
-    #test_unbiaser_plugin_window_size_512()
-    #test_unbiaser_plugin_ema()
+    test_unbiaser_plugin_window_size_512()
+    test_unbiaser_plugin_ema()
