@@ -49,33 +49,6 @@ def main():
     cli_args = vars(args)
     print(f"CLI arguments: {cli_args}")
 
-    # Convert unknown args to a dictionary
-    unknown_args_dict = {}
-    current_key = None
-    for arg in unknown_args:
-        if arg.startswith('--'):
-            if current_key:
-                unknown_args_dict[current_key] = True  # Flags without values are treated as True
-            current_key = arg[2:]
-        else:
-            if current_key:
-                unknown_args_dict[current_key] = arg
-                current_key = None
-
-    if current_key:
-        unknown_args_dict[current_key] = True
-
-    print(f"Unknown args as dict: {unknown_args_dict}")
-
-    # Specific handling for --range argument
-    if 'range' in unknown_args_dict:
-        range_str = unknown_args_dict['range']
-        try:
-            unknown_args_dict['range'] = tuple(map(int, range_str.strip("()").split(',')))
-        except ValueError:
-            print(f"Error: Invalid format for --range argument: {range_str}", file=sys.stderr)
-            return
-
     print("Loading configuration...")
     config = load_config(args)
     print(f"Initial loaded config: {config}")
@@ -84,9 +57,14 @@ def main():
     config = merge_config(config, cli_args)
     print(f"Config after merging with CLI args: {config}")
 
-    # Merge plugin-specific arguments
-    config.update(unknown_args_dict)
-    print(f"Final merged config: {config}")
+    # Set default plugin if not provided in CLI or config file
+    if 'plugin' not in config or not config['plugin']:
+        if args.plugin:
+            config['plugin'] = args.plugin
+        else:
+            config['plugin'] = 'default_plugin'
+
+    print(f"Using plugin: {config['plugin']}")
 
     debug_info = {
         "execution_time": "",
@@ -106,12 +84,14 @@ def main():
     debug_info["input_rows"] = len(data)
     debug_info["input_columns"] = len(data.columns)
 
-    plugin_class, required_params = load_plugin(config['plugin_name'])
+    plugin_class, required_params = load_plugin(config['plugin'])
     if plugin_class is None:
-        print(f"Error: The plugin {config['plugin_name']} could not be loaded.")
+        print(f"Error: The plugin {config['plugin']} could not be loaded.")
         return
 
     plugin = plugin_class()
+
+    # Set plugin parameters from config, no CLI override for plugin-specific params
     plugin_params = {param: config[param] for param in required_params if param in config}
     print(f"Setting plugin parameters: {plugin_params}")
     plugin.set_params(**plugin_params)
