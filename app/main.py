@@ -1,5 +1,3 @@
-# app/main.py
-
 import sys
 import os
 import json
@@ -132,6 +130,15 @@ def main():
 
     execution_time = time.time() - start_time
     debug_info["execution_time"] = execution_time
+
+    if 'debug_file' not in config or not config['debug_file']:
+        config['debug_file'] = DEFAULT_VALUES['debug_file']
+
+    plugin.add_debug_info(debug_info)
+    save_debug_info(debug_info, config['debug_file'])
+
+    print(f"Debug info saved to {config['debug_file']}")
+    print(f"Execution time: {execution_time} seconds")
 
     if config['remote_save_config']:
         if save_remote_config(config_str, config['remote_save_config'], config['remote_username'], config['remote_password']):
