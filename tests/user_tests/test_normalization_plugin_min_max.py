@@ -24,7 +24,7 @@ def test_normalization_plugin_min_max():
     assert config['output_file'] == 'output.csv'
     assert config['plugin'] == 'default_plugin'
     assert config['method'] == 'min-max'
-    assert config['range'] == (0, 1)
+    assert config['range'] == [0, 1]  # Expecting a list format here
 
     # Assertions for the debug file
     assert debug_info['input_rows'] == 73841
