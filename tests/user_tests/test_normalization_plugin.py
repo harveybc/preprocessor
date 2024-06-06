@@ -84,5 +84,5 @@ def test_normalization_plugin_min_max():
 
 if __name__ == '__main__':
     test_normalization_plugin()
-    test_normalization_plugin_z_score()
-    test_normalization_plugin_min_max()
+    #test_normalization_plugin_z_score()
+    #test_normalization_plugin_min_max()
