@@ -92,6 +92,9 @@ def main():
     debug_info["output_rows"] = len(processed_data)
     debug_info["output_columns"] = len(processed_data.columns)
 
+    # Include plugin-specific debug information
+    debug_info.update(plugin.get_debug_info())
+
     include_date = config['force_date'] or not (config.get('method') in ['select_single', 'select_multi'])
 
     if not config['quiet_mode']:
