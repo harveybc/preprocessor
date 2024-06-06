@@ -1,5 +1,3 @@
-# app/plugins/default_plugin.py
-
 import pandas as pd
 import json
 import os
@@ -13,6 +11,8 @@ class DefaultPlugin:
     plugin_params = {
         'method': 'min-max',
         'range': (-1, 1),
+        'save_params': None,  # Change default to None
+        'load_params': None
     }
 
     # Define the debug variables for this plugin
@@ -73,7 +73,7 @@ class DefaultPlugin:
             pd.DataFrame: The normalized data.
         """
         method = self.params.get('method', 'min-max')
-        save_params = self.params.get('save_params', 'normalization_params.json')
+        save_params = self.params.get('save_params')
         load_params = self.params.get('load_params')
         range_vals = self.params.get('range', (-1, 1))
 
@@ -102,7 +102,7 @@ class DefaultPlugin:
             else:
                 raise ValueError(f"Unknown normalization method: {method}")
 
-            # Save normalization parameters if save_params path is provided
+            # Save normalization parameters if save_params path is provided and not None
             if save_params:
                 with open(save_params, 'w') as f:
                     json.dump(self.normalization_params, f)
