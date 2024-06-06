@@ -45,10 +45,24 @@ class DefaultPlugin:
         Returns:
             dict: Debug information including min_val, max_val, mean, and std.
         """
-        debug_info = {var: self.params.get(var) for var in self.plugin_debug_vars}
+        debug_info = {var: None for var in self.plugin_debug_vars}
         if self.normalization_params:
-            debug_info.update(self.normalization_params)
+            if self.normalization_params['method'] == 'z-score':
+                debug_info['mean'] = self.normalization_params['mean']
+                debug_info['std'] = self.normalization_params['std']
+            elif self.normalization_params['method'] == 'min-max':
+                debug_info['min_val'] = self.normalization_params['min']
+                debug_info['max_val'] = self.normalization_params['max']
         return debug_info
+
+    def add_debug_info(self, debug_info):
+        """
+        Add debug information to the given dictionary.
+
+        Args:
+            debug_info (dict): The dictionary to add debug information to.
+        """
+        debug_info.update(self.get_debug_info())
 
     def process(self, data):
         """
