@@ -36,7 +36,7 @@ def parse_args():
         for param, default in plugin_params.items():
             parser.add_argument(f'--{param}', type=type(default), default=default, help=f'{param} for the plugin {args.plugin}')
     
-    # Parse again to include dynamically added plugin parameters
+    # Reparse the arguments to include dynamically added plugin parameters
     args = parser.parse_args()
     print(f"Final args: {args}")
 
