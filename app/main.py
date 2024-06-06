@@ -127,28 +127,19 @@ def main():
     write_csv(config['output_file'], processed_data, include_date=include_date, headers=config['headers'])
     print(f"Output written to {config['output_file']}")
 
-    config_str, config_filename = save_config({k: v for k, v in config.items() if k not in DEFAULT_VALUES or v != DEFAULT_VALUES[k]})
+    config_str, config_filename = save_config(config)
     print(f"Configuration saved to {config_filename}")
 
     execution_time = time.time() - start_time
     debug_info["execution_time"] = execution_time
 
-    if 'debug_file' not in config or not config['debug_file']:
-        config['debug_file'] = 'debug_out.json'
-
-    plugin.add_debug_info(debug_info)
-    save_debug_info(debug_info, config['debug_file'])
-
-    print(f"Debug info saved to {config['debug_file']}")
-    print(f"Execution time: {execution_time} seconds")
-
-    if config.get('remote_save_config'):
+    if config['remote_save_config']:
         if save_remote_config(config_str, config['remote_save_config'], config['remote_username'], config['remote_password']):
             print(f"Configuration successfully saved to remote URL {config['remote_save_config']}")
         else:
             print(f"Failed to save configuration to remote URL {config['remote_save_config']}")
 
-    if config.get('remote_log'):
+    if config['remote_log']:
         if log_remote_info(config_str, debug_info, config['remote_log'], config['remote_username'], config['remote_password']):
             print(f"Debug information successfully logged to remote URL {config['remote_log']}")
         else:
