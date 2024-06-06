@@ -56,24 +56,27 @@ default_values = {
 # Modify load_config to ensure 'plugin' argument is prioritized
 def load_config(args):
     config = default_values.copy()
+    print(f"Initial default values: {config}")
 
-    # Load configuration from file if specified
     if args.load_config:
         try:
             with open(args.load_config, 'r') as f:
                 config.update(json.load(f))
+            print(f"Loaded config from file {args.load_config}: {config}")
         except FileNotFoundError:
             print(f"Error: The file {args.load_config} does not exist.")
             raise
 
-    # Ensure the CLI 'plugin' argument is prioritized
+    # Prioritize CLI 'plugin' argument
     if args.plugin:
         config['plugin_name'] = args.plugin
+    print(f"Config after setting CLI plugin argument: {config}")
 
     # Merge remaining CLI arguments
     for key, value in vars(args).items():
         if value is not None:
             config[key] = value
+    print(f"Final merged config: {config}")
 
     return config
 
