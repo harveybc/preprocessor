@@ -12,6 +12,9 @@ from app.config_handler import load_config, save_config, save_debug_info, merge_
 from app.data_handler import load_csv, write_csv
 
 def save_remote_config(config, url, username, password):
+    """
+    Save the configuration to a remote URL.
+    """
     try:
         response = requests.post(url, auth=(username, password), data={'json_config': config})
         response.raise_for_status()
@@ -21,6 +24,9 @@ def save_remote_config(config, url, username, password):
         return False
 
 def log_remote_info(config, debug_info, url, username, password):
+    """
+    Log debug information to a remote URL.
+    """
     try:
         data = {'json_config': config, 'json_result': json.dumps(debug_info)}
         response = requests.post(url, auth=(username, password), data=data)

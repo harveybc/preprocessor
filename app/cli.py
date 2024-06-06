@@ -21,6 +21,7 @@ def parse_args():
     parser.add_argument('--force_date', action='store_true', help='Force date inclusion')
     parser.add_argument('--headers', action='store_true', help='Indicate if CSV has headers')
     parser.add_argument('--debug_file', type=str, help='Path to save debug information')
+    parser.add_argument('--method', type=str, help='Method to use for the plugin')  # Global method parameter
 
     # First pass parse to get the plugin name
     args, unknown = parser.parse_known_args()
