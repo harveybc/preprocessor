@@ -30,8 +30,8 @@ def test_normalization_plugin_z_score():
     # Assertions for the debug file
     assert debug_info['input_rows'] == 73841
     assert debug_info['output_rows'] == 73841
-    assert debug_info['input_columns'] == 1
-    assert debug_info['output_columns'] == 1
+    assert debug_info['input_columns'] == 5
+    assert debug_info['output_columns'] == 5
     assert 'execution_time' in debug_info
     assert debug_info['mean'] is not None
     assert debug_info['std'] is not None
