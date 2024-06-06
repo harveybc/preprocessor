@@ -1,3 +1,5 @@
+# app/cli.py
+
 import argparse
 from plugin_loader import get_plugin_params
 
@@ -20,10 +22,11 @@ def parse_args():
     parser.add_argument('--headers', action='store_true', help='Indicate if CSV has headers')
     parser.add_argument('--debug_file', type=str, help='Path to save debug information')
 
-    # Parse known arguments first to check for plugin-specific parameters
+    # First pass parse to get the plugin name
     args, unknown = parser.parse_known_args()
     print(f"Initial args: {args}")
 
+    # Dynamically add plugin parameters if a plugin is specified
     if args.plugin:
         print(f"Getting plugin parameters for: {args.plugin}")
         plugin_params = get_plugin_params(args.plugin)
@@ -31,8 +34,4 @@ def parse_args():
         for param, default in plugin_params.items():
             parser.add_argument(f'--{param}', type=type(default), default=default, help=f'{param} for the plugin {args.plugin}')
     
-    # Parse all arguments again with plugin parameters included
-    args = parser.parse_args()
-    print(f"Final args with plugin params: {args}")
-
-    return args
+    return parser.parse_args()
