@@ -8,7 +8,7 @@ import time
 from plugin_loader import load_plugin
 from app.cli import parse_args
 from app.config_handler import load_config, save_config, save_debug_info, merge_config
-from app.data_handler import load_csv, write_csv  # Importing required functions
+from app.data_handler import load_csv, write_csv
 
 def save_remote_config(config, url, username, password):
     try:
@@ -51,13 +51,19 @@ def main():
 
     # Convert unknown args to a dictionary
     unknown_args_dict = {}
+    current_key = None
     for arg in unknown_args:
         if arg.startswith('--'):
-            key = arg[2:]
-            unknown_args_dict[key] = None
+            if current_key:
+                unknown_args_dict[current_key] = True  # Flags without values are treated as True
+            current_key = arg[2:]
         else:
-            if key in unknown_args_dict and unknown_args_dict[key] is None:
-                unknown_args_dict[key] = arg
+            if current_key:
+                unknown_args_dict[current_key] = arg
+                current_key = None
+
+    if current_key:
+        unknown_args_dict[current_key] = True
 
     print(f"Unknown args as dict: {unknown_args_dict}")
 
