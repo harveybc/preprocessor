@@ -88,5 +88,5 @@ def test_unbiaser_plugin_ema():
 
 if __name__ == '__main__':
     test_unbiaser_plugin_default()
-    test_unbiaser_plugin_window_size_512()
-    test_unbiaser_plugin_ema()
+    #test_unbiaser_plugin_window_size_512()
+    #test_unbiaser_plugin_ema()
