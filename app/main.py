@@ -5,7 +5,7 @@ import os
 import json
 import requests
 import time
-from plugin_loader import load_plugin
+from app.plugin_loader import load_plugin
 from app.cli import parse_args
 from app.config_handler import load_config, save_config, save_debug_info, merge_config
 from app.data_handler import load_csv, write_csv
