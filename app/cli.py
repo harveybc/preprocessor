@@ -1,16 +1,17 @@
-# app/cli.py
-
 import argparse
 from plugin_loader import get_plugin_params
 
 def parse_args():
     """
-    Parse command line arguments, including dynamically adding plugin-specific parameters if a plugin is specified.
+    Parse command-line arguments and dynamically add plugin-specific parameters.
+
+    Returns:
+        Namespace: Parsed command-line arguments.
     """
     print("Parsing initial arguments...")
     parser = argparse.ArgumentParser(description='Preprocessor CLI')
     
-    # Basic arguments for the preprocessor
+    # Define common arguments
     parser.add_argument('csv_file', type=str, help='Path to the CSV file')
     parser.add_argument('--save_config', type=str, help='Path to save the configuration')
     parser.add_argument('--load_config', type=str, help='Path to load the configuration')
@@ -26,18 +27,19 @@ def parse_args():
     parser.add_argument('--headers', action='store_true', help='Indicate if CSV has headers')
     parser.add_argument('--debug_file', type=str, help='Path to save debug information')
 
-    # Initial parsing to get the plugin name if provided
+    # Parse known and unknown arguments to handle plugin-specific parameters dynamically
     args, unknown = parser.parse_known_args()
-
-    # Dynamically add plugin-specific parameters if a plugin is specified
+    print(f"Initial args: {args}")
+    
     if args.plugin:
         print(f"Getting plugin parameters for: {args.plugin}")
         plugin_params = get_plugin_params(args.plugin)
         print(f"Retrieved plugin params: {plugin_params}")
+        
+        # Add plugin-specific arguments dynamically
         for param, default in plugin_params.items():
             parser.add_argument(f'--{param}', type=type(default), default=default, help=f'{param} for the plugin {args.plugin}')
 
-        # Re-parse arguments with the new plugin-specific parameters
-        args = parser.parse_args()
+    # Parse all arguments including dynamically added ones
+    return parser.parse_args()
 
-    return args
