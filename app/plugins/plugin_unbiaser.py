@@ -63,8 +63,8 @@ class Plugin:
             pd.DataFrame: The dataset with unbiasing applied.
         """
         method = self.params.get('method', 'ma')
-        window_size = self.params.get('window_size', 5)
-        ema_alpha = self.params.get('ema_alpha', 0.1)
+        window_size = int(self.params.get('window_size', 5))  # Ensure window_size is an integer
+        ema_alpha = float(self.params.get('ema_alpha', 0.1))  # Ensure ema_alpha is a float
 
         print("Starting the process method.")
         print(f"Method: {method}, Window size: {window_size}, EMA alpha: {ema_alpha}")
