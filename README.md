@@ -53,7 +53,8 @@ To install and set up the Preprocessor application, follow these steps:
         sh preprocessor.sh tests\data\EURUSD_5m_2006_2007.csv --plugin feature_selector --method select_single --single 0
         ```
 
-7. **Run Tests (Optional)**:
+7. **Run Tests (Optional, requires external repo)**:
+For pasing remote tests, requires an instance of [harveybc/data-logger](https://github.com/harveybc/data-logger)
     - On Windows, run the following command to run the tests:
         ```bash
         set_env.bat
