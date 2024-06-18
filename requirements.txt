@@ -15,7 +15,7 @@
 numpy
 scikit-learn
 joblib
-scipy
+scipy==1.0
 build
 pytest
 pdoc3
