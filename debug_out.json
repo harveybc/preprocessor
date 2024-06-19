@@ -1,0 +1,10 @@
+{
+    "execution_time": 1.9099011421203613,
+    "input_rows": 73841,
+    "output_rows": 73841,
+    "input_columns": 5,
+    "output_columns": 5,
+    "method": "ema",
+    "window_size": 5,
+    "ema_alpha": 0.1
+}

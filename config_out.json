@@ -1,0 +1,5 @@
+{
+    "plugin": "unbiaser",
+    "csv_file": "tests/data/EURUSD_5m_2006_2007.csv",
+    "method": "ema"
+}
