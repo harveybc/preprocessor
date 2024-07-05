@@ -52,7 +52,9 @@ class DefaultPlugin:
                 debug_info['min_val'] = self.normalization_params['min']
                 debug_info['max_val'] = self.normalization_params['max']
                 debug_info['range'] = self.normalization_params['range']
-                debug_info['mae_per_pip'] = self.calculate_mae_for_pips(1, debug_info['min_val'], debug_info['max_val'], debug_info['range'])   
+                # Assuming we are interested in the first column for MAE per pip calculation
+                first_col = list(debug_info['min_val'].keys())[0]
+                debug_info['mae_per_pip'] = self.calculate_mae_for_pips(1, debug_info['min_val'][first_col], debug_info['max_val'][first_col], debug_info['range'])
         return debug_info
 
     def add_debug_info(self, debug_info):
