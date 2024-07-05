@@ -146,7 +146,7 @@ class DefaultPlugin:
                 range_vals = self.normalization_params.get('range', (-1, 1))
                 normalized_data = (numeric_data - min_val) / (max_val - min_val) * (range_vals[1] - range_vals[0]) + range_vals[0]
             else:
-                raise ValueError(f"Unknown normalization method: self.normalization_params['method']}")
+                raise ValueError(f"Unknown normalization method: {self.normalization_params['method']}")
 
         # Combine numeric data back with non-numeric data (e.g., date columns)
         result = pd.concat([non_numeric_data, normalized_data], axis=1)
