@@ -87,12 +87,9 @@ class DefaultPlugin:
         conversion_factor = normalized_range_span / original_range
         
         # Step 4: Calculate the value of 1 pip in the normalized range
-        pip_value_in_normalized_range = 0.0001 * conversion_factor
+        pip_value_in_normalized_range = pips * 0.0001 * conversion_factor
         
-        # Step 5: Calculate the MAE in the normalized range for the given number of pips
-        mae_normalized = pips * pip_value_in_normalized_range
-        
-        return mae_normalized
+        return pip_value_in_normalized_range
 
     def process(self, data):
         """
@@ -149,7 +146,7 @@ class DefaultPlugin:
                 range_vals = self.normalization_params.get('range', (-1, 1))
                 normalized_data = (numeric_data - min_val) / (max_val - min_val) * (range_vals[1] - range_vals[0]) + range_vals[0]
             else:
-                raise ValueError(f"Unknown normalization method: {self.normalization_params['method']}")
+                raise ValueError(f"Unknown normalization method: self.normalization_params['method']}")
 
         # Combine numeric data back with non-numeric data (e.g., date columns)
         result = pd.concat([non_numeric_data, normalized_data], axis=1)
@@ -164,3 +161,14 @@ class DefaultPlugin:
                 print(f"Column '{column}' was not found in the processed data.")
 
         return result
+
+# Example usage
+if __name__ == "__main__":
+    plugin = DefaultPlugin()
+    data = pd.read_csv('path_to_your_csv.csv')
+    processed_data = plugin.process(data)
+    print(processed_data)
+    
+    # Calculate MAE for 1 pip with example values
+    mae_for_pip = plugin.calculate_mae_for_pips(1, 1.24665, 1.3676, (-1, 1))
+    print(f"MAE for 1 pip: {mae_for_pip}")
