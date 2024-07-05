@@ -1,5 +1,4 @@
 import pandas as pd
-from app.reconstruction import unwindow_data
 
 def load_csv(file_path, headers=False):
     """
@@ -46,7 +45,7 @@ def load_csv(file_path, headers=False):
     
     return data
 
-def write_csv(file_path, data, include_date=True, headers=True, window_size=None):
+def write_csv(file_path, data, include_date=True, headers=True):
     """
     Write a pandas DataFrame to a CSV file.
 
@@ -55,15 +54,11 @@ def write_csv(file_path, data, include_date=True, headers=True, window_size=None
         data (pd.DataFrame): The data to be written to the CSV file.
         include_date (bool): Whether to include the date column in the output.
         headers (bool): Whether to include headers in the output.
-        window_size (int, optional): The size of the window for unwindowing data.
 
     Returns:
         None
     """
     try:
-        if window_size is not None:
-            data = unwindow_data(data)
-        
         if include_date and 'date' in data.columns:
             data.to_csv(file_path, index=True, header=headers)
         else:
