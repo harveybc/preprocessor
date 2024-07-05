@@ -15,7 +15,7 @@ def parse_args():
     parser.add_argument('--remote_load_decoder', help='URL to load remote decoder model', default=None)
     parser.add_argument('--remote_save_encoder', help='URL to save remote encoder model', default=None)
     parser.add_argument('--remote_save_decoder', help='URL to save remote decoder model', default=None)
-    parser.add_argument('--_size', type=int, help='Size of the sliding ', default=10)
+    parser.add_argument('--window_size', type=int, help='Size of the sliding window', default=10)
     parser.add_argument('--max_error', type=float, help='Maximum mean squared error threshold', default=0.01)
     parser.add_argument('--initial_size', type=int, help='Initial size of the encoder/decoder interface', default=256)
     parser.add_argument('--step_size', type=int, help='Step size to reduce the interface size', default=32)
