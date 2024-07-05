@@ -15,9 +15,10 @@
 numpy
 scikit-learn
 joblib
-scipy==1.0
+scipy
 build
 pytest
 pdoc3
 boruta
+statsmodels
 #

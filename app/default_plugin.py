@@ -16,7 +16,7 @@ class DefaultPlugin:
     }
 
     # Define the debug variables for this plugin
-    plugin_debug_vars = ['min_val', 'max_val', 'mean', 'std']
+    plugin_debug_vars = ['min_val', 'max_val', 'mean', 'std', 'range', 'method', 'mae_per_pip']
 
     def __init__(self):
         """
@@ -51,6 +51,8 @@ class DefaultPlugin:
             elif self.normalization_params['method'] == 'min-max':
                 debug_info['min_val'] = self.normalization_params['min']
                 debug_info['max_val'] = self.normalization_params['max']
+                debug_info['range'] = self.normalization_params['range']
+                debug_info['mae_per_pip'] = self.calculate_mae_for_pips(1, debug_info['min_val'], debug_info['max_val'], debug_info['range'])   
         return debug_info
 
     def add_debug_info(self, debug_info):
@@ -61,6 +63,36 @@ class DefaultPlugin:
             debug_info (dict): The dictionary to add debug information to.
         """
         debug_info.update(self.get_debug_info())
+
+    def calculate_mae_for_pips(self, pips, original_min, original_max, normalized_range=(-1, 1)):
+        """
+        Calculate the MAE in the normalized range corresponding to the given number of pips.
+
+        Parameters:
+        - pips (float): The number of pips.
+        - original_min (float): The minimum value of the original data.
+        - original_max (float): The maximum value of the original data.
+        - normalized_range (tuple): The range of the normalized data. Default is (-1, 1).
+
+        Returns:
+        - float: The MAE in the normalized range corresponding to the given number of pips.
+        """
+        # Step 1: Calculate the original range
+        original_range = original_max - original_min
+        
+        # Step 2: Calculate the span of the normalized range
+        normalized_range_span = normalized_range[1] - normalized_range[0]
+        
+        # Step 3: Calculate the conversion factor from the original range to the normalized range
+        conversion_factor = normalized_range_span / original_range
+        
+        # Step 4: Calculate the value of 1 pip in the normalized range
+        pip_value_in_normalized_range = 0.0001 * conversion_factor
+        
+        # Step 5: Calculate the MAE in the normalized range for the given number of pips
+        mae_normalized = pips * pip_value_in_normalized_range
+        
+        return mae_normalized
 
     def process(self, data):
         """
