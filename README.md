@@ -43,7 +43,7 @@ To install and set up the Preprocessor application, follow these steps:
     ```
 
 6. **Run the Preprocessor**:
-    - On Windows, run the following command to verify installation (it uses all default values, use feature-extractor.bat --help, for complete command line arguments description):
+    - On Windows, run the following command to verify installation (it uses all default values, use preprocessor.bat --help, for complete command line arguments description):
         ```bash
         preprocessor.bat tests\data\EURUSD_hour_2010_2020.csv --plugin feature_selector --method select_single --single 4
         ```
