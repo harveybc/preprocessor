@@ -85,17 +85,19 @@ The Normalizer Plugin is used to normalize data using methods such as z-score an
 
 [Read more about the Normalizer Plugin](https://github.com/harveybc/preprocessor/blob/master/README_normalizer.md)
 
-#### Using Z-Score Normalization
-
-```bash
-preprocessor.bat  path/to/input.csv --plugin default_plugin --method z-score --save_config save_config.json
-```
-
 #### Using Min-Max Normalization
 
 ```bash
-preprocessor.bat  path/to/input.csv --plugin default_plugin --method min-max --range 0 1 --save_config save_config.json
+preprocessor.bat  tests/data/EURUSD_hour_2010_2020.csv --plugin default_plugin --method min-max --range 0 1 --save_config save_config.json
 ```
+
+#### Using Z-Score Normalization
+
+```bash
+preprocessor.bat  tests/data/EURUSD_hour_2010_2020.csv --plugin default_plugin --method z-score --save_config save_config.json
+```
+
+
 ### Cleaner Plugin
 
 The Cleaner Plugin performs data cleaning during preprocessing. It has two main methods: missing_values and outlier.
