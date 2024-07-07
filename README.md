@@ -43,14 +43,14 @@ To install and set up the Preprocessor application, follow these steps:
     ```
 
 6. **Run the Preprocessor**:
-    - On Windows, run the following command to verify installation (it generates an example output file csv_output.csv):
+    - On Windows, run the following command to verify installation (it uses all default values, use feature-extractor.bat --help, for complete command line arguments description):
         ```bash
-        preprocessor.bat tests\data\EURUSD_5m_2006_2007.csv --plugin feature_selector --method select_single --single 0
+        preprocessor.bat tests\data\EURUSD_hour_2010_2020.csv --plugin feature_selector --method select_single --single 4
         ```
 
     - On Linux, run:
         ```bash
-        sh preprocessor.sh tests\data\EURUSD_5m_2006_2007.csv --plugin feature_selector --method select_single --single 0
+        sh preprocessor.sh tests\data\EURUSD_hour_2010_2020.csv --plugin feature_selector --method select_single --single 0
         ```
 
 7. **Run Tests (Optional, requires external repo)**:
