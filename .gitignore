@@ -58,7 +58,6 @@ tests/test_output.csv
 .pypirc
 tests/data/test_output.csv
 *.csv
-!tests/data/EURUSD_5m_2006_2007.csv
-!tests/data/EURUSD_hour_2010_2020.csv
+!tests/data/*.csv
 *.462506
 .coverage (Carmencita's conflicted copy 2020-04-29)
