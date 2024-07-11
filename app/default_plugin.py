@@ -48,10 +48,15 @@ class DefaultPlugin:
             if self.normalization_params['method'] == 'z-score':
                 debug_info['mean'] = self.normalization_params['mean']
                 debug_info['std'] = self.normalization_params['std']
+                debug_info['method'] = 'z-score'
+                first_col = list(debug_info['std'].keys())[0]
+                debug_info['mae_per_pip'] = self.calculate_mae_for_pips_z(1, debug_info['mean'][first_col], debug_info['std'][first_col])
+
             elif self.normalization_params['method'] == 'min-max':
                 debug_info['min_val'] = self.normalization_params['min']
                 debug_info['max_val'] = self.normalization_params['max']
                 debug_info['range'] = self.normalization_params['range']
+                debug_info['method'] = 'min-max'
                 # Assuming we are interested in the first column for MAE per pip calculation
                 first_col = list(debug_info['min_val'].keys())[0]
                 debug_info['mae_per_pip'] = self.calculate_mae_for_pips(1, debug_info['min_val'][first_col], debug_info['max_val'][first_col], debug_info['range'])
@@ -92,6 +97,26 @@ class DefaultPlugin:
         pip_value_in_normalized_range = pips * 0.0001 * conversion_factor
         
         return pip_value_in_normalized_range
+    
+    def calculate_mae_for_pips_z(self, pips, mean, std):
+        """
+        Calculate the MAE in the normalized range corresponding to the given number of pips using z-score normalization.
+
+        Parameters:
+        - pips (float): The number of pips.
+        - mean (float): The mean value of the original data.
+        - std (float): The standard deviation of the original data.
+
+        Returns:
+        - float: The MAE in the normalized range corresponding to the given number of pips.
+        """
+        # Step 1: Calculate the value of pips in the original scale
+        pip_value_in_original_scale = pips * 0.0001
+
+        # Step 2: Normalize the pip value using z-score normalization
+        pip_value_in_normalized_scale = pip_value_in_original_scale / std
+        
+        return pip_value_in_normalized_scale
 
     def process(self, data):
         """
