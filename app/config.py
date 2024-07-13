@@ -16,9 +16,5 @@ REMOTE_CONFIG_URL = 'http://remote-config-server/api/config'  # Default URL for 
 # Plugin configurations
 PLUGIN_DIRECTORY = 'app/plugins/'  # Directory containing all plugins
 
-# Default normalization parameters
-DEFAULT_NORMALIZATION_METHOD = 'z-score'  # Default method for normalization
-DEFAULT_NORMALIZATION_RANGE = (0, 1)  # Default range for min-max normalization
-
 # Quiet mode
 DEFAULT_QUIET_MODE = False  # Default setting for quiet mode
