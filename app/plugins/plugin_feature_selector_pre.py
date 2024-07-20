@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 import json
 import os
-from statsmodels.tsa.stattools import grangercausalitytests
 
 class Plugin:
     """
@@ -16,7 +15,7 @@ class Plugin:
         'load_params': None,
         'max_lag': 5,
         'significance_level': 0.05,
-        'single': 1,
+        'single': 4,
         'multi': None
     }
 
@@ -118,28 +117,6 @@ class Plugin:
             pacf_values = [abs(val) for val in np.correlate(data[column], data[column], mode='full')]
             if any(val > significance_level for val in pacf_values):
                 selected_features.append(column)
-        return selected_features
-
-    def _granger_causality_feature_selection(self, data, max_lag, significance_level):
-        """
-        Apply Granger causality feature selection to the data.
-
-        Args:
-            data (pd.DataFrame): The input data to be processed.
-            max_lag (int): Maximum lag for the Granger causality test.
-            significance_level (float): Significance level for the statistical tests.
-
-        Returns:
-            list: List of selected feature names.
-        """
-        selected_features = []
-        target_column = 'eur_usd_rate'
-        for column in data.columns:
-            if column != target_column:
-                test_result = grangercausalitytests(data[[target_column, column]], max_lag, verbose=False)
-                p_values = [test_result[i+1][0]['ssr_chi2test'][1] for i in range(max_lag)]
-                if any(p_val < significance_level for p_val in p_values):
-                    selected_features.append(column)
         return selected_features
 
     def get_debug_info(self):
