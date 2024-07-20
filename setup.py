@@ -20,8 +20,7 @@ setup(
     install_requires=[
         'pandas',
         'numpy',
-        'requests',
-        'statsmodels'
+        'requests'
     ],
     author='Harvey Bastidas',
     author_email='your.email@example.com',
