@@ -116,7 +116,7 @@ class Plugin:
             data (pd.DataFrame): The input data to be processed.
 
         Returns:
-            pd.DataFrame: The processed data.
+            pd.DataFrame: The summary of processed datasets.
         """
         # Print the dimensions of the loaded data
         print(f"Loaded data shape: {data.shape}")
