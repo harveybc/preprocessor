@@ -107,7 +107,11 @@ class Plugin:
         min_val = data[numeric_columns].min()
         max_val = data[numeric_columns].max()
         range_vals = (-1, 1)
-        self.normalization_params = {'min': min_val.to_dict(), 'max': max_val.to_dict(), 'range': range_vals}
+        self.normalization_params = {
+            'min': min_val.to_dict(),
+            'max': max_val.to_dict(),
+            'range': range_vals
+        }
         normalized_data = (data[numeric_columns] - min_val) / (max_val - min_val) * (range_vals[1] - range_vals[0]) + range_vals[0]
         data[numeric_columns] = normalized_data
         return data
@@ -123,11 +127,16 @@ class Plugin:
         Returns:
             dict: Contains processed training and validation datasets.
         """
-        # Reorder columns
+        # Reorder columns based on input and output orders
         input_column_order = self.params['input_column_order']
         output_column_order = self.params['output_column_order']
-        data = data[input_column_order]
-        data.columns = output_column_order
+
+        # Create a mapping from input column order to output column order
+        column_mapping = {input_column_order[i]: output_column_order[i] for i in range(len(input_column_order))}
+
+        # Reorder columns based on the mapping
+        data.columns = input_column_order  # Set columns to input order first
+        data = data[[column_mapping[col] for col in data.columns]]  # Reorder to output order
         print("Columns reordered based on output_column_order")
 
         # Split into training and validation datasets
@@ -170,6 +179,6 @@ class Plugin:
 # Example usage
 if __name__ == "__main__":
     plugin = Plugin()
-    data = pd.read_csv('path_to_your_csv.csv')
+    data = pd.read_csv('path_to_your_csv.csv', header=None)
     processed_data = plugin.process(data)
     print(processed_data)
