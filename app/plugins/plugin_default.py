@@ -185,7 +185,7 @@ class Plugin:
         print(f"Step 5: Extracted and saved target columns.")
         print(f"Training target data saved to: {training_target_file}")
         print(f"Validation target data saved to: {validation_target_file}")
-
+ 
         # Step 6: Save debug information for the target column
         debug_info = self.get_debug_info()
         debug_info_file = f"{target_prefix}debug_info.json"
