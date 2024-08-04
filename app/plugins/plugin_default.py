@@ -118,6 +118,9 @@ class Plugin:
         Returns:
             pd.DataFrame: The processed data.
         """
+        # Print the dimensions of the loaded data
+        print(f"Loaded data shape: {data.shape}")
+
         # Step 1: Reorder columns based on input and output orders
         input_column_order = self.params['input_column_order']
         output_column_order = self.params['output_column_order']
@@ -140,7 +143,7 @@ class Plugin:
         print(f"Step 3: Normalized the training dataset.")
         print(f"Normalized training data shape: {training_data.shape}")
 
-        # Normalize the validation dataset using training normalization parameters
+        # Step 4: Normalize the validation dataset using training normalization parameters
         numeric_columns = validation_data.select_dtypes(include=[np.number]).columns
         min_val = pd.Series(self.normalization_params['min'])
         max_val = pd.Series(self.normalization_params['max'])
@@ -150,7 +153,7 @@ class Plugin:
         print(f"Step 4: Normalized the validation dataset.")
         print(f"Normalized validation data shape: {validation_data.shape}")
 
-        # Extract and save the target columns for training and validation datasets
+        # Step 5: Extract and save the target columns for training and validation datasets
         target_column_index = self.params['target_column']
         target_column_name = output_column_order[target_column_index]
         target_prefix = self.params['target_prefix']
@@ -168,7 +171,7 @@ class Plugin:
         print(f"Training target data saved to: {training_target_file}")
         print(f"Validation target data saved to: {validation_target_file}")
 
-        # Save debug information for the target column
+        # Step 6: Save debug information for the target column
         debug_info = self.get_debug_info()
         debug_info_file = f"{target_prefix}debug_info.json"
         with open(debug_info_file, 'w') as f:
@@ -183,5 +186,6 @@ class Plugin:
 if __name__ == "__main__":
     plugin = Plugin()
     data = pd.read_csv('tests/data/EURUSD_5m_2010_2015.csv', header=None)
+    print(f"Loaded data shape: {data.shape}")
     processed_data = plugin.process(data)
     print(processed_data)
