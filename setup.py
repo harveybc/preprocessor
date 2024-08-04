@@ -9,7 +9,7 @@ setup(
             'preprocessor=app.main:main'
         ],
         'preprocessor.plugins': [
-            'default_plugin=.plugins.plugin_default:Plugin',
+            'default_plugin=app.plugins.plugin_default:Plugin',
             'normalizer=app.plugins.plugin_normalizer:Plugin',
             'unbiaser=app.plugins.plugin_unbiaser:Plugin',
             'trimmer=app.plugins.plugin_trimmer:Plugin',
