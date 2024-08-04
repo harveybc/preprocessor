@@ -12,7 +12,7 @@ def parse_args():
     parser.add_argument('--remote_password', help='Password for remote logging', default=None)
     parser.add_argument('--plugin', help='Encoder plugin to use', default='default_plugin')
     parser.add_argument('--output_file', help='Path to save the output data', default='output.csv')
-    parser.add_argument('--headers', action='store_true', help='Indicate if the CSV file has headers')
+    parser.add_argument('--headers', action='store_true', help='Indicate if the CSV file has headers', default=True)
     parser.add_argument('--force_date', action='store_true', help='Force inclusion of the date column in the output')
     parser.add_argument('--debug_file', help='Path to save debug information', default='debug_out.json')
     # quiet mode
