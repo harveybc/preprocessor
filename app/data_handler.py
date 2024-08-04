@@ -14,6 +14,7 @@ def load_csv(file_path, headers=True):
     try:
         if headers:
             data = pd.read_csv(file_path, sep=',', parse_dates=[0], dayfirst=True)
+            data.set_index('datetime', inplace=True)
         else:
             # Read the file without headers
             data = pd.read_csv(file_path, header=None, sep=',', parse_dates=[0], dayfirst=True)
