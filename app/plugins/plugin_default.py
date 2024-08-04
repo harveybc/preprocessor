@@ -143,6 +143,10 @@ class Plugin:
         print(f"Step 3: Normalized the training dataset.")
         print(f"Normalized training data shape: {training_data.shape}")
 
+        # Verify normalization parameters for the target column
+        target_column_name = output_column_order[self.params['target_column']]
+        print(f"Target column normalization parameters: min_val = {self.normalization_params['min'][target_column_name]}, max_val = {self.normalization_params['max'][target_column_name]}")
+
         # Step 4: Normalize the validation dataset using training normalization parameters
         numeric_columns = validation_data.select_dtypes(include=[np.number]).columns
         min_val = pd.Series(self.normalization_params['min'])
