@@ -145,8 +145,8 @@ class Plugin:
         training_data_file = f"{dataset_prefix}training.csv"
         validation_data_file = f"{dataset_prefix}validation.csv"
         
-        training_data.to_csv(training_data_file, index=True)
-        validation_data.to_csv(validation_data_file, index=True)
+        training_data.to_csv(training_data_file, index=True, header=False)
+        validation_data.to_csv(validation_data_file, index=True, header=False)
         
         print(f"Training data saved to: {training_data_file}")
         print(f"Validation data saved to: {validation_data_file}")
@@ -181,8 +181,8 @@ class Plugin:
         training_target_file = f"{target_prefix}training.csv"
         validation_target_file = f"{target_prefix}validation.csv"
 
-        training_target.to_csv(training_target_file, index=False)
-        validation_target.to_csv(validation_target_file, index=False)
+        training_target.to_csv(training_target_file, index=False, header=False)
+        validation_target.to_csv(validation_target_file, index=False, header=False)
 
         print(f"Step 5: Extracted and saved target columns.")
         print(f"Training target data saved to: {training_target_file}")
