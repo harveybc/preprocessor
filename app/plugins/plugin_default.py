@@ -138,6 +138,17 @@ class Plugin:
         print(f"Training data shape: {training_data.shape}")
         print(f"Validation data shape: {validation_data.shape}")
 
+        # Save the training and validation datasets (prior to normalization)
+        dataset_prefix = self.params['dataset_prefix']
+        training_data_file = f"{dataset_prefix}training.csv"
+        validation_data_file = f"{dataset_prefix}validation.csv"
+        
+        training_data.to_csv(training_data_file, index=False)
+        validation_data.to_csv(validation_data_file, index=False)
+        
+        print(f"Training data saved to: {training_data_file}")
+        print(f"Validation data saved to: {validation_data_file}")
+
         # Step 3: Normalize the training dataset
         training_data = self.normalize_data(training_data)
         print(f"Step 3: Normalized the training dataset.")
@@ -184,7 +195,15 @@ class Plugin:
         print(f"Step 6: Saved debug information.")
         print(f"Debug information saved to: {debug_info_file}")
 
-        return data  # Return the entire data as per the original return type requirement
+        # Create a summary DataFrame with the dataset details
+        summary_data = {
+            'Filename': [training_data_file, validation_data_file, training_target_file, validation_target_file],
+            'Rows': [training_data.shape[0], validation_data.shape[0], training_target.shape[0], validation_target.shape[0]],
+            'Columns': [training_data.shape[1], validation_data.shape[1], training_target.shape[1], validation_target.shape[1]]
+        }
+        summary_df = pd.DataFrame(summary_data)
+
+        return summary_df
 
 # Example usage
 if __name__ == "__main__":
