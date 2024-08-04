@@ -13,7 +13,8 @@ class Plugin:
         'validation_proportion': 0.5,
         'dataset_prefix': "x_",
         'target_prefix': "y_",
-        'target_column': 4
+        'target_column': 4,
+        'pip_value': 0.00001
     }
 
     # Define the debug variables for this plugin
@@ -78,10 +79,11 @@ class Plugin:
         Returns:
         - float: The MAE in the normalized range corresponding to the given number of pips.
         """
+        pip_value = self.params['pip_value']
         original_range = original_max - original_min
         normalized_range_span = normalized_range[1] - normalized_range[0]
         conversion_factor = normalized_range_span / original_range
-        pip_value_in_normalized_range = pips * 0.0001 * conversion_factor
+        pip_value_in_normalized_range = pips * pip_value * conversion_factor
         return pip_value_in_normalized_range
 
     def normalize_data(self, data):
