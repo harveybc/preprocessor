@@ -1,6 +1,5 @@
 import pandas as pd
 import json
-import os
 import numpy as np
 
 class Plugin:
@@ -79,18 +78,10 @@ class Plugin:
         Returns:
         - float: The MAE in the normalized range corresponding to the given number of pips.
         """
-        # Step 1: Calculate the original range
         original_range = original_max - original_min
-        
-        # Step 2: Calculate the span of the normalized range
         normalized_range_span = normalized_range[1] - normalized_range[0]
-        
-        # Step 3: Calculate the conversion factor from the original range to the normalized range
         conversion_factor = normalized_range_span / original_range
-        
-        # Step 4: Calculate the value of 1 pip in the normalized range
         pip_value_in_normalized_range = pips * 0.0001 * conversion_factor
-        
         return pip_value_in_normalized_range
 
     def normalize_data(self, data):
@@ -113,7 +104,7 @@ class Plugin:
             'range': range_vals
         }
         normalized_data = (data[numeric_columns] - min_val) / (max_val - min_val) * (range_vals[1] - range_vals[0]) + range_vals[0]
-        data[numeric_columns] = normalized_data
+        data.loc[:, numeric_columns] = normalized_data  # Use .loc to avoid SettingWithCopyWarning
         return data
 
     def process(self, data):
@@ -125,28 +116,29 @@ class Plugin:
             data (pd.DataFrame): The input data to be processed.
 
         Returns:
-            dict: Contains processed training and validation datasets.
+            pd.DataFrame: The processed data.
         """
-        # Reorder columns based on input and output orders
+        # Step 1: Reorder columns based on input and output orders
         input_column_order = self.params['input_column_order']
         output_column_order = self.params['output_column_order']
 
-        # Create a mapping from input column order to output column order
-        column_mapping = {input_column_order[i]: output_column_order[i] for i in range(len(input_column_order))}
-
-        # Reorder columns based on the mapping
         data.columns = input_column_order  # Set columns to input order first
-        data = data[[column_mapping[col] for col in data.columns]]  # Reorder to output order
-        print("Columns reordered based on output_column_order")
+        data = data[output_column_order]
+        print(f"Step 1: Columns reordered based on output_column_order. New order: {list(data.columns)}")
 
-        # Split into training and validation datasets
+        # Step 2: Split into training and validation datasets
         validation_proportion = self.params['validation_proportion']
         validation_size = int(len(data) * validation_proportion)
-        training_data = data[:-validation_size]
-        validation_data = data[-validation_size:]
+        training_data = data.iloc[:-validation_size].copy()
+        validation_data = data.iloc[-validation_size:].copy()
+        print(f"Step 2: Split data into training and validation datasets.")
+        print(f"Training data shape: {training_data.shape}")
+        print(f"Validation data shape: {validation_data.shape}")
 
-        # Normalize the training dataset
+        # Step 3: Normalize the training dataset
         training_data = self.normalize_data(training_data)
+        print(f"Step 3: Normalized the training dataset.")
+        print(f"Normalized training data shape: {training_data.shape}")
 
         # Normalize the validation dataset using training normalization parameters
         numeric_columns = validation_data.select_dtypes(include=[np.number]).columns
@@ -154,7 +146,9 @@ class Plugin:
         max_val = pd.Series(self.normalization_params['max'])
         range_vals = self.normalization_params['range']
         normalized_validation_data = (validation_data[numeric_columns] - min_val) / (max_val - min_val) * (range_vals[1] - range_vals[0]) + range_vals[0]
-        validation_data[numeric_columns] = normalized_validation_data
+        validation_data.loc[:, numeric_columns] = normalized_validation_data  # Use .loc to avoid SettingWithCopyWarning
+        print(f"Step 4: Normalized the validation dataset.")
+        print(f"Normalized validation data shape: {validation_data.shape}")
 
         # Extract and save the target columns for training and validation datasets
         target_column_index = self.params['target_column']
@@ -164,21 +158,30 @@ class Plugin:
         training_target = training_data[[target_column_name]]
         validation_target = validation_data[[target_column_name]]
 
-        training_target.to_csv(f"{target_prefix}training.csv", index=False)
-        validation_target.to_csv(f"{target_prefix}validation.csv", index=False)
+        training_target_file = f"{target_prefix}training.csv"
+        validation_target_file = f"{target_prefix}validation.csv"
+
+        training_target.to_csv(training_target_file, index=False)
+        validation_target.to_csv(validation_target_file, index=False)
+
+        print(f"Step 5: Extracted and saved target columns.")
+        print(f"Training target data saved to: {training_target_file}")
+        print(f"Validation target data saved to: {validation_target_file}")
 
         # Save debug information for the target column
         debug_info = self.get_debug_info()
-        with open(f"{target_prefix}debug_info.json", 'w') as f:
+        debug_info_file = f"{target_prefix}debug_info.json"
+        with open(debug_info_file, 'w') as f:
             json.dump(debug_info, f)
 
-        print("Target columns and debug information saved")
+        print(f"Step 6: Saved debug information.")
+        print(f"Debug information saved to: {debug_info_file}")
 
-        return {'training_data': training_data, 'validation_data': validation_data}
+        return data  # Return the entire data as per the original return type requirement
 
 # Example usage
 if __name__ == "__main__":
     plugin = Plugin()
-    data = pd.read_csv('path_to_your_csv.csv', header=None)
+    data = pd.read_csv('tests/data/EURUSD_5m_2010_2015.csv', header=None)
     processed_data = plugin.process(data)
     print(processed_data)
