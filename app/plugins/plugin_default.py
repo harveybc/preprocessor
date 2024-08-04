@@ -145,8 +145,8 @@ class Plugin:
         training_data_file = f"{dataset_prefix}training.csv"
         validation_data_file = f"{dataset_prefix}validation.csv"
         
-        training_data.to_csv(training_data_file, index=False)
-        validation_data.to_csv(validation_data_file, index=False)
+        training_data.to_csv(training_data_file, index=True)
+        validation_data.to_csv(validation_data_file, index=True)
         
         print(f"Training data saved to: {training_data_file}")
         print(f"Validation data saved to: {validation_data_file}")
