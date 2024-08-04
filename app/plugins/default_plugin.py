@@ -3,20 +3,22 @@ import json
 import os
 import numpy as np
 
-class DefaultPlugin:
+class Plugin:
     """
-    Default Plugin to normalize the dataset using various methods.
+    Plugin to preprocess the dataset for feature extraction.
     """
     # Define the parameters for this plugin and their default values
     plugin_params = {
-        'method': 'min-max',
-        'range': (-1, 1),
-        'save_params': None,  # Change default to None
-        'load_params': None
+        'input_column_order': ["d", "o", "h", "l", "c", "v"],
+        'output_column_order': ["d", "o", "l", "h", "c", "v"],
+        'validation_proportion': 0.5,
+        'dataset_prefix': "x_",
+        'target_prefix': "y_",
+        'target_column': 4
     }
 
     # Define the debug variables for this plugin
-    plugin_debug_vars = ['min_val', 'max_val', 'mean', 'std', 'range', 'method', 'mae_per_pip']
+    plugin_debug_vars = ['min_val', 'max_val', 'range', 'method', 'mae_per_pip']
 
     def __init__(self):
         """
@@ -41,25 +43,18 @@ class DefaultPlugin:
         Get debug information for the plugin.
 
         Returns:
-            dict: Debug information including min_val, max_val, mean, and std.
+            dict: Debug information including min_val, max_val, range, method, and mae_per_pip.
         """
         debug_info = {var: None for var in self.plugin_debug_vars}
         if self.normalization_params:
-            if self.normalization_params['method'] == 'z-score':
-                debug_info['mean'] = self.normalization_params['mean']
-                debug_info['std'] = self.normalization_params['std']
-                debug_info['method'] = 'z-score'
-                first_col = list(debug_info['std'].keys())[0]
-                debug_info['mae_per_pip'] = self.calculate_mae_for_pips_z(1, debug_info['mean'][first_col], debug_info['std'][first_col])
-
-            elif self.normalization_params['method'] == 'min-max':
-                debug_info['min_val'] = self.normalization_params['min']
-                debug_info['max_val'] = self.normalization_params['max']
-                debug_info['range'] = self.normalization_params['range']
-                debug_info['method'] = 'min-max'
-                # Assuming we are interested in the first column for MAE per pip calculation
-                first_col = list(debug_info['min_val'].keys())[0]
-                debug_info['mae_per_pip'] = self.calculate_mae_for_pips(1, debug_info['min_val'][first_col], debug_info['max_val'][first_col], debug_info['range'])
+            target_column_name = self.params['output_column_order'][self.params['target_column']]
+            debug_info['min_val'] = self.normalization_params['min'][target_column_name]
+            debug_info['max_val'] = self.normalization_params['max'][target_column_name]
+            debug_info['range'] = self.normalization_params['range']
+            debug_info['method'] = 'min-max'
+            debug_info['mae_per_pip'] = self.calculate_mae_for_pips(
+                1, debug_info['min_val'], debug_info['max_val'], debug_info['range']
+            )
         return debug_info
 
     def add_debug_info(self, debug_info):
@@ -97,105 +92,84 @@ class DefaultPlugin:
         pip_value_in_normalized_range = pips * 0.0001 * conversion_factor
         
         return pip_value_in_normalized_range
-    
-    def calculate_mae_for_pips_z(self, pips, mean, std):
-        """
-        Calculate the MAE in the normalized range corresponding to the given number of pips using z-score normalization.
 
-        Parameters:
-        - pips (float): The number of pips.
-        - mean (float): The mean value of the original data.
-        - std (float): The standard deviation of the original data.
+    def normalize_data(self, data):
+        """
+        Normalize the data using min-max normalization.
+
+        Args:
+            data (pd.DataFrame): The input data to be normalized.
 
         Returns:
-        - float: The MAE in the normalized range corresponding to the given number of pips.
+            pd.DataFrame: The normalized data.
         """
-        # Step 1: Calculate the value of pips in the original scale
-        pip_value_in_original_scale = pips * 0.0001
-
-        # Step 2: Normalize the pip value using z-score normalization
-        pip_value_in_normalized_scale = pip_value_in_original_scale / std
-        
-        return pip_value_in_normalized_scale
+        numeric_columns = data.select_dtypes(include=[np.number]).columns
+        min_val = data[numeric_columns].min()
+        max_val = data[numeric_columns].max()
+        range_vals = (-1, 1)
+        self.normalization_params = {'min': min_val.to_dict(), 'max': max_val.to_dict(), 'range': range_vals}
+        normalized_data = (data[numeric_columns] - min_val) / (max_val - min_val) * (range_vals[1] - range_vals[0]) + range_vals[0]
+        data[numeric_columns] = normalized_data
+        return data
 
     def process(self, data):
         """
-        Normalize the data using the specified parameters or calculate them if not provided.
+        Process the data by reordering columns, splitting into training and validation datasets,
+        normalizing the training and validation datasets, and saving target columns.
 
         Args:
             data (pd.DataFrame): The input data to be processed.
 
         Returns:
-            pd.DataFrame: The normalized data.
+            dict: Contains processed training and validation datasets.
         """
-        method = self.params.get('method', 'min-max')
-        save_params = self.params.get('save_params')
-        load_params = self.params.get('load_params')
-        range_vals = self.params.get('range', (-1, 1))
+        # Reorder columns
+        input_column_order = self.params['input_column_order']
+        output_column_order = self.params['output_column_order']
+        data = data[input_column_order]
+        data.columns = output_column_order
+        print("Columns reordered based on output_column_order")
 
-        # Retain the date column
-        date_column = data.select_dtypes(include=[np.datetime64]).columns
-        non_numeric_data = data[date_column]
-        
-        # Select only numeric columns for processing
-        numeric_data = data.select_dtypes(include=[np.number])
+        # Split into training and validation datasets
+        validation_proportion = self.params['validation_proportion']
+        validation_size = int(len(data) * validation_proportion)
+        training_data = data[:-validation_size]
+        validation_data = data[-validation_size:]
 
-        if load_params and os.path.exists(load_params):
-            with open(load_params, 'r') as f:
-                self.normalization_params = json.load(f)
+        # Normalize the training dataset
+        training_data = self.normalize_data(training_data)
 
-        if self.normalization_params is None:
-            if method == 'z-score':
-                mean = numeric_data.mean()
-                std = numeric_data.std()
-                self.normalization_params = {'method': 'z-score', 'mean': mean.to_dict(), 'std': std.to_dict()}
-                normalized_data = (numeric_data - mean) / std
-            elif method == 'min-max':
-                min_val = numeric_data.min()
-                max_val = numeric_data.max()
-                self.normalization_params = {'method': 'min-max', 'min': min_val.to_dict(), 'max': max_val.to_dict(), 'range': range_vals}
-                normalized_data = (numeric_data - min_val) / (max_val - min_val) * (range_vals[1] - range_vals[0]) + range_vals[0]
-            else:
-                raise ValueError(f"Unknown normalization method: {method}")
+        # Normalize the validation dataset using training normalization parameters
+        numeric_columns = validation_data.select_dtypes(include=[np.number]).columns
+        min_val = pd.Series(self.normalization_params['min'])
+        max_val = pd.Series(self.normalization_params['max'])
+        range_vals = self.normalization_params['range']
+        normalized_validation_data = (validation_data[numeric_columns] - min_val) / (max_val - min_val) * (range_vals[1] - range_vals[0]) + range_vals[0]
+        validation_data[numeric_columns] = normalized_validation_data
 
-            # Save normalization parameters if save_params path is provided and not None
-            if save_params:
-                with open(save_params, 'w') as f:
-                    json.dump(self.normalization_params, f)
-        else:
-            if self.normalization_params['method'] == 'z-score':
-                mean = pd.Series(self.normalization_params['mean'])
-                std = pd.Series(self.normalization_params['std'])
-                normalized_data = (numeric_data - mean) / std
-            elif self.normalization_params['method'] == 'min-max':
-                min_val = pd.Series(self.normalization_params['min'])
-                max_val = pd.Series(self.normalization_params['max'])
-                range_vals = self.normalization_params.get('range', (-1, 1))
-                normalized_data = (numeric_data - min_val) / (max_val - min_val) * (range_vals[1] - range_vals[0]) + range_vals[0]
-            else:
-                raise ValueError(f"Unknown normalization method: {self.normalization_params['method']}")
+        # Extract and save the target columns for training and validation datasets
+        target_column_index = self.params['target_column']
+        target_column_name = output_column_order[target_column_index]
+        target_prefix = self.params['target_prefix']
 
-        # Combine numeric data back with non-numeric data (e.g., date columns)
-        result = pd.concat([non_numeric_data, normalized_data], axis=1)
+        training_target = training_data[[target_column_name]]
+        validation_target = validation_data[[target_column_name]]
 
-        # Debug information
-        for column in data.columns:
-            if column in non_numeric_data.columns:
-                print(f"Column '{column}' is non-numeric and was not processed.")
-            elif column in numeric_data.columns:
-                print(f"Column '{column}' was successfully processed.")
-            else:
-                print(f"Column '{column}' was not found in the processed data.")
+        training_target.to_csv(f"{target_prefix}training.csv", index=False)
+        validation_target.to_csv(f"{target_prefix}validation.csv", index=False)
 
-        return result
+        # Save debug information for the target column
+        debug_info = self.get_debug_info()
+        with open(f"{target_prefix}debug_info.json", 'w') as f:
+            json.dump(debug_info, f)
+
+        print("Target columns and debug information saved")
+
+        return {'training_data': training_data, 'validation_data': validation_data}
 
 # Example usage
 if __name__ == "__main__":
-    plugin = DefaultPlugin()
+    plugin = Plugin()
     data = pd.read_csv('path_to_your_csv.csv')
     processed_data = plugin.process(data)
     print(processed_data)
-    
-    # Calculate MAE for 1 pip with example values
-    mae_for_pip = plugin.calculate_mae_for_pips(1, 1.24665, 1.3676, (-1, 1))
-    print(f"MAE for 1 pip: {mae_for_pip}")
