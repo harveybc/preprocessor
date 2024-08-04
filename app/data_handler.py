@@ -1,6 +1,6 @@
 import pandas as pd
 
-def load_csv(file_path, headers=False):
+def load_csv(file_path, headers=True):
     """
     Load a CSV file into a pandas DataFrame, handling date columns and correct numeric parsing.
 
