@@ -17,7 +17,7 @@ def load_csv(file_path, headers=True):
             #data.set_index(list(data.columns[[0]]), inplace=True)
         else:
             # Read the file without headers
-            data = pd.read_csv(file_path, header=None, sep=',', parse_dates=[0], infer_datetime_format=True)
+            data = pd.read_csv(file_path, header=None, sep=',')
             # Check if the first column is a date column
             if pd.api.types.is_datetime64_any_dtype(data.iloc[:, 0]):
                 data.columns = ['date'] + [f'col_{i-1}' for i in range(1, len(data.columns))]

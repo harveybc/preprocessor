@@ -4,7 +4,8 @@ import os
 import numpy as np
 
 class Plugin:
-    """
+    """1.60139	1.16481
+
     Default Plugin to normalize the dataset using various methods.
     """
     # Define the parameters for this plugin and their default values
