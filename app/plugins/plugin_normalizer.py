@@ -58,7 +58,7 @@ class Plugin:
                 debug_info['range'] = self.normalization_params['range']
                 debug_info['method'] = 'min-max'
                 # Assuming we are interested in the first column for MAE per pip calculation
-                first_col = list(debug_info['min_val'].keys())[0]
+                first_col = 0
                 debug_info['mae_per_pip'] = self.calculate_mae_for_pips(1, debug_info['min_val'][first_col], debug_info['max_val'][first_col], debug_info['range'])
         return debug_info
 
@@ -134,8 +134,8 @@ class Plugin:
         range_vals = self.params.get('range', (-1, 1))
 
         # Retain the date column
-        date_column = data.select_dtypes(include=[np.datetime64]).columns
-        non_numeric_data = data[date_column]
+        #date_column = data.select_dtypes(include=[np.datetime64]).columns
+        #non_numeric_data = data[date_column]
         
         # Select only numeric columns for processing
         numeric_data = data.select_dtypes(include=[np.number])
@@ -176,16 +176,17 @@ class Plugin:
                 raise ValueError(f"Unknown normalization method: {self.normalization_params['method']}")
 
         # Combine numeric data back with non-numeric data (e.g., date columns)
-        result = pd.concat([non_numeric_data, normalized_data], axis=1)
+        # result = pd.concat([non_numeric_data, normalized_data], axis=1)
+        result = normalized_data
 
         # Debug information
-        for column in data.columns:
-            if column in non_numeric_data.columns:
-                print(f"Column '{column}' is non-numeric and was not processed.")
-            elif column in numeric_data.columns:
-                print(f"Column '{column}' was successfully processed.")
-            else:
-                print(f"Column '{column}' was not found in the processed data.")
+        #for column in data.columns:
+        #    if column in non_numeric_data.columns:
+        #        print(f"Column '{column}' is non-numeric and was not processed.")
+        #    elif column in numeric_data.columns:
+        #        print(f"Column '{column}' was successfully processed.")
+        #    else:
+        #        print(f"Column '{column}' was not found in the processed data.")
 
         return result
 
