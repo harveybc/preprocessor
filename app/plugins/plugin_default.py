@@ -109,103 +109,112 @@ class Plugin:
         data.loc[:, numeric_columns] = normalized_data  # Use .loc to avoid SettingWithCopyWarning
         return data
 
-    def process(self, data):
-        """
-        Process the data by reordering columns, splitting into training and validation datasets,
-        normalizing the training and validation datasets, and saving target columns.
+   def process(self, data):
+    """
+    Process the data by reordering columns, splitting into three datasets (D1, D2, D3),
+    normalizing D2 and D3 based on D1, and saving the target columns.
 
-        Args:
-            data (pd.DataFrame): The input data to be processed.
+    Args:
+        data (pd.DataFrame): The input data to be processed.
 
-        Returns:
-            pd.DataFrame: The summary of processed datasets.
-        """
-        # Print the dimensions of the loaded data
-        print(f"Loaded data shape: {data.shape}")
+    Returns:
+        pd.DataFrame: The summary of processed datasets.
+    """
+    # Print the dimensions of the loaded data
+    print(f"Loaded data shape: {data.shape}")
 
-        # Step 1: Reorder columns based on input and output orders
-        input_column_order = self.params['input_column_order']
-        output_column_order = self.params['output_column_order']
+    # Step 1: Reorder columns based on input and output orders
+    input_column_order = self.params['input_column_order']
+    output_column_order = self.params['output_column_order']
 
-        data.columns = input_column_order  # Set columns to input order first
-        data = data[output_column_order]
-        print(f"Step 1: Columns reordered based on output_column_order. New order: {list(data.columns)}")
+    data.columns = input_column_order  # Set columns to input order first
+    data = data[output_column_order]
+    print(f"Step 1: Columns reordered based on output_column_order. New order: {list(data.columns)}")
 
-        # Step 2: Split into training and validation datasets
-        validation_proportion = self.params['validation_proportion']
-        validation_size = int(len(data) * validation_proportion)
-        training_data = data.iloc[:-validation_size].copy()
-        validation_data = data.iloc[-validation_size:].copy()
-        print(f"Step 2: Split data into training and validation datasets.")
-        print(f"Training data shape: {training_data.shape}")
-        print(f"Validation data shape: {validation_data.shape}")
+    # Step 2: Split into three datasets (D1 for training, D2 for validation, D3 for testing)
+    total_len = len(data)
+    d1_size = int(total_len * self.params['d1_proportion'])
+    d2_size = int(total_len * self.params['d2_proportion'])
 
-        # Save the training and validation datasets (prior to normalization)
-        dataset_prefix = self.params['dataset_prefix']
-        training_data_file = f"{dataset_prefix}training.csv"
-        validation_data_file = f"{dataset_prefix}validation.csv"
-        
-        training_data.to_csv(training_data_file, header=False, index=False)
-        validation_data.to_csv(validation_data_file, header=False, index=False)
-        
-        print(f"Training data saved to: {training_data_file}")
-        print(f"Validation data saved to: {validation_data_file}")
+    d1_data = data.iloc[:d1_size].copy()
+    d2_data = data.iloc[d1_size:d1_size + d2_size].copy()
+    d3_data = data.iloc[d1_size + d2_size:].copy()
 
-        # Step 3: Normalize the training dataset
-        training_data = self.normalize_data(training_data)
-        print(f"Step 3: Normalized the training dataset.")
-        print(f"Normalized training data shape: {training_data.shape}")
+    print(f"Step 2: Split data into D1, D2, and D3 datasets.")
+    print(f"D1 data shape: {d1_data.shape}")
+    print(f"D2 data shape: {d2_data.shape}")
+    print(f"D3 data shape: {d3_data.shape}")
 
-        # Verify normalization parameters for the target column
-        target_column_name = output_column_order[self.params['target_column']]
-        print(f"Target column normalization parameters: min_val = {self.normalization_params['min'][target_column_name]}, max_val = {self.normalization_params['max'][target_column_name]}")
+    # Step 3: Save D1 dataset (prior to normalization)
+    dataset_prefix = self.params['dataset_prefix']
+    d1_data_file = f"{dataset_prefix}d1_training.csv"
+    d1_data.to_csv(d1_data_file, header=False, index=False)
+    print(f"D1 data saved to: {d1_data_file}")
 
-        # Step 4: Normalize the validation dataset using training normalization parameters
-        numeric_columns = validation_data.select_dtypes(include=[np.number]).columns
-        min_val = pd.Series(self.normalization_params['min'])
-        max_val = pd.Series(self.normalization_params['max'])
-        range_vals = self.normalization_params['range']
-        normalized_validation_data = (validation_data[numeric_columns] - min_val) / (max_val - min_val) * (range_vals[1] - range_vals[0]) + range_vals[0]
-        validation_data.loc[:, numeric_columns] = normalized_validation_data  # Use .loc to avoid SettingWithCopyWarning
-        print(f"Step 4: Normalized the validation dataset.")
-        print(f"Normalized validation data shape: {validation_data.shape}")
+    # Step 4: Calculate min and max values from D1
+    min_vals = d1_data.min()
+    max_vals = d1_data.max()
+    self.normalization_params = {'min': min_vals, 'max': max_vals}
+    print(f"Step 4: Calculated min and max values from D1.")
 
-        # Step 5: Extract and save the target columns for training and validation datasets
-        target_column_index = self.params['target_column']
-        target_column_name = output_column_order[target_column_index]
-        target_prefix = self.params['target_prefix']
+    # Step 5: Normalize D2 and D3 using D1's min and max values
+    def normalize(df, min_vals, max_vals):
+        return (df - min_vals) / (max_vals - min_vals)
+    
+    d2_data = normalize(d2_data, min_vals, max_vals)
+    d3_data = normalize(d3_data, min_vals, max_vals)
+    print(f"Step 5: Normalized D2 and D3 datasets using D1's normalization parameters.")
 
-        training_target = training_data[[target_column_name]]
-        validation_target = validation_data[[target_column_name]]
+    # Save the D2 and D3 datasets
+    d2_data_file = f"{dataset_prefix}d2_validation.csv"
+    d3_data_file = f"{dataset_prefix}d3_testing.csv"
 
-        training_target_file = f"{target_prefix}training.csv"
-        validation_target_file = f"{target_prefix}validation.csv"
+    d2_data.to_csv(d2_data_file, header=False, index=False)
+    d3_data.to_csv(d3_data_file, header=False, index=False)
 
-        training_target.to_csv(training_target_file, index=False, header=False)
-        validation_target.to_csv(validation_target_file, index=False, header=False)
+    print(f"D2 data saved to: {d2_data_file}")
+    print(f"D3 data saved to: {d3_data_file}")
 
-        print(f"Step 5: Extracted and saved target columns.")
-        print(f"Training target data saved to: {training_target_file}")
-        print(f"Validation target data saved to: {validation_target_file}")
+    # Step 6: Extract and save the target columns for D1, D2, and D3 datasets
+    target_column_index = self.params['target_column']
+    target_column_name = output_column_order[target_column_index]
+    target_prefix = self.params['target_prefix']
 
-        # Step 6: Save debug information for the target column
-        debug_info = self.get_debug_info()
-        debug_info_file = f"{target_prefix}debug_info.json"
-        with open(debug_info_file, 'w') as f:
-            json.dump(debug_info, f)
+    d1_target = d1_data[[target_column_name]]
+    d2_target = d2_data[[target_column_name]]
+    d3_target = d3_data[[target_column_name]]
 
-        print(f"Step 6: Saved debug information.")
-        print(f"Debug information saved to: {debug_info_file}")
+    d1_target_file = f"{target_prefix}d1_target.csv"
+    d2_target_file = f"{target_prefix}d2_target.csv"
+    d3_target_file = f"{target_prefix}d3_target.csv"
 
-        # Create a summary DataFrame with the dataset details
-        summary_data = {
-            'Filename': [training_data_file, validation_data_file, training_target_file, validation_target_file],
-            'Rows': [training_data.shape[0], validation_data.shape[0], training_target.shape[0], validation_target.shape[0]],
-            'Columns': [training_data.shape[1], validation_data.shape[1], training_target.shape[1], validation_target.shape[1]]
-        }
-        summary_df = pd.DataFrame(summary_data)
+    d1_target.to_csv(d1_target_file, index=False, header=False)
+    d2_target.to_csv(d2_target_file, index=False, header=False)
+    d3_target.to_csv(d3_target_file, index=False, header=False)
 
-        return summary_df
+    print(f"Step 6: Extracted and saved target columns for D1, D2, and D3.")
+    print(f"D1 target data saved to: {d1_target_file}")
+    print(f"D2 target data saved to: {d2_target_file}")
+    print(f"D3 target data saved to: {d3_target_file}")
+
+    # Step 7: Save debug information for the target column
+    debug_info = self.get_debug_info()
+    debug_info_file = f"{target_prefix}debug_info.json"
+    with open(debug_info_file, 'w') as f:
+        json.dump(debug_info, f)
+
+    print(f"Step 7: Saved debug information.")
+    print(f"Debug information saved to: {debug_info_file}")
+
+    # Create a summary DataFrame with the dataset details
+    summary_data = {
+        'Filename': [d1_data_file, d2_data_file, d3_data_file, d1_target_file, d2_target_file, d3_target_file],
+        'Rows': [d1_data.shape[0], d2_data.shape[0], d3_data.shape[0], d1_target.shape[0], d2_target.shape[0], d3_target.shape[0]],
+        'Columns': [d1_data.shape[1], d2_data.shape[1], d3_data.shape[1], d1_target.shape[1], d2_target.shape[1], d3_target.shape[1]]
+    }
+    summary_df = pd.DataFrame(summary_data)
+
+    return summary_df
 
 # Example usage
 if __name__ == "__main__":
