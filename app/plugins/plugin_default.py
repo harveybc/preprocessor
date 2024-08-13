@@ -116,7 +116,7 @@ class Plugin:
         Returns:
             pd.DataFrame: The summary of processed datasets.
         """
-        # Print the dimensions and head of the loaded data
+        # Print the dimensions of the loaded data
         print(f"[DEBUG] Loaded data shape: {data.shape}")
         print(f"[DEBUG] First few rows of loaded data:\n{data.head()}")
 
@@ -129,9 +129,11 @@ class Plugin:
         print(f"[DEBUG] Step 1: Columns reordered based on output_column_order. New order: {list(data.columns)}")
         print(f"[DEBUG] First few rows after reordering columns:\n{data.head()}")
 
-        # Step 2: Ensure all columns that should be numeric are numeric
-        data = data.apply(pd.to_numeric, errors='coerce')
-        print(f"[DEBUG] Step 2: Converted columns to numeric where applicable.")
+        # Step 2: Ensure only numeric columns are converted to numeric
+        non_numeric_columns = ['d']
+        numeric_columns = data.columns.difference(non_numeric_columns)
+        data[numeric_columns] = data[numeric_columns].apply(pd.to_numeric, errors='coerce')
+        print("[DEBUG] Step 2: Converted columns to numeric where applicable.")
         print(f"[DEBUG] First few rows after conversion to numeric:\n{data.head()}")
 
         # Drop any rows with NaN values that resulted from conversion (optional, based on your data handling policy)
@@ -154,75 +156,64 @@ class Plugin:
         print(f"[DEBUG] D2 data shape: {d2_data.shape}")
         print(f"[DEBUG] D3 data shape: {d3_data.shape}")
 
-        # Step 5: Save D1, D2 and D3 dataset (prior to normalization)
+        # Save D1, D2, and D3 datasets (prior to normalization)
         dataset_prefix = self.params['dataset_prefix']
         d1_data_file = f"{dataset_prefix}d1_original.csv"
-        d1_data.to_csv(d1_data_file, header=False, index=False)
-        print(f"[DEBUG] D1 data saved to: {d1_data_file}")
-
         d2_data_file = f"{dataset_prefix}d2_original.csv"
-        d2_data.to_csv(d2_data_file, header=False, index=False)
-        print(f"[DEBUG] D2 data saved to: {d2_data_file}")
-
         d3_data_file = f"{dataset_prefix}d3_original.csv"
+        d1_data.to_csv(d1_data_file, header=False, index=False)
+        d2_data.to_csv(d2_data_file, header=False, index=False)
         d3_data.to_csv(d3_data_file, header=False, index=False)
+        print(f"[DEBUG] D1 data saved to: {d1_data_file}")
+        print(f"[DEBUG] D2 data saved to: {d2_data_file}")
         print(f"[DEBUG] D3 data saved to: {d3_data_file}")
 
-        # Step 6: Calculate min and max values from D1
-        min_vals = d1_data.min()
-        max_vals = d1_data.max()
+        # Step 5: Calculate min and max values from D1
+        target_column_name = output_column_order[self.params['target_column']]
+        min_vals = d1_data[target_column_name].min()
+        max_vals = d1_data[target_column_name].max()
         self.normalization_params = {'min': min_vals, 'max': max_vals, 'range': self.params['range']}
         print(f"[DEBUG] Step 6: Calculated min and max values from D1's target column.")
-        print(f"[DEBUG] Min values:\n{min_vals}")
-        print(f"[DEBUG] Max values:\n{max_vals}")
 
-        # Step 7: Normalize all using D1's min and max values
-        d1_data = self.normalize(d1_data, min_vals, max_vals, self.params['range'])
-        d2_data = self.normalize(d2_data, min_vals, max_vals, self.params['range'])
-        d3_data = self.normalize(d3_data, min_vals, max_vals, self.params['range'])
+        # Step 6: Normalize the target column of D1, D2, and D3 using D1's min and max values
+        d1_data[target_column_name] = self.normalize(d1_data[target_column_name], min_vals, max_vals, self.params['range'])
+        d2_data[target_column_name] = self.normalize(d2_data[target_column_name], min_vals, max_vals, self.params['range'])
+        d3_data[target_column_name] = self.normalize(d3_data[target_column_name], min_vals, max_vals, self.params['range'])
         print(f"[DEBUG] Step 7: Normalized D1, D2, and D3 datasets using D1's normalization parameters.")
-        print(f"[DEBUG] First few rows of normalized D1 data:\n{d1_data.head()}")
 
-        # Step 8: Extract and save the target columns for D1, D2, and D3 datasets
-        target_column_index = self.params['target_column']
-        target_column_name = output_column_order[target_column_index]
+        # Save the normalized target columns
         target_prefix = self.params['target_prefix']
-
-        d1_target = d1_data[[target_column_name]]
-        d2_target = d2_data[[target_column_name]]
-        d3_target = d3_data[[target_column_name]]
-
         d1_target_file = f"{target_prefix}d1_target.csv"
-        d1_target.to_csv(d1_target_file, index=False, header=False)
-        print(f"[DEBUG] D1 target data saved to: {d1_target_file}")
-
         d2_target_file = f"{target_prefix}d2_target.csv"
-        d2_target.to_csv(d2_target_file, index=False, header=False)
-        print(f"[DEBUG] D2 target data saved to: {d2_target_file}")
-
         d3_target_file = f"{target_prefix}d3_target.csv"
-        d3_target.to_csv(d3_target_file, index=False, header=False)
+
+        d1_data[[target_column_name]].to_csv(d1_target_file, index=False, header=False)
+        d2_data[[target_column_name]].to_csv(d2_target_file, index=False, header=False)
+        d3_data[[target_column_name]].to_csv(d3_target_file, index=False, header=False)
+
+        print(f"[DEBUG] D1 target data saved to: {d1_target_file}")
+        print(f"[DEBUG] D2 target data saved to: {d2_target_file}")
         print(f"[DEBUG] D3 target data saved to: {d3_target_file}")
 
-        # Step 9: Save debug information for the target column
+        # Step 7: Save debug information for the target column
         debug_info = self.get_debug_info()
         debug_info_file = f"{target_prefix}debug_info.json"
         with open(debug_info_file, 'w') as f:
             json.dump(debug_info, f)
 
-        print(f"[DEBUG] Step 9: Saved debug information.")
+        print(f"[DEBUG] Step 8: Saved debug information.")
         print(f"[DEBUG] Debug information saved to: {debug_info_file}")
 
         # Create a summary DataFrame with the dataset details
         summary_data = {
             'Filename': [d1_data_file, d2_data_file, d3_data_file, d1_target_file, d2_target_file, d3_target_file],
-            'Rows': [d1_data.shape[0], d2_data.shape[0], d3_data.shape[0], d1_target.shape[0], d2_target.shape[0], d3_target.shape[0]],
-            'Columns': [d1_data.shape[1], d2_data.shape[1], d3_data.shape[1], d1_target.shape[1], d2_target.shape[1], d3_target.shape[1]]
+            'Rows': [d1_data.shape[0], d2_data.shape[0], d3_data.shape[0], d1_data.shape[0], d2_data.shape[0], d3_data.shape[0]],
+            'Columns': [d1_data.shape[1], d2_data.shape[1], d3_data.shape[1], 1, 1, 1]
         }
         summary_df = pd.DataFrame(summary_data)
 
-        print(f"[DEBUG] Processing complete. Summary:\n{summary_df}")
         return summary_df
+
 
 
 
