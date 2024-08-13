@@ -194,7 +194,7 @@ class Plugin:
         }
         summary_df = pd.DataFrame(summary_data)
 
-    return summary_df
+        return summary_df
 
 
 
