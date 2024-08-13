@@ -89,7 +89,7 @@ class Plugin:
         pip_value_in_normalized_range = pips * pip_value * conversion_factor
         return pip_value_in_normalized_range
 
-    def normalize(df, min_vals, max_vals, range_vals):
+    def normalize(self, df, min_vals, max_vals, range_vals):
         """
         Normalize the DataFrame using min-max normalization with a specified range.
 
@@ -167,7 +167,8 @@ class Plugin:
         self.normalization_params = {'min': min_vals, 'max': max_vals, 'range': self.params['range']}
         print(f"Step 6: Calculated min and max values from D1.")
 
-        # Step 7: Normalize D2 and D3 using D1's min and max values
+        # Step 7: Normalize all using D1's min and max values
+        d1_data = self.normalize(d1_data, min_vals, max_vals, self.params['range'])
         d2_data = self.normalize(d2_data, min_vals, max_vals, self.params['range'])
         d3_data = self.normalize(d3_data, min_vals, max_vals, self.params['range'])
         print(f"Step 7: Normalized D2 and D3 datasets using D1's normalization parameters.")
