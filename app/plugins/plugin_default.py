@@ -10,7 +10,6 @@ class Plugin:
     plugin_params = {
         'input_column_order': ["d", "o", "h", "l", "c", "v"],
         'output_column_order': ["d", "o", "l", "h", "c", "v"],
-        'validation_proportion': 0.5,
         'dataset_prefix': "x_",
         'target_prefix': "y_",
         'target_column': 4,
@@ -89,26 +88,12 @@ class Plugin:
         pip_value_in_normalized_range = pips * pip_value * conversion_factor
         return pip_value_in_normalized_range
 
-    def normalize(self, df, min_vals, max_vals, range_vals):
-        """
-        Normalize the DataFrame using min-max normalization with a specified range.
-
-        Args:
-            df (pd.DataFrame): The DataFrame to be normalized.
-            min_vals (pd.Series): The minimum values for each column.
-            max_vals (pd.Series): The maximum values for each column.
-            range_vals (tuple): The range (min, max) for normalization.
-
-        Returns:
-            pd.DataFrame: The normalized DataFrame.
-        """
-        norm_min, norm_max = range_vals
-        return (df - min_vals) / (max_vals - min_vals) * (norm_max - norm_min) + norm_min
-
     def process(self, data):
         """
-        Process the data by reordering columns, splitting into three datasets (D1, D2, D3),
-        normalizing D2 and D3 based on D1, and saving the target columns.
+        Process the data by splitting into three datasets (D1, D2, D3), 
+        saving the original datasets, extracting the target columns, 
+        and normalizing the target columns using D1's target column 
+        for D1, D2, and D3.
 
         Args:
             data (pd.DataFrame): The input data to be processed.
@@ -149,7 +134,7 @@ class Plugin:
         print(f"D2 data shape: {d2_data.shape}")
         print(f"D3 data shape: {d3_data.shape}")
 
-        # Step 5: Save D1, D2 and D3 dataset (prior to normalization)
+        # Step 5: Save D1, D2, and D3 datasets (prior to normalization)
         dataset_prefix = self.params['dataset_prefix']
         d1_data_file = f"{dataset_prefix}d1_original.csv"
         d1_data.to_csv(d1_data_file, header=False, index=False)
@@ -161,36 +146,32 @@ class Plugin:
         d3_data.to_csv(d3_data_file, header=False, index=False)
         print(f"D3 data saved to: {d3_data_file}")
 
-        # Step 6: Calculate min and max values from D1
-        min_vals = d1_data.min()
-        max_vals = d1_data.max()
-        self.normalization_params = {'min': min_vals, 'max': max_vals, 'range': self.params['range']}
-        print(f"Step 6: Calculated min and max values from D1.")
-
-        # Step 7: Normalize all using D1's min and max values
-        d1_data = self.normalize(d1_data, min_vals, max_vals, self.params['range'])
-        d2_data = self.normalize(d2_data, min_vals, max_vals, self.params['range'])
-        d3_data = self.normalize(d3_data, min_vals, max_vals, self.params['range'])
-        print(f"Step 7: Normalized D2 and D3 datasets using D1's normalization parameters.")
-
-        # Save the D2 and D3 datasets
-        d2_data_file = f"{dataset_prefix}d2_validation.csv"
-        d3_data_file = f"{dataset_prefix}d3_testing.csv"
-
-        d2_data.to_csv(d2_data_file, header=False, index=False)
-        d3_data.to_csv(d3_data_file, header=False, index=False)
-
-        print(f"D2 data saved to: {d2_data_file}")
-        print(f"D3 data saved to: {d3_data_file}")
-
-        # Step 8: Extract and save the target columns for D1, D2, and D3 datasets
+        # Step 6: Extract the target column for D1, D2, and D3 datasets
         target_column_index = self.params['target_column']
         target_column_name = output_column_order[target_column_index]
-        target_prefix = self.params['target_prefix']
 
         d1_target = d1_data[[target_column_name]]
         d2_target = d2_data[[target_column_name]]
         d3_target = d3_data[[target_column_name]]
+
+        print(f"Step 6: Extracted target columns for D1, D2, and D3.")
+
+        # Step 7: Calculate min and max values from D1's target column
+        min_val = d1_target.min()
+        max_val = d1_target.max()
+        range_vals = self.params['range']
+        self.normalization_params = {'min': min_val, 'max': max_val, 'range': range_vals}
+        print(f"Step 7: Calculated min and max values from D1's target column.")
+
+        # Step 8: Normalize the target columns for D1, D2, and D3
+        norm_min, norm_max = range_vals
+        d1_target = (d1_target - min_val) / (max_val - min_val) * (norm_max - norm_min) + norm_min
+        d2_target = (d2_target - min_val) / (max_val - min_val) * (norm_max - norm_min) + norm_min
+        d3_target = (d3_target - min_val) / (max_val - min_val) * (norm_max - norm_min) + norm_min
+        print(f"Step 8: Normalized target columns for D1, D2, and D3.")
+
+        # Step 9: Save the normalized target columns
+        target_prefix = self.params['target_prefix']
 
         d1_target_file = f"{target_prefix}d1_target.csv"
         d2_target_file = f"{target_prefix}d2_target.csv"
@@ -200,19 +181,10 @@ class Plugin:
         d2_target.to_csv(d2_target_file, index=False, header=False)
         d3_target.to_csv(d3_target_file, index=False, header=False)
 
-        print(f"Step 8: Extracted and saved target columns for D1, D2, and D3.")
+        print(f"Step 9: Saved normalized target columns for D1, D2, and D3.")
         print(f"D1 target data saved to: {d1_target_file}")
         print(f"D2 target data saved to: {d2_target_file}")
         print(f"D3 target data saved to: {d3_target_file}")
-
-        # Step 9: Save debug information for the target column
-        debug_info = self.get_debug_info()
-        debug_info_file = f"{target_prefix}debug_info.json"
-        with open(debug_info_file, 'w') as f:
-            json.dump(debug_info, f)
-
-        print(f"Step 9: Saved debug information.")
-        print(f"Debug information saved to: {debug_info_file}")
 
         # Create a summary DataFrame with the dataset details
         summary_data = {
@@ -222,7 +194,7 @@ class Plugin:
         }
         summary_df = pd.DataFrame(summary_data)
 
-        return summary_df
+    return summary_df
 
 
 
