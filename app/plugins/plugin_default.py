@@ -89,28 +89,21 @@ class Plugin:
         pip_value_in_normalized_range = pips * pip_value * conversion_factor
         return pip_value_in_normalized_range
 
-    def normalize_data(self, data):
+    def normalize(df, min_vals, max_vals, range_vals):
         """
-        Normalize the data using min-max normalization.
+        Normalize the DataFrame using min-max normalization with a specified range.
 
         Args:
-            data (pd.DataFrame): The input data to be normalized.
+            df (pd.DataFrame): The DataFrame to be normalized.
+            min_vals (pd.Series): The minimum values for each column.
+            max_vals (pd.Series): The maximum values for each column.
+            range_vals (tuple): The range (min, max) for normalization.
 
         Returns:
-            pd.DataFrame: The normalized data.
+            pd.DataFrame: The normalized DataFrame.
         """
-        numeric_columns = data.select_dtypes(include=[np.number]).columns
-        min_val = data[numeric_columns].min()
-        max_val = data[numeric_columns].max()
-        range_vals = self.params['range']
-        self.normalization_params = {
-            'min': min_val.to_dict(),
-            'max': max_val.to_dict(),
-            'range': range_vals
-        }
-        normalized_data = (data[numeric_columns] - min_val) / (max_val - min_val) * (range_vals[1] - range_vals[0]) + range_vals[0]
-        data.loc[:, numeric_columns] = normalized_data  # Use .loc to avoid SettingWithCopyWarning
-        return data
+        norm_min, norm_max = range_vals
+        return (df - min_vals) / (max_vals - min_vals) * (norm_max - norm_min) + norm_min
 
     def process(self, data):
         """
@@ -156,24 +149,27 @@ class Plugin:
         print(f"D2 data shape: {d2_data.shape}")
         print(f"D3 data shape: {d3_data.shape}")
 
-        # Step 5: Save D1 dataset (prior to normalization)
+        # Step 5: Save D1, D2 and D3 dataset (prior to normalization)
         dataset_prefix = self.params['dataset_prefix']
-        d1_data_file = f"{dataset_prefix}d1_training.csv"
+        d1_data_file = f"{dataset_prefix}d1_original.csv"
         d1_data.to_csv(d1_data_file, header=False, index=False)
         print(f"D1 data saved to: {d1_data_file}")
+        d2_data_file = f"{dataset_prefix}d2_original.csv"
+        d2_data.to_csv(d2_data_file, header=False, index=False)
+        print(f"D2 data saved to: {d2_data_file}")
+        d3_data_file = f"{dataset_prefix}d3_original.csv"
+        d3_data.to_csv(d3_data_file, header=False, index=False)
+        print(f"D3 data saved to: {d3_data_file}")
 
         # Step 6: Calculate min and max values from D1
         min_vals = d1_data.min()
         max_vals = d1_data.max()
-        self.normalization_params = {'min': min_vals, 'max': max_vals}
+        self.normalization_params = {'min': min_vals, 'max': max_vals, 'range': self.params['range']}
         print(f"Step 6: Calculated min and max values from D1.")
 
         # Step 7: Normalize D2 and D3 using D1's min and max values
-        def normalize(df, min_vals, max_vals):
-            return (df - min_vals) / (max_vals - min_vals)
-        
-        d2_data = normalize(d2_data, min_vals, max_vals)
-        d3_data = normalize(d3_data, min_vals, max_vals)
+        d2_data = self.normalize(d2_data, min_vals, max_vals, self.params['range'])
+        d3_data = self.normalize(d3_data, min_vals, max_vals, self.params['range'])
         print(f"Step 7: Normalized D2 and D3 datasets using D1's normalization parameters.")
 
         # Save the D2 and D3 datasets
@@ -226,6 +222,7 @@ class Plugin:
         summary_df = pd.DataFrame(summary_data)
 
         return summary_df
+
 
 
 # Example usage
