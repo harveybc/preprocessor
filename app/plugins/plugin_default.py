@@ -134,7 +134,15 @@ class Plugin:
         data = data[output_column_order]
         print(f"Step 1: Columns reordered based on output_column_order. New order: {list(data.columns)}")
 
-        # Step 2: Split into three datasets (D1 for training, D2 for validation, D3 for testing)
+        # Step 2: Ensure all columns that should be numeric are numeric
+        data = data.apply(pd.to_numeric, errors='coerce')
+        print("Step 2: Converted columns to numeric where applicable.")
+
+        # Drop any rows with NaN values that resulted from conversion (optional, based on your data handling policy)
+        data = data.dropna()
+        print("Step 3: Dropped rows with NaN values.")
+
+        # Step 4: Split into three datasets (D1 for training, D2 for validation, D3 for testing)
         total_len = len(data)
         d1_size = int(total_len * self.params['d1_proportion'])
         d2_size = int(total_len * self.params['d2_proportion'])
@@ -143,30 +151,30 @@ class Plugin:
         d2_data = data.iloc[d1_size:d1_size + d2_size].copy()
         d3_data = data.iloc[d1_size + d2_size:].copy()
 
-        print(f"Step 2: Split data into D1, D2, and D3 datasets.")
+        print(f"Step 4: Split data into D1, D2, and D3 datasets.")
         print(f"D1 data shape: {d1_data.shape}")
         print(f"D2 data shape: {d2_data.shape}")
         print(f"D3 data shape: {d3_data.shape}")
 
-        # Step 3: Save D1 dataset (prior to normalization)
+        # Step 5: Save D1 dataset (prior to normalization)
         dataset_prefix = self.params['dataset_prefix']
         d1_data_file = f"{dataset_prefix}d1_training.csv"
         d1_data.to_csv(d1_data_file, header=False, index=False)
         print(f"D1 data saved to: {d1_data_file}")
 
-        # Step 4: Calculate min and max values from D1
+        # Step 6: Calculate min and max values from D1
         min_vals = d1_data.min()
         max_vals = d1_data.max()
         self.normalization_params = {'min': min_vals, 'max': max_vals}
-        print(f"Step 4: Calculated min and max values from D1.")
+        print(f"Step 6: Calculated min and max values from D1.")
 
-        # Step 5: Normalize D2 and D3 using D1's min and max values
+        # Step 7: Normalize D2 and D3 using D1's min and max values
         def normalize(df, min_vals, max_vals):
             return (df - min_vals) / (max_vals - min_vals)
         
         d2_data = normalize(d2_data, min_vals, max_vals)
         d3_data = normalize(d3_data, min_vals, max_vals)
-        print(f"Step 5: Normalized D2 and D3 datasets using D1's normalization parameters.")
+        print(f"Step 7: Normalized D2 and D3 datasets using D1's normalization parameters.")
 
         # Save the D2 and D3 datasets
         d2_data_file = f"{dataset_prefix}d2_validation.csv"
@@ -178,7 +186,7 @@ class Plugin:
         print(f"D2 data saved to: {d2_data_file}")
         print(f"D3 data saved to: {d3_data_file}")
 
-        # Step 6: Extract and save the target columns for D1, D2, and D3 datasets
+        # Step 8: Extract and save the target columns for D1, D2, and D3 datasets
         target_column_index = self.params['target_column']
         target_column_name = output_column_order[target_column_index]
         target_prefix = self.params['target_prefix']
@@ -195,18 +203,18 @@ class Plugin:
         d2_target.to_csv(d2_target_file, index=False, header=False)
         d3_target.to_csv(d3_target_file, index=False, header=False)
 
-        print(f"Step 6: Extracted and saved target columns for D1, D2, and D3.")
+        print(f"Step 8: Extracted and saved target columns for D1, D2, and D3.")
         print(f"D1 target data saved to: {d1_target_file}")
         print(f"D2 target data saved to: {d2_target_file}")
         print(f"D3 target data saved to: {d3_target_file}")
 
-        # Step 7: Save debug information for the target column
+        # Step 9: Save debug information for the target column
         debug_info = self.get_debug_info()
         debug_info_file = f"{target_prefix}debug_info.json"
         with open(debug_info_file, 'w') as f:
             json.dump(debug_info, f)
 
-        print(f"Step 7: Saved debug information.")
+        print(f"Step 9: Saved debug information.")
         print(f"Debug information saved to: {debug_info_file}")
 
         # Create a summary DataFrame with the dataset details
@@ -218,6 +226,7 @@ class Plugin:
         summary_df = pd.DataFrame(summary_data)
 
         return summary_df
+
 
 # Example usage
 if __name__ == "__main__":
