@@ -16,7 +16,8 @@ class Plugin:
         'target_column': 4,
         'pip_value': 0.00001,
         'range': (0, 1),
-        
+        'd1_proportion': 0.3,
+        'd2_proportion': 0.3
     }
 
     # Define the debug variables for this plugin
