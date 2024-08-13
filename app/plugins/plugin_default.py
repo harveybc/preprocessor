@@ -88,6 +88,23 @@ class Plugin:
         pip_value_in_normalized_range = pips * pip_value * conversion_factor
         return pip_value_in_normalized_range
 
+    def normalize(self, df, min_vals, max_vals, range_vals):
+        """
+        Normalize the DataFrame using min-max normalization with a specified range.
+
+        Args:
+            df (pd.DataFrame): The DataFrame to be normalized.
+            min_vals (pd.Series): The minimum values for each column.
+            max_vals (pd.Series): The maximum values for each column.
+            range_vals (tuple): The range (min, max) for normalization.
+
+        Returns:
+            pd.DataFrame: The normalized DataFrame.
+        """
+        norm_min, norm_max = range_vals
+        normalized_df = (df - min_vals) / (max_vals - min_vals) * (norm_max - norm_min) + norm_min
+        return normalized_df
+
     def process(self, data):
         """
         Process the data by reordering columns, splitting into three datasets (D1, D2, D3),
