@@ -174,6 +174,9 @@ class Plugin:
         max_vals = d1_data[target_column_name].max()
         self.normalization_params = {'min': min_vals, 'max': max_vals, 'range': self.params['range']}
         print(f"[DEBUG] Step 6: Calculated min and max values from D1's target column.")
+        print(f"[DEBUG] First few rows from D1 target before normalization:\n{d1_data[target_column_name].head()}")
+        print(f"[DEBUG] First few rows from D2 target before normalization:\n{d2_data[target_column_name].head()}")
+        print(f"[DEBUG] First few rows from D3 target before normalization:\n{d3_data[target_column_name].head()}")
 
         # Step 6: Normalize the target column of D1, D2, and D3 using D1's min and max values
         d1_data[target_column_name] = self.normalize(d1_data[target_column_name], min_vals, max_vals, self.params['range'])
