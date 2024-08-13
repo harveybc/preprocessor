@@ -50,8 +50,8 @@ class Plugin:
         debug_info = {var: None for var in self.plugin_debug_vars}
         if self.normalization_params:
             target_column_name = self.params['output_column_order'][self.params['target_column']]
-            debug_info['min_val'] = self.normalization_params['min'][target_column_name]
-            debug_info['max_val'] = self.normalization_params['max'][target_column_name]
+            debug_info['min_val'] = self.normalization_params['min']
+            debug_info['max_val'] = self.normalization_params['max']
             debug_info['range'] = self.normalization_params['range']
             debug_info['method'] = 'min-max'
             debug_info['mae_per_pip'] = self.calculate_mae_for_pips(
