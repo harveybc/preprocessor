@@ -12,9 +12,9 @@ class Plugin:
         'output_column_order': ["d", "o", "l", "h", "c", "v","co"],
         'dataset_prefix': "x_",
         'target_prefix': "y_",
-        'target_column': 6,
+        'target_column': 4,
         'pip_value': 0.00001,
-        'range': (-1, 1),
+        'range': (0, 1),
         'd1_proportion': 0.3,
         'd2_proportion': 0.3
     }
