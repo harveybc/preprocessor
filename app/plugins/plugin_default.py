@@ -102,7 +102,16 @@ class Plugin:
             pd.DataFrame: The normalized DataFrame.
         """
         norm_min, norm_max = range_vals
-        normalized_df = (df - min_vals) / (max_vals - min_vals) * (norm_max - norm_min) + norm_min
+        # if range is (0, 1), the formula is:
+        if  norm_min == 0 and norm_max == 1:
+            normalized_df = (df - min_vals) / (max_vals - min_vals)
+        # else use standardization instead of min-max normalization\
+        else:
+            # standardization formula (substract average and  divide by standard deviation), so calculate average and standard deviation
+            mean = df.mean()
+            std = df.std()
+            normalized_df = (df - mean) / std
+        
         return normalized_df
 
     def process(self, data):
