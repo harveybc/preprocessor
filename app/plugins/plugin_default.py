@@ -71,6 +71,12 @@ class Plugin:
         """
         Process the data by reordering columns, splitting into three datasets (D1, D2, D3),
         normalizing columns based on D1, and saving the datasets.
+
+        Args:
+            data (pd.DataFrame): The input data to be processed.
+
+        Returns:
+            pd.DataFrame: The summary of processed datasets.
         """
         print(f"[DEBUG] Loaded data shape: {data.shape}")
         print(f"[DEBUG] First few rows of loaded data:\n{data.head()}")
@@ -79,17 +85,11 @@ class Plugin:
         input_column_order = self.params['input_column_order']
         output_column_order = self.params['output_column_order']
 
-        # Assuming that the first len(input_column_order) columns correspond to 'input_column_order'
         column_indices = list(range(len(input_column_order)))
-
-        # Create a mapping of the input positions to output positions
         reordered_indices = [input_column_order.index(col) for col in output_column_order]
+        reordered_data = data.iloc[:, column_indices].copy()
+        reordered_data = reordered_data.iloc[:, reordered_indices]
 
-        # Reorder the columns accordingly (only the first len(input_column_order) columns)
-        reordered_data = data.iloc[:, column_indices].copy()  # Select the first N columns based on input order
-        reordered_data = reordered_data.iloc[:, reordered_indices]  # Reorder based on output order
-
-        # Preserve any additional columns (keep their order intact)
         if data.shape[1] > len(input_column_order):
             additional_columns = data.iloc[:, len(input_column_order):].copy()
             reordered_data = pd.concat([reordered_data, additional_columns], axis=1)
@@ -97,11 +97,9 @@ class Plugin:
         print(f"[DEBUG] Reordered columns: {list(reordered_data.columns)}")
 
         # Step 2: Ensure only numeric columns are converted to numeric
-        non_numeric_columns = ['d']  # Assuming 'd' refers to date or non-numeric column (position, not name)
+        non_numeric_columns = ['d']
         numeric_columns = reordered_data.columns.difference(non_numeric_columns)
         reordered_data[numeric_columns] = reordered_data[numeric_columns].apply(pd.to_numeric, errors='coerce')
-
-        # Drop any rows with NaN values
         reordered_data = reordered_data.dropna()
 
         print(f"[DEBUG] Data shape after dropping NaN rows: {reordered_data.shape}")
@@ -122,6 +120,8 @@ class Plugin:
 
         # Step 4: Calculate CV (Coefficient of Variation) and decide normalization method
         cvs = {}
+        high_cv_columns = []
+        low_cv_columns = []
         for column in numeric_columns:
             col_data = d1_data[column]
             mean = col_data.mean()
@@ -129,20 +129,22 @@ class Plugin:
             cv = std_dev / abs(mean) if abs(mean) > 1e-8 else 0
             cvs[column] = cv
 
-        # Calculate the median CV and identify columns to process based on 'only_low_CV' flag
-        median_cv = np.median(list(cvs.values()))
-        print(f"[DEBUG] Median CV: {median_cv}")
+            # Print CV for each column
+            print(f"[DEBUG] {column} has CV {cv:.5f}")
 
-        if self.params['only_low_CV']:
-            columns_to_process = [col for col, cv in cvs.items() if cv <= median_cv]
-            print(f"[DEBUG] Low CV columns: {columns_to_process}")
-        else:
-            columns_to_process = list(numeric_columns)
-            print(f"[DEBUG] Processing all columns: {columns_to_process}")
+            # Classify as high or low volatility based on CV
+            if cv > 1:  # Adjust threshold as per your specific needs
+                high_cv_columns.append((column, cv))
+            else:
+                low_cv_columns.append((column, cv))
+
+        # Print high and low CV columns
+        print(f"[DEBUG] High CV columns: {high_cv_columns}")
+        print(f"[DEBUG] Low CV columns: {low_cv_columns}")
 
         # Step 5: Normalize the selected columns in D1, D2, and D3
         epsilon = 1e-8
-        for column in columns_to_process:
+        for column in numeric_columns:
             col_data = d1_data[column]
             method = 'z-score' if abs(skew(col_data)) <= 0.5 and -1.0 <= kurtosis(col_data) <= 6.0 else 'min-max'
 
@@ -237,10 +239,6 @@ class Plugin:
         summary_df = pd.DataFrame(summary_data)
 
         return summary_df
-
-
-
-
 
 
 
