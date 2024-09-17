@@ -146,7 +146,11 @@ class Plugin:
         epsilon = 1e-8
         for column in numeric_columns:
             col_data = d1_data[column]
-            method = 'z-score' if abs(skew(col_data)) <= 0.5 and -1.0 <= kurtosis(col_data) <= 6.0 else 'min-max'
+            # Enforce min-max normalization for 'Close' column in target
+            if column == 'Close':
+                method = 'min-max'
+            else:
+                method = 'z-score' if abs(skew(col_data)) <= 0.5 and -1.0 <= kurtosis(col_data) <= 6.0 else 'min-max'
 
             if method == 'z-score':
                 mean = col_data.mean()
@@ -163,14 +167,14 @@ class Plugin:
 
             print(f"[DEBUG] Normalized column '{column}' using {method} method.")
 
-        # Step 6: Save D1, D2, and D3 datasets in the correct output order without headers
+        # Step 6: Save D1, D2, and D3 datasets in the correct output order without headers (Original values for open, low, high, and close)
         # Ensure that the columns in D1, D2, and D3 are ordered according to 'output_column_order' (["d", "o", "l", "h", "c"])
         output_order = ['Open', 'Low', 'High', 'Close']  # Mapping of 'o', 'l', 'h', 'c' to column names
 
-        # Rearrange the columns according to the output order
-        d1_data_reordered = d1_data[output_order]
-        d2_data_reordered = d2_data[output_order]
-        d3_data_reordered = d3_data[output_order]
+        # Use the unnormalized data for the original columns (Open, Low, High, Close)
+        d1_data_reordered = reordered_data[output_order].iloc[:d1_size]
+        d2_data_reordered = reordered_data[output_order].iloc[d1_size:d1_size + d2_size]
+        d3_data_reordered = reordered_data[output_order].iloc[d1_size + d2_size:]
 
         # Save the reordered datasets without headers
         dataset_prefix = self.params['dataset_prefix']
@@ -187,17 +191,9 @@ class Plugin:
         print(f"[DEBUG] D2 data saved to: {d2_data_file}")
         print(f"[DEBUG] D3 data saved to: {d3_data_file}")
 
-        # Ensure columns_to_process is properly set before creating the target file
-        numeric_columns = reordered_data.columns.difference(non_numeric_columns)
-
-        if self.params['only_low_CV']:
-            columns_to_process = [col for col, cv in cvs.items() if cv <= 0.3]
-        else:
-            columns_to_process = list(numeric_columns)
-
         # Step 7: Exclude 'Low', 'High', and 'Open' columns for the target file and reorder to have 'Close' as the first column
         columns_to_exclude = ['Open', 'Low', 'High']  # Exclude Open, Low, High
-        columns_to_include_in_target = [col for col in columns_to_process if col not in columns_to_exclude and col != 'd']
+        columns_to_include_in_target = [col for col in numeric_columns if col not in columns_to_exclude and col != 'd']
 
         # Ensure 'Close' is the first column
         if 'Close' in columns_to_include_in_target:
@@ -258,6 +254,7 @@ class Plugin:
         summary_df = pd.DataFrame(summary_data)
 
         return summary_df
+
 
 
 
