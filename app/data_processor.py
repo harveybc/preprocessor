@@ -1,18 +1,18 @@
 from app.data_handler import load_csv, write_csv
 
-def process_data(config, plugin):
+def run_preprocessor_pipeline(config, plugin):
     """Process the data using the specified plugin."""
-    data = load_csv(config['csv_file'], headers=config['headers'])
+    data = load_csv(config['input_file'])
 
     # Debugging: Print loaded data
     print("Loaded data:\n", data.head())
 
-    processed_data = plugin.process(data, method=config['method'], save_params=config['save_config'], load_params=config['load_config'], single=config['single'], multi=config['multi'])
+    processed_data = plugin.process(data)
 
     # Debugging: Print processed data
     print("Processed data:\n", processed_data.head())
 
-    include_date = config['force_date'] or not (config['method'] in ['select_single', 'select_multi'])
+    include_date = config['force_date']  if 'date' in processed_data.columns else False
 
     if not config['quiet_mode']:
         print("Processing complete. Writing output...")

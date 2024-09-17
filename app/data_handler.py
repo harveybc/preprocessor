@@ -1,63 +1,44 @@
 import pandas as pd
 
-def load_csv(file_path, headers=True):
+def load_csv(file_path):
     """
-    Load a CSV file into a pandas DataFrame, handling date columns and correct numeric parsing.
-
-    Args:
-        file_path (str): The path to the CSV file to be loaded.
-        headers (bool): Whether the CSV file has headers.
-
-    Returns:
-        pd.DataFrame: The loaded data as a pandas DataFrame.
+    Load a CSV file assuming it has headers and a 'date' column at the beginning.
+    The 'date' column is set as the index.
     """
     try:
-        if headers:
-            data = pd.read_csv(file_path, sep=',', parse_dates=[0], infer_datetime_format=True)
-            #data.set_index(list(data.columns[[0]]), inplace=True)
-        else:
-            # Read the file without headers
-            data = pd.read_csv(file_path, header=None, sep=',')
-            # Check if the first column is a date column
-            if pd.api.types.is_datetime64_any_dtype(data.iloc[:, 0]):
-                data.columns = ['date'] + [f'col_{i-1}' for i in range(1, len(data.columns))]
-                data.set_index('date', inplace=True)
-            else:
-                # Manually set column names if the first column is not a date
-                data.columns = [f'col_{i}' for i in range(len(data.columns))]
+        # Read CSV with headers and parse the first column (assumed to be the 'date' column)
+        data = pd.read_csv(file_path, sep=',', parse_dates=[0], dayfirst=True)
+        
+        # Set the first column ('date') as the index
+        data.set_index(data.columns[0], inplace=True)
+        data.index.name = 'date'  # Explicitly set index name to 'date'
 
-            # Convert numeric columns to appropriate data types
-            for col in data.columns:
-                if col != 'date':
-                    data[col] = pd.to_numeric(data[col], errors='coerce')
-                
-    except FileNotFoundError:
-        print(f"Error: The file {file_path} does not exist.")
-        raise
-    except pd.errors.EmptyDataError:
-        print("Error: The file is empty.")
-        raise
-    except pd.errors.ParserError:
-        print("Error: Error parsing the file.")
-        raise
+        print(f"Loaded data columns: {data.columns}")  # Debugging line
+        
+        # Convert all non-date columns to numeric, coercing errors to NaN
+        for col in data.columns:
+            data[col] = pd.to_numeric(data[col], errors='coerce')
+
+        print(f"First 5 rows of the data:\n{data.head()}")
+
     except Exception as e:
         print(f"An error occurred while loading the CSV: {e}")
         raise
-    
+
     return data
+
+
+
 
 def write_csv(file_path, data, include_date=True, headers=True):
     """
-    Write a pandas DataFrame to a CSV file.
-
-    Args:
-        file_path (str): The path to the CSV file to be written.
-        data (pd.DataFrame): The data to be written to the CSV file.
-        include_date (bool): Whether to include the date column in the output.
-        headers (bool): Whether to include headers in the output.
-
-    Returns:
-        None
+    Write a DataFrame to a CSV file, optionally including the date column and headers.
+    
+    Parameters:
+    - file_path: str: Path to the output CSV file
+    - data: pd.DataFrame: DataFrame to save
+    - include_date: bool: Whether to include the 'date' column in the output
+    - headers: bool: Whether to include the column headers in the output
     """
     try:
         if include_date and 'date' in data.columns:
