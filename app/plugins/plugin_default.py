@@ -2,6 +2,7 @@ import pandas as pd
 import json
 import numpy as np
 from scipy.stats import skew, kurtosis
+import matplotlib.pyplot as plt
 
 class Plugin:
     """
@@ -18,7 +19,7 @@ class Plugin:
         'range': (-1, 1),
         'd1_proportion': 0.3,
         'd2_proportion': 0.3,
-        'only_low_CV': True  # New parameter to control processing of low CV columns
+        'only_low_CV': True  # Parameter to control processing of low CV columns
     }
 
     # Define the debug variables for this plugin
@@ -93,6 +94,7 @@ class Plugin:
 
         # Now, reorder the first len(output_column_order) columns according to 'output_column_order'
         # and keep the rest of the columns in their original order
+        output_column_order = self.params['output_column_order']
         existing_columns = list(data.columns)
         other_columns = [col for col in existing_columns if col not in output_column_order]
         new_column_order = output_column_order + other_columns
@@ -238,38 +240,66 @@ class Plugin:
         print(f"[DEBUG] D2 data saved to: {d2_data_file}")
         print(f"[DEBUG] D3 data saved to: {d3_data_file}")
 
-        # Step 8: Save the target columns separately if needed
+        # Step 8: Save the target datasets (excluding date and the first 5 columns)
+
+        # Identify columns to include in target files
+        columns_to_exclude = output_column_order  # ['d', 'o', 'l', 'h', 'c']
+        columns_to_include_in_target = [col for col in columns_to_process if col not in columns_to_exclude]
+
+        print(f"[DEBUG] Columns to include in target files: {columns_to_include_in_target}")
+
+        # Create target datasets
+        d1_target = d1_data[columns_to_include_in_target]
+        d2_target = d2_data[columns_to_include_in_target]
+        d3_target = d3_data[columns_to_include_in_target]
+
+        # Save the target datasets
         target_prefix = self.params['target_prefix']
         d1_target_file = f"{target_prefix}d1_target.csv"
         d2_target_file = f"{target_prefix}d2_target.csv"
         d3_target_file = f"{target_prefix}d3_target.csv"
 
-        d1_data[[target_column_name]].to_csv(d1_target_file, index=False, header=False)
-        d2_data[[target_column_name]].to_csv(d2_target_file, index=False, header=False)
-        d3_data[[target_column_name]].to_csv(d3_target_file, index=False, header=False)
+        d1_target.to_csv(d1_target_file, index=False, header=False)
+        d2_target.to_csv(d2_target_file, index=False, header=False)
+        d3_target.to_csv(d3_target_file, index=False, header=False)
 
         print(f"[DEBUG] D1 target data saved to: {d1_target_file}")
         print(f"[DEBUG] D2 target data saved to: {d2_target_file}")
         print(f"[DEBUG] D3 target data saved to: {d3_target_file}")
 
-        # Step 9: Save debug information
+        # Step 9: Plot all the columns (except date and the first 5 columns) of the post-processed D1 target file
+
+        # Plotting each column in d1_target
+        for column in d1_target.columns:
+            plt.figure()
+            plt.plot(d1_target[column].reset_index(drop=True))
+            plt.title(f'D1 Target - {column}')
+            plt.xlabel('Index')
+            plt.ylabel(column)
+            plt.savefig(f'd1_target_{column}.png')
+            plt.close()
+
+        print(f"[DEBUG] Plots of D1 target columns saved.")
+
+        # Step 10: Save debug information
         debug_info = self.get_debug_info()
         debug_info_file = f"{target_prefix}debug_info.json"
         with open(debug_info_file, 'w') as f:
             json.dump(debug_info, f, indent=4)
 
-        print(f"[DEBUG] Step 9: Saved debug information.")
+        print(f"[DEBUG] Step 10: Saved debug information.")
         print(f"[DEBUG] Debug information saved to: {debug_info_file}")
 
-        # Create a summary DataFrame with the dataset details
+        # Step 11: Create a summary DataFrame with the dataset details
         summary_data = {
             'Filename': [d1_data_file, d2_data_file, d3_data_file, d1_target_file, d2_target_file, d3_target_file],
-            'Rows': [d1_data.shape[0], d2_data.shape[0], d3_data.shape[0], d1_data.shape[0], d2_data.shape[0], d3_data.shape[0]],
-            'Columns': [d1_data.shape[1], d2_data.shape[1], d3_data.shape[1], 1, 1, 1]
+            'Rows': [d1_data.shape[0], d2_data.shape[0], d3_data.shape[0], d1_target.shape[0], d2_target.shape[0], d3_target.shape[0]],
+            'Columns': [d1_data.shape[1], d2_data.shape[1], d3_data.shape[1], d1_target.shape[1], d2_target.shape[1], d3_target.shape[1]]
         }
         summary_df = pd.DataFrame(summary_data)
 
         return summary_df
+
 
 
 
