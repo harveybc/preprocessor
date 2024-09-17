@@ -176,14 +176,17 @@ class Plugin:
         print(f"[DEBUG] D2 data saved to: {d2_data_file}")
         print(f"[DEBUG] D3 data saved to: {d3_data_file}")
 
+        # Ensure columns_to_process is properly set before creating the target file
+        numeric_columns = reordered_data.columns.difference(non_numeric_columns)
+
+        if self.params['only_low_CV']:
+            columns_to_process = [col for col, cv in cvs.items() if cv <= median_cv]
+        else:
+            columns_to_process = list(numeric_columns)
+
         # Step 7: Exclude 'Low', 'High', and 'Open' columns for the target file and reorder to have 'Close' as the first column
         columns_to_exclude = ['Open', 'Low', 'High']  # Exclude Open, Low, High
         columns_to_include_in_target = [col for col in columns_to_process if col not in columns_to_exclude and col != 'd']
-
-        # Ensure 'Close' is the first column
-        if 'Close' in columns_to_include_in_target:
-            columns_to_include_in_target.remove('Close')
-            columns_to_include_in_target = ['Close'] + columns_to_include_in_target
 
         print(f"[DEBUG] Columns included in target file: {columns_to_include_in_target}")
 
