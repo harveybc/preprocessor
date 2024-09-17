@@ -1,6 +1,7 @@
 import pandas as pd
 import json
 import numpy as np
+from scipy.stats import skew, kurtosis
 
 class Plugin:
     """
@@ -8,26 +9,28 @@ class Plugin:
     """
     # Define the parameters for this plugin and their default values
     plugin_params = {
-        'input_column_order': ["d", "o", "h", "l", "c", "v","co"],
-        'output_column_order': ["d", "o", "l", "h", "c", "v","co"],
+        'input_column_order': ["d", "o", "h", "l", "c"],
+        'output_column_order': ["d", "o", "l", "h", "c"],
         'dataset_prefix': "x_",
         'target_prefix': "y_",
-        'target_column': 4,
+        'target_column': 4,  # Index in output_column_order (zero-based)
         'pip_value': 0.00001,
-        'range': (0, 1),
+        'range': (-1, 1),
         'd1_proportion': 0.3,
-        'd2_proportion': 0.3
+        'd2_proportion': 0.3,
+        'only_low_CV': True  # New parameter to control processing of low CV columns
     }
 
     # Define the debug variables for this plugin
-    plugin_debug_vars = ['min_val', 'max_val', 'range', 'method', 'mae_per_pip']
+    plugin_debug_vars = ['column_metrics', 'normalization_params']
 
     def __init__(self):
         """
         Initialize the Plugin with default parameters.
         """
         self.params = self.plugin_params.copy()
-        self.normalization_params = None
+        self.normalization_params = {}  # To store normalization parameters for each column
+        self.column_metrics = {}  # To store metrics for each column
 
     def set_params(self, **kwargs):
         """
@@ -45,18 +48,12 @@ class Plugin:
         Get debug information for the plugin.
 
         Returns:
-            dict: Debug information including min_val, max_val, range, method, and mae_per_pip.
+            dict: Debug information including column metrics and normalization parameters.
         """
-        debug_info = {var: None for var in self.plugin_debug_vars}
-        if self.normalization_params:
-            target_column_name = self.params['output_column_order'][self.params['target_column']]
-            debug_info['min_val'] = self.normalization_params['min']
-            debug_info['max_val'] = self.normalization_params['max']
-            debug_info['range'] = self.normalization_params['range']
-            debug_info['method'] = 'min-max'
-            debug_info['mae_per_pip'] = self.calculate_mae_for_pips(
-                1, debug_info['min_val'], debug_info['max_val'], debug_info['range']
-            )
+        debug_info = {
+            'column_metrics': self.column_metrics,
+            'normalization_params': self.normalization_params
+        }
         return debug_info
 
     def add_debug_info(self, debug_info):
@@ -68,56 +65,10 @@ class Plugin:
         """
         debug_info.update(self.get_debug_info())
 
-    def calculate_mae_for_pips(self, pips, original_min, original_max, normalized_range=(-1, 1)):
-        """
-        Calculate the MAE in the normalized range corresponding to the given number of pips.
-
-        Parameters:
-        - pips (float): The number of pips.
-        - original_min (float): The minimum value of the original data.
-        - original_max (float): The maximum value of the original data.
-        - normalized_range (tuple): The range of the normalized data. Default is (-1, 1).
-
-        Returns:
-        - float: The MAE in the normalized range corresponding to the given number of pips.
-        """
-        pip_value = self.params['pip_value']
-        original_range = original_max - original_min
-        normalized_range_span = normalized_range[1] - normalized_range[0]
-        conversion_factor = normalized_range_span / original_range
-        pip_value_in_normalized_range = pips * pip_value * conversion_factor
-        return pip_value_in_normalized_range
-
-    def normalize(self, df, min_vals, max_vals, range_vals):
-        """
-        Normalize the DataFrame using min-max normalization with a specified range.
-
-        Args:
-            df (pd.DataFrame): The DataFrame to be normalized.
-            min_vals (pd.Series): The minimum values for each column.
-            max_vals (pd.Series): The maximum values for each column.
-            range_vals (tuple): The range (min, max) for normalization.
-
-        Returns:
-            pd.DataFrame: The normalized DataFrame.
-        """
-        norm_min, norm_max = range_vals
-        # if range is (0, 1), the formula is:
-        if  norm_min == 0 and norm_max == 1:
-            normalized_df = (df - min_vals) / (max_vals - min_vals)
-        # else use standardization instead of min-max normalization\
-        else:
-            # standardization formula (substract average and  divide by standard deviation), so calculate average and standard deviation
-            mean = df.mean()
-            std = df.std()
-            normalized_df = (df - mean) / std
-        
-        return normalized_df
-
     def process(self, data):
         """
         Process the data by reordering columns, splitting into three datasets (D1, D2, D3),
-        normalizing D2 and D3 based on D1, and saving the target columns.
+        normalizing columns based on D1, and saving the datasets.
 
         Args:
             data (pd.DataFrame): The input data to be processed.
@@ -129,14 +80,24 @@ class Plugin:
         print(f"[DEBUG] Loaded data shape: {data.shape}")
         print(f"[DEBUG] First few rows of loaded data:\n{data.head()}")
 
-        # Step 1: Reorder columns based on input and output orders
+        # Step 1: Assign column names
         input_column_order = self.params['input_column_order']
-        output_column_order = self.params['output_column_order']
+        total_columns = data.shape[1]
+        if total_columns < len(input_column_order):
+            raise ValueError("Input data has fewer columns than expected in 'input_column_order'.")
 
-        data.columns = input_column_order  # Set columns to input order first
-        data = data[output_column_order]
-        print(f"[DEBUG] Step 1: Columns reordered based on output_column_order. New order: {list(data.columns)}")
-        print(f"[DEBUG] First few rows after reordering columns:\n{data.head()}")
+        # Assign names to the first len(input_column_order) columns
+        col_mapping = dict(zip(range(len(input_column_order)), input_column_order))
+        data.rename(columns=col_mapping, inplace=True)
+        print(f"[DEBUG] Step 1: Renamed first {len(input_column_order)} columns.")
+
+        # Now, reorder the first len(output_column_order) columns according to 'output_column_order'
+        # and keep the rest of the columns in their original order
+        existing_columns = list(data.columns)
+        other_columns = [col for col in existing_columns if col not in output_column_order]
+        new_column_order = output_column_order + other_columns
+        data = data[new_column_order]
+        print(f"[DEBUG] Reordered columns. New order: {list(data.columns)}")
 
         # Step 2: Ensure only numeric columns are converted to numeric
         non_numeric_columns = ['d']
@@ -145,7 +106,7 @@ class Plugin:
         print("[DEBUG] Step 2: Converted columns to numeric where applicable.")
         print(f"[DEBUG] First few rows after conversion to numeric:\n{data.head()}")
 
-        # Drop any rows with NaN values that resulted from conversion (optional, based on your data handling policy)
+        # Drop any rows with NaN values that resulted from conversion
         data = data.dropna()
         print(f"[DEBUG] Step 3: Dropped rows with NaN values (if any).")
         print(f"[DEBUG] Data shape after dropping NaN rows: {data.shape}")
@@ -165,11 +126,111 @@ class Plugin:
         print(f"[DEBUG] D2 data shape: {d2_data.shape}")
         print(f"[DEBUG] D3 data shape: {d3_data.shape}")
 
-        # Save D1, D2, and D3 datasets (prior to normalization)
+        # Step 5: Analyze columns in D1 to decide on normalization method and calculate metrics
+        # Adjust target_column index if necessary
+        target_column_index = self.params['target_column']
+        output_column_order = self.params['output_column_order']
+        target_column_name = output_column_order[target_column_index]
+
+        # All numeric columns including additional ones
+        numeric_columns = d1_data.columns.difference(non_numeric_columns)
+
+        # Calculate CV, skewness, kurtosis for each column
+        cvs = {}
+        skewness_dict = {}
+        kurtosis_dict = {}
+        epsilon = 1e-8  # Small value to prevent division by zero
+
+        for column in numeric_columns:
+            col_data = d1_data[column]
+
+            # Calculate mean and std dev
+            mean = col_data.mean()
+            std_dev = col_data.std()
+            adjusted_mean = mean if abs(mean) > epsilon else epsilon
+            cv = std_dev / abs(adjusted_mean)
+            cvs[column] = cv
+
+            # Calculate skewness and kurtosis
+            skewness = skew(col_data)
+            kurt = kurtosis(col_data)
+            skewness_dict[column] = skewness
+            kurtosis_dict[column] = kurt
+
+            # Decide on normalization method
+            if abs(skewness) <= 0.5 and -1.0 <= kurt <= 6.0:
+                method = 'z-score'
+                norm_params = {
+                    'mean': mean,
+                    'std': std_dev
+                }
+            else:
+                method = 'min-max'
+                min_val = col_data.min()
+                max_val = col_data.max()
+                norm_params = {
+                    'min': min_val,
+                    'max': max_val
+                }
+
+            # Save metrics and normalization parameters
+            self.column_metrics[column] = {
+                'CV': cv,
+                'skewness': skewness,
+                'kurtosis': kurt,
+                'normality_score': abs(skewness) + abs(kurt),
+                'method': method
+            }
+            self.normalization_params[column] = norm_params
+
+        # Determine the median CV
+        median_cv = np.median(list(cvs.values()))
+        print(f"[DEBUG] Median CV across columns: {median_cv}")
+
+        # Identify columns to process based on only_low_CV parameter
+        if self.params['only_low_CV']:
+            columns_to_process = [col for col, cv in cvs.items() if cv <= median_cv]
+            print(f"[DEBUG] Processing only low CV columns: {columns_to_process}")
+        else:
+            columns_to_process = list(numeric_columns)
+            print(f"[DEBUG] Processing all columns: {columns_to_process}")
+
+        # Step 6: Normalize the selected columns in D1, D2, and D3 using parameters from D1
+        for column in columns_to_process:
+            method = self.column_metrics[column]['method']
+            norm_params = self.normalization_params[column]
+
+            if method == 'z-score':
+                mean = norm_params['mean']
+                std_dev = norm_params['std']
+                # Normalize
+                d1_data[column] = (d1_data[column] - mean) / std_dev
+                d2_data[column] = (d2_data[column] - mean) / std_dev
+                d3_data[column] = (d3_data[column] - mean) / std_dev
+            else:  # min-max
+                min_val = norm_params['min']
+                max_val = norm_params['max']
+                range_min, range_max = self.params['range']
+                # Normalize
+                d1_data[column] = (d1_data[column] - min_val) / (max_val - min_val + epsilon) * (range_max - range_min) + range_min
+                d2_data[column] = (d2_data[column] - min_val) / (max_val - min_val + epsilon) * (range_max - range_min) + range_min
+                d3_data[column] = (d3_data[column] - min_val) / (max_val - min_val + epsilon) * (range_max - range_min) + range_min
+
+            print(f"[DEBUG] Normalized column '{column}' using method '{method}'.")
+
+        # For columns not processed (if only_low_CV is True), you can decide what to do
+        columns_not_processed = set(numeric_columns) - set(columns_to_process)
+        if columns_not_processed:
+            print(f"[DEBUG] Columns not processed (high CV): {columns_not_processed}")
+            # Optionally, you can drop these columns or keep them unprocessed
+            # For this example, we'll keep them unprocessed
+            pass  # Do nothing
+
+        # Step 7: Save D1, D2, and D3 datasets
         dataset_prefix = self.params['dataset_prefix']
-        d1_data_file = f"{dataset_prefix}d1_original.csv"
-        d2_data_file = f"{dataset_prefix}d2_original.csv"
-        d3_data_file = f"{dataset_prefix}d3_original.csv"
+        d1_data_file = f"{dataset_prefix}d1.csv"
+        d2_data_file = f"{dataset_prefix}d2.csv"
+        d3_data_file = f"{dataset_prefix}d3.csv"
         d1_data.to_csv(d1_data_file, header=False, index=False)
         d2_data.to_csv(d2_data_file, header=False, index=False)
         d3_data.to_csv(d3_data_file, header=False, index=False)
@@ -177,23 +238,7 @@ class Plugin:
         print(f"[DEBUG] D2 data saved to: {d2_data_file}")
         print(f"[DEBUG] D3 data saved to: {d3_data_file}")
 
-        # Step 5: Calculate min and max values from D1
-        target_column_name = output_column_order[self.params['target_column']]
-        min_vals = d1_data[target_column_name].min()
-        max_vals = d1_data[target_column_name].max()
-        self.normalization_params = {'min': min_vals, 'max': max_vals, 'range': self.params['range']}
-        print(f"[DEBUG] Step 6: Calculated min and max values from D1's target column.")
-        print(f"[DEBUG] First few rows from D1 target before normalization:\n{d1_data[target_column_name].head()}")
-        print(f"[DEBUG] First few rows from D2 target before normalization:\n{d2_data[target_column_name].head()}")
-        print(f"[DEBUG] First few rows from D3 target before normalization:\n{d3_data[target_column_name].head()}")
-
-        # Step 6: Normalize the target column of D1, D2, and D3 using D1's min and max values
-        d1_data[target_column_name] = self.normalize(d1_data[target_column_name], min_vals, max_vals, self.params['range'])
-        d2_data[target_column_name] = self.normalize(d2_data[target_column_name], min_vals, max_vals, self.params['range'])
-        d3_data[target_column_name] = self.normalize(d3_data[target_column_name], min_vals, max_vals, self.params['range'])
-        print(f"[DEBUG] Step 7: Normalized D1, D2, and D3 datasets using D1's normalization parameters.")
-
-        # Save the normalized target columns
+        # Step 8: Save the target columns separately if needed
         target_prefix = self.params['target_prefix']
         d1_target_file = f"{target_prefix}d1_target.csv"
         d2_target_file = f"{target_prefix}d2_target.csv"
@@ -207,13 +252,13 @@ class Plugin:
         print(f"[DEBUG] D2 target data saved to: {d2_target_file}")
         print(f"[DEBUG] D3 target data saved to: {d3_target_file}")
 
-        # Step 7: Save debug information for the target column
+        # Step 9: Save debug information
         debug_info = self.get_debug_info()
         debug_info_file = f"{target_prefix}debug_info.json"
         with open(debug_info_file, 'w') as f:
-            json.dump(debug_info, f)
+            json.dump(debug_info, f, indent=4)
 
-        print(f"[DEBUG] Step 8: Saved debug information.")
+        print(f"[DEBUG] Step 9: Saved debug information.")
         print(f"[DEBUG] Debug information saved to: {debug_info_file}")
 
         # Create a summary DataFrame with the dataset details
@@ -225,6 +270,8 @@ class Plugin:
         summary_df = pd.DataFrame(summary_data)
 
         return summary_df
+
+
 
 
 
