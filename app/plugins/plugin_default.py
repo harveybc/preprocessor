@@ -146,7 +146,7 @@ class Plugin:
         epsilon = 1e-8
         for column in numeric_columns:
             col_data = d1_data[column]
-            # Enforce min-max normalization for 'Close' column in target
+            # Ensure min-max normalization for 'Close' column in the target files
             if column == 'Close':
                 method = 'min-max'
             else:
@@ -191,9 +191,17 @@ class Plugin:
         print(f"[DEBUG] D2 data saved to: {d2_data_file}")
         print(f"[DEBUG] D3 data saved to: {d3_data_file}")
 
-        # Step 7: Exclude 'Low', 'High', and 'Open' columns for the target file and reorder to have 'Close' as the first column
+        # Step 7: Ensure columns_to_process is properly set before creating the target file
+        numeric_columns = reordered_data.columns.difference(non_numeric_columns)
+
+        if self.params['only_low_CV']:
+            columns_to_process = [col for col, cv in cvs.items() if cv <= 0.3]
+        else:
+            columns_to_process = list(numeric_columns)
+
+        # Step 8: Exclude 'Low', 'High', and 'Open' columns for the target file and reorder to have 'Close' as the first column
         columns_to_exclude = ['Open', 'Low', 'High']  # Exclude Open, Low, High
-        columns_to_include_in_target = [col for col in numeric_columns if col not in columns_to_exclude and col != 'd']
+        columns_to_include_in_target = [col for col in columns_to_process if col not in columns_to_exclude and col != 'd']
 
         # Ensure 'Close' is the first column
         if 'Close' in columns_to_include_in_target:
@@ -221,7 +229,7 @@ class Plugin:
         print(f"[DEBUG] D2 target data saved to: {d2_target_file}")
         print(f"[DEBUG] D3 target data saved to: {d3_target_file}")
 
-        # Step 8: Plot distribution of each column in D1 target dataset
+        # Step 9: Plot distribution of each column in D1 target dataset
         num_columns = len(d1_target.columns)
         num_rows = (num_columns + 3) // 4  # Create a grid of 4 plots per row
         fig, axes = plt.subplots(num_rows, 4, figsize=(20, num_rows * 5))
@@ -237,7 +245,7 @@ class Plugin:
 
         print(f"[DEBUG] Distribution plots saved for D1 target.")
 
-        # Step 9: Save debug information
+        # Step 10: Save debug information
         debug_info = self.get_debug_info()
         debug_info_file = f"{target_prefix}debug_info.json"
         with open(debug_info_file, 'w') as f:
@@ -245,7 +253,7 @@ class Plugin:
 
         print(f"[DEBUG] Debug information saved to: {debug_info_file}")
 
-        # Step 10: Create a summary DataFrame with the dataset details
+        # Step 11: Create a summary DataFrame with the dataset details
         summary_data = {
             'Filename': [d1_data_file, d2_data_file, d3_data_file, d1_target_file, d2_target_file, d3_target_file],
             'Rows': [d1_data.shape[0], d2_data.shape[0], d3_data.shape[0], d1_target.shape[0], d2_target.shape[0], d3_target.shape[0]],
