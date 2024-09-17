@@ -167,11 +167,17 @@ class Plugin:
 
             print(f"[DEBUG] Normalized column '{column}' using {method} method.")
 
-        # Step 6: Save D1, D2, and D3 datasets in the correct output order without headers (Original values for open, low, high, and close)
-        # Ensure that the columns in D1, D2, and D3 are ordered according to 'output_column_order' (["d", "o", "l", "h", "c"])
-        output_order = ['d', 'Open', 'Low', 'High', 'Close']  # Mapping of 'o', 'l', 'h', 'c' to column names
+        # Step 6: Reset the index to bring the date into the columns
+        reordered_data = reordered_data.reset_index()  # This will bring the index (date) back as a column
 
-        # Use the unnormalized data for the original columns (Open, Low, High, Close)
+        # Rename the index column to 'Date' if necessary (you can adjust based on the actual column name or leave as-is)
+        if 'index' in reordered_data.columns:
+            reordered_data.rename(columns={'index': 'Date'}, inplace=True)
+
+        # Ensure that the columns in D1, D2, and D3 are ordered according to 'output_column_order' (['Date', 'o', 'l', 'h', 'c'])
+        output_order = ['Date', 'Open', 'Low', 'High', 'Close']  # Mapping of 'Date', 'o', 'l', 'h', 'c' to column names
+
+        # Rearrange the columns according to the output order
         d1_data_reordered = reordered_data[output_order].iloc[:d1_size]
         d2_data_reordered = reordered_data[output_order].iloc[d1_size:d1_size + d2_size]
         d3_data_reordered = reordered_data[output_order].iloc[d1_size + d2_size:]
