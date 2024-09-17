@@ -163,7 +163,8 @@ class Plugin:
         print(f"[DEBUG] D3 data saved to: {d3_data_file}")
 
         # Step 8: Exclude date and first 5 columns (['d', 'o', 'l', 'h', 'c']) for target file
-        columns_to_exclude = output_column_order  # ['d', 'o', 'l', 'h', 'c']
+        columns_to_exclude = self.params['output_column_order']  # Correct exclusion of first 5 columns
+
         columns_to_include_in_target = [col for col in columns_to_process if col not in columns_to_exclude]
 
         print(f"[DEBUG] Columns included in target file: {columns_to_include_in_target}")
@@ -187,7 +188,7 @@ class Plugin:
         print(f"[DEBUG] D2 target data saved to: {d2_target_file}")
         print(f"[DEBUG] D3 target data saved to: {d3_target_file}")
 
-        # Step 9: Plot each column in the target file
+        # Step 9: Plot each column's distribution in the target file
         num_columns = len(d1_target.columns)
         num_rows = (num_columns + 3) // 4
         fig, axes = plt.subplots(num_rows, 4, figsize=(20, num_rows * 5))
@@ -197,12 +198,9 @@ class Plugin:
             sns.histplot(d1_target[column], kde=True, ax=axes[i])
             axes[i].set_title(f'Distribution of {column}')
 
-        
         plt.tight_layout(h_pad=10, pad=3)  # Added padding to prevent overlap
         plt.savefig('d1_target_distributions.png')
-        # Adjust layout and vertical separation
         plt.show()
-
 
         print(f"[DEBUG] Distribution plots saved for D1 target.")
         
@@ -221,6 +219,7 @@ class Plugin:
         summary_df = pd.DataFrame(summary_data)
 
         return summary_df
+
 
 
 
