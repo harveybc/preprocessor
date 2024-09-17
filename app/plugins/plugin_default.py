@@ -186,7 +186,7 @@ class Plugin:
         reordered_data.columns = output_column_order + additional_column_names
 
         # Step 7: Exclude 'Low', 'High', and 'Open' columns for the target file
-        columns_to_exclude = ['o', 'l', 'h']  # Open, Low, High
+        columns_to_exclude =  ['Open', 'Low', 'High']    # Open, Low, High
 
         # Ensure 'columns_to_process' uses column names
         columns_to_include_in_target = [col for col in columns_to_process if col not in columns_to_exclude and col != 'd']
