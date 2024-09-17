@@ -81,47 +81,48 @@ class Plugin:
         print(f"[DEBUG] Loaded data shape: {data.shape}")
         print(f"[DEBUG] First few rows of loaded data:\n{data.head()}")
 
-        # Step 1: Assign column names
+        # Step 1: Reorder columns based on input and output orders without renaming them
         input_column_order = self.params['input_column_order']
-        total_columns = data.shape[1]
-        if total_columns < len(input_column_order):
-            raise ValueError("Input data has fewer columns than expected in 'input_column_order'.")
-
-        # Assign names to the first len(input_column_order) columns
-        col_mapping = dict(zip(range(len(input_column_order)), input_column_order))
-        data.rename(columns=col_mapping, inplace=True)
-        print(f"[DEBUG] Step 1: Renamed first {len(input_column_order)} columns.")
-
-        # Now, reorder the first len(output_column_order) columns according to 'output_column_order'
-        # and keep the rest of the columns in their original order
         output_column_order = self.params['output_column_order']
-        existing_columns = list(data.columns)
-        other_columns = [col for col in existing_columns if col not in output_column_order]
-        new_column_order = output_column_order + other_columns
-        data = data[new_column_order]
-        print(f"[DEBUG] Reordered columns. New order: {list(data.columns)}")
 
+        # We assume that the first len(input_column_order) columns correspond to 'input_column_order'
+        column_indices = list(range(len(input_column_order)))  # The positions of the first columns
+
+        # Create a mapping of the input positions to output positions
+        reordered_indices = [input_column_order.index(col) for col in output_column_order]
+        
+        # Reorder the columns accordingly (only the first len(input_column_order) columns)
+        reordered_data = data.iloc[:, column_indices].copy()  # Select the first N columns based on input order
+        reordered_data = reordered_data.iloc[:, reordered_indices]  # Reorder based on output order
+        
+        # Preserve any additional columns (keep their order intact)
+        if data.shape[1] > len(input_column_order):
+            additional_columns = data.iloc[:, len(input_column_order):].copy()
+            reordered_data = pd.concat([reordered_data, additional_columns], axis=1)
+        
+        print(f"[DEBUG] Reordered columns. New order: {list(reordered_data.columns)}")
+        
         # Step 2: Ensure only numeric columns are converted to numeric
-        non_numeric_columns = ['d']
-        numeric_columns = data.columns.difference(non_numeric_columns)
-        data[numeric_columns] = data[numeric_columns].apply(pd.to_numeric, errors='coerce')
+        non_numeric_columns = ['d']  # Assuming 'd' refers to date or non-numeric column (position, not name)
+        numeric_columns = reordered_data.columns.difference(non_numeric_columns)
+        reordered_data[numeric_columns] = reordered_data[numeric_columns].apply(pd.to_numeric, errors='coerce')
         print("[DEBUG] Step 2: Converted columns to numeric where applicable.")
-        print(f"[DEBUG] First few rows after conversion to numeric:\n{data.head()}")
+        print(f"[DEBUG] First few rows after conversion to numeric:\n{reordered_data.head()}")
 
         # Drop any rows with NaN values that resulted from conversion
-        data = data.dropna()
+        reordered_data = reordered_data.dropna()
         print(f"[DEBUG] Step 3: Dropped rows with NaN values (if any).")
-        print(f"[DEBUG] Data shape after dropping NaN rows: {data.shape}")
-        print(f"[DEBUG] First few rows after dropping NaN rows:\n{data.head()}")
+        print(f"[DEBUG] Data shape after dropping NaN rows: {reordered_data.shape}")
+        print(f"[DEBUG] First few rows after dropping NaN rows:\n{reordered_data.head()}")
 
         # Step 4: Split into three datasets (D1 for training, D2 for validation, D3 for testing)
-        total_len = len(data)
+        total_len = len(reordered_data)
         d1_size = int(total_len * self.params['d1_proportion'])
         d2_size = int(total_len * self.params['d2_proportion'])
 
-        d1_data = data.iloc[:d1_size].copy()
-        d2_data = data.iloc[d1_size:d1_size + d2_size].copy()
-        d3_data = data.iloc[d1_size + d2_size:].copy()
+        d1_data = reordered_data.iloc[:d1_size].copy()
+        d2_data = reordered_data.iloc[d1_size:d1_size + d2_size].copy()
+        d3_data = reordered_data.iloc[d1_size + d2_size:].copy()
 
         print(f"[DEBUG] Step 4: Split data into D1, D2, and D3 datasets.")
         print(f"[DEBUG] D1 data shape: {d1_data.shape}")
