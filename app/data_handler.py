@@ -2,16 +2,16 @@ import pandas as pd
 
 def load_csv(file_path):
     """
-    Load a CSV file assuming it has a 'date' column at the beginning and headers.
-    Renames the columns from the headers to 'date', 'c1', 'c2', etc.
+    Load a CSV file assuming it has headers and a 'date' column at the beginning.
+    The 'date' column is set as the index.
     """
     try:
-        # Read CSV with headers and date parsing for the first column
+        # Read CSV with headers and parse the first column (assumed to be the 'date' column)
         data = pd.read_csv(file_path, sep=',', parse_dates=[0], dayfirst=True)
         
-        # Correctly set column names including 'date'
-        data.columns = ['date'] + [f'c{i}' for i in range(1, len(data.columns))]
-        data.set_index('date', inplace=True)
+        # Set the first column ('date') as the index
+        data.set_index(data.columns[0], inplace=True)
+        data.index.name = 'date'  # Explicitly set index name to 'date'
 
         print(f"Loaded data columns: {data.columns}")  # Debugging line
         
@@ -19,7 +19,6 @@ def load_csv(file_path):
         for col in data.columns:
             data[col] = pd.to_numeric(data[col], errors='coerce')
 
-        print(f"Loaded data columns: {data.columns}")
         print(f"First 5 rows of the data:\n{data.head()}")
 
     except Exception as e:
