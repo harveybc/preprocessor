@@ -180,7 +180,7 @@ class Plugin:
         numeric_columns = reordered_data.columns.difference(non_numeric_columns)
         median_cv = np.median(list(cvs.values()))
         if self.params['only_low_CV']:
-            columns_to_process = [col for col, cv in cvs.items() if cv <= median_cv]
+            columns_to_process = [col for col, cv in cvs.items() if cv <= median_cv/2]
         else:
             columns_to_process = list(numeric_columns)
 
