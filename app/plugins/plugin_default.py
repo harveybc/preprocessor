@@ -106,12 +106,14 @@ class Plugin:
         non_numeric_columns = ['d']  # Assuming 'd' refers to date or non-numeric column (position, not name)
         numeric_columns = reordered_data.columns.difference(non_numeric_columns)
         reordered_data[numeric_columns] = reordered_data[numeric_columns].apply(pd.to_numeric, errors='coerce')
+
+        # Drop any rows with NaN values
         reordered_data = reordered_data.dropna()
 
         print(f"[DEBUG] Data shape after dropping NaN rows: {reordered_data.shape}")
         print(f"[DEBUG] First few rows after dropping NaN rows:\n{reordered_data.head()}")
 
-        # Step 4: Split into three datasets (D1 for training, D2 for validation, D3 for testing)
+        # Step 3: Split into three datasets (D1 for training, D2 for validation, D3 for testing)
         total_len = len(reordered_data)
         d1_size = int(total_len * self.params['d1_proportion'])
         d2_size = int(total_len * self.params['d2_proportion'])
@@ -124,7 +126,7 @@ class Plugin:
         print(f"[DEBUG] D2 data shape: {d2_data.shape}")
         print(f"[DEBUG] D3 data shape: {d3_data.shape}")
 
-        # Step 5: Calculate CV and decide normalization method
+        # Step 4: Calculate CV (Coefficient of Variation) and decide normalization method
         cvs = {}
         for column in numeric_columns:
             col_data = d1_data[column]
@@ -133,10 +135,10 @@ class Plugin:
             cv = std_dev / abs(mean) if abs(mean) > 1e-8 else 0
             cvs[column] = cv
 
+        # Calculate the median CV and identify columns to process based on 'only_low_CV' flag
         median_cv = np.median(list(cvs.values()))
         print(f"[DEBUG] Median CV: {median_cv}")
 
-        # Process only low CV columns if specified
         if self.params['only_low_CV']:
             columns_to_process = [col for col, cv in cvs.items() if cv <= median_cv]
             print(f"[DEBUG] Low CV columns: {columns_to_process}")
@@ -144,12 +146,28 @@ class Plugin:
             columns_to_process = list(numeric_columns)
             print(f"[DEBUG] Processing all columns: {columns_to_process}")
 
-        # Step 6: Normalize columns
+        # Step 5: Normalize the selected columns in D1, D2, and D3
+        epsilon = 1e-8
         for column in columns_to_process:
-            method = 'z-score' if cvs[column] <= median_cv else 'min-max'
-            print(f"[DEBUG] Normalizing {column} using {method}")
+            col_data = d1_data[column]
+            method = 'z-score' if abs(skew(col_data)) <= 0.5 and -1.0 <= kurtosis(col_data) <= 6.0 else 'min-max'
 
-        # Step 7: Save D1, D2, and D3 datasets
+            if method == 'z-score':
+                mean = col_data.mean()
+                std_dev = col_data.std()
+                d1_data[column] = (d1_data[column] - mean) / (std_dev + epsilon)
+                d2_data[column] = (d2_data[column] - mean) / (std_dev + epsilon)
+                d3_data[column] = (d3_data[column] - mean) / (std_dev + epsilon)
+            else:  # min-max normalization
+                min_val = col_data.min()
+                max_val = col_data.max()
+                d1_data[column] = (d1_data[column] - min_val) / (max_val - min_val + epsilon)
+                d2_data[column] = (d2_data[column] - min_val) / (max_val - min_val + epsilon)
+                d3_data[column] = (d3_data[column] - min_val) / (max_val - min_val + epsilon)
+
+            print(f"[DEBUG] Normalized column '{column}' using {method} method.")
+
+        # Step 6: Save D1, D2, and D3 datasets
         dataset_prefix = self.params['dataset_prefix']
         d1_data_file = f"{dataset_prefix}d1.csv"
         d2_data_file = f"{dataset_prefix}d2.csv"
@@ -162,9 +180,8 @@ class Plugin:
         print(f"[DEBUG] D2 data saved to: {d2_data_file}")
         print(f"[DEBUG] D3 data saved to: {d3_data_file}")
 
-        # Step 8: Exclude date and first 5 columns (['d', 'o', 'l', 'h', 'c']) for target file
-        columns_to_exclude = self.params['output_column_order']  # Correct exclusion of first 5 columns
-
+        # Step 7: Exclude date and the first 5 columns (['d', 'o', 'l', 'h', 'c']) for target file
+        columns_to_exclude = output_column_order  # ['d', 'o', 'l', 'h', 'c']
         columns_to_include_in_target = [col for col in columns_to_process if col not in columns_to_exclude]
 
         print(f"[DEBUG] Columns included in target file: {columns_to_include_in_target}")
@@ -188,9 +205,9 @@ class Plugin:
         print(f"[DEBUG] D2 target data saved to: {d2_target_file}")
         print(f"[DEBUG] D3 target data saved to: {d3_target_file}")
 
-        # Step 9: Plot each column's distribution in the target file
+        # Step 8: Plot distribution of each column in D1 target dataset
         num_columns = len(d1_target.columns)
-        num_rows = (num_columns + 3) // 4
+        num_rows = (num_columns + 3) // 4  # Create a grid of 4 plots per row
         fig, axes = plt.subplots(num_rows, 4, figsize=(20, num_rows * 5))
         axes = axes.flatten()
 
@@ -198,19 +215,21 @@ class Plugin:
             sns.histplot(d1_target[column], kde=True, ax=axes[i])
             axes[i].set_title(f'Distribution of {column}')
 
-        plt.tight_layout(h_pad=10, pad=3)  # Added padding to prevent overlap
+        plt.tight_layout(h_pad=10, pad=3)  # Adjust layout to prevent overlap
         plt.savefig('d1_target_distributions.png')
         plt.show()
 
         print(f"[DEBUG] Distribution plots saved for D1 target.")
-        
-        # Step 10: Save debug info
-        debug_info = self.get_debug_info()
-        with open(f'{target_prefix}debug_info.json', 'w') as f:
-            json.dump(debug_info, f, indent=4)
-        print(f"[DEBUG] Debug information saved to: {target_prefix}debug_info.json.")
 
-        # Create a summary DataFrame with the dataset details
+        # Step 9: Save debug information
+        debug_info = self.get_debug_info()
+        debug_info_file = f"{target_prefix}debug_info.json"
+        with open(debug_info_file, 'w') as f:
+            json.dump(debug_info, f, indent=4)
+
+        print(f"[DEBUG] Debug information saved to: {debug_info_file}")
+
+        # Step 10: Create a summary DataFrame with the dataset details
         summary_data = {
             'Filename': [d1_data_file, d2_data_file, d3_data_file, d1_target_file, d2_target_file, d3_target_file],
             'Rows': [d1_data.shape[0], d2_data.shape[0], d3_data.shape[0], d1_target.shape[0], d2_target.shape[0], d3_target.shape[0]],
