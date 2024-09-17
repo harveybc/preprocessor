@@ -180,20 +180,18 @@ class Plugin:
         print(f"[DEBUG] D2 data saved to: {d2_data_file}")
         print(f"[DEBUG] D3 data saved to: {d3_data_file}")
 
-        # Assign column names to the reordered DataFrame
-        num_columns = reordered_data.shape[1]
-        additional_column_names = [f'col_{i}' for i in range(len(output_column_order), num_columns)]
-        reordered_data.columns = output_column_order + additional_column_names
-
-        # Step 7: Exclude 'Low', 'High', and 'Open' columns for the target file
-        columns_to_exclude =  ['Open', 'Low', 'High']    # Open, Low, High
-
-        # Ensure 'columns_to_process' uses column names
+        # Step 7: Exclude 'Low', 'High', and 'Open' columns for the target file and reorder to have 'Close' as the first column
+        columns_to_exclude = ['Open', 'Low', 'High']  # Exclude Open, Low, High
         columns_to_include_in_target = [col for col in columns_to_process if col not in columns_to_exclude and col != 'd']
+
+        # Ensure 'Close' is the first column
+        if 'Close' in columns_to_include_in_target:
+            columns_to_include_in_target.remove('Close')
+            columns_to_include_in_target = ['Close'] + columns_to_include_in_target
 
         print(f"[DEBUG] Columns included in target file: {columns_to_include_in_target}")
 
-        # Create target datasets without 'Low', 'High', and 'Open'
+        # Create target datasets with 'Close' as the first column
         d1_target = d1_data[columns_to_include_in_target]
         d2_target = d2_data[columns_to_include_in_target]
         d3_target = d3_data[columns_to_include_in_target]
