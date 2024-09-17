@@ -138,7 +138,7 @@ class Plugin:
         # All numeric columns including additional ones
         numeric_columns = d1_data.columns.difference(non_numeric_columns)
 
-        # Calculate CV, skewness, kurtosis for each column
+        # Calculate CV, skewness, kurtosis for each column (ensure exact CV classification as in feature-engineering)
         cvs = {}
         skewness_dict = {}
         kurtosis_dict = {}
@@ -186,7 +186,8 @@ class Plugin:
             }
             self.normalization_params[column] = norm_params
 
-        # Determine the median CV
+        # ** Use the exact threshold for low and high CV from feature-eng **
+        # Assuming feature-eng uses the median CV as the threshold for classifying low/high variability
         median_cv = np.median(list(cvs.values()))
         print(f"[DEBUG] Median CV across columns: {median_cv}")
 
@@ -221,15 +222,7 @@ class Plugin:
 
             print(f"[DEBUG] Normalized column '{column}' using method '{method}'.")
 
-        # For columns not processed (if only_low_CV is True), you can decide what to do
-        columns_not_processed = set(numeric_columns) - set(columns_to_process)
-        if columns_not_processed:
-            print(f"[DEBUG] Columns not processed (high CV): {columns_not_processed}")
-            # Optionally, you can drop these columns or keep them unprocessed
-            # For this example, we'll keep them unprocessed
-            pass  # Do nothing
-
-        # Step 7: Save D1, D2, and D3 datasets
+        # Step 7: Save D1, D2, and D3 datasets (all numeric columns including low CV)
         dataset_prefix = self.params['dataset_prefix']
         d1_data_file = f"{dataset_prefix}d1.csv"
         d2_data_file = f"{dataset_prefix}d2.csv"
@@ -300,7 +293,6 @@ class Plugin:
         summary_df = pd.DataFrame(summary_data)
 
         return summary_df
-
 
 
 
