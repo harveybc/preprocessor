@@ -169,7 +169,7 @@ class Plugin:
 
         # Step 6: Save D1, D2, and D3 datasets in the correct output order without headers (Original values for open, low, high, and close)
         # Ensure that the columns in D1, D2, and D3 are ordered according to 'output_column_order' (["d", "o", "l", "h", "c"])
-        output_order = ['Date', 'Open', 'Low', 'High', 'Close']  # Mapping of 'o', 'l', 'h', 'c' to column names
+        output_order = ['d', 'Open', 'Low', 'High', 'Close']  # Mapping of 'o', 'l', 'h', 'c' to column names
 
         # Use the unnormalized data for the original columns (Open, Low, High, Close)
         d1_data_reordered = reordered_data[output_order].iloc[:d1_size]
