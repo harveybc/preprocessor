@@ -180,7 +180,7 @@ class Plugin:
         numeric_columns = reordered_data.columns.difference(non_numeric_columns)
 
         if self.params['only_low_CV']:
-            columns_to_process = [col for col, cv in cvs.items() if cv <= 1110.3]
+            columns_to_process = [col for col, cv in cvs.items() if cv <= 0.3]
         else:
             columns_to_process = list(numeric_columns)
 
