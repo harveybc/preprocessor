@@ -1,7 +1,7 @@
 # config.py
 
 DEFAULT_VALUES = {
-    'csv_file': 'tests/data/indicators_output_EURUSD_hour_2005_2020.csv',  # Default path for the CSV file
+    'input_file': 'tests/data/indicators_output_EURUSD_hour_2005_2020.csv',  # Default path for the CSV file
     'output_file': './output.csv',  # Default output file for processed data
     'load_config': None,  # Path to load configuration file (if provided)
     'save_config': './output_config.json',  # Path to save the configuration file

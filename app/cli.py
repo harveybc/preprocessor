@@ -2,7 +2,7 @@ import argparse
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Feature-extractor: A tool for encoding and decoding CSV data with support for dynamic plugins.')
-    parser.add_argument('csv_file', help='Path to the CSV file to be processed')
+    parser.add_argument('input_file', help='Path to the CSV file to be processed')
     parser.add_argument('--load_config', help='Path to the configuration file to load', default=None)
     parser.add_argument('--save_config', help='Path to save the configuration file', default=None)
     parser.add_argument('--remote_load_config', help='URL to load remote configuration', default=None)
