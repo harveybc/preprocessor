@@ -1,20 +1,20 @@
-# Configuration file for the preprocessor application
+# config.py
 
-# Path configurations
-CSV_INPUT_PATH = './csv_input.csv'  # Default path for CSV input if not specified
-CSV_OUTPUT_PATH = './csv_output.csv'  # Default path for CSV output if not specified
-CONFIG_SAVE_PATH = './config_out.json'  # Default file to save preprocessing configurations
-CONFIG_LOAD_PATH = './config_in.json'  # Default file to load configurations from
+DEFAULT_VALUES = {
+    'csv_file': 'tests/data/indicators_output_EURUSD_hour_2005_2020.csv',  # Default path for the CSV file
+    'output_file': './output.csv',  # Default output file for processed data
+    'load_config': None,  # Path to load configuration file (if provided)
+    'save_config': './output_config.json',  # Path to save the configuration file
+    'remote_load_config': None,  # URL for remote configuration loading
+    'remote_save_config': None,  # URL for remote configuration saving
+    'remote_log': None,  # URL for remote logging
+    'remote_username': None,  # Username for remote logging/authentication
+    'remote_password': None,  # Password for remote logging/authentication
+    'plugin': 'default_plugin',  # Default plugin to use for feature extraction
+    'headers': True,  # Whether the CSV file has headers (True by default)
+    'force_date': False,  # Force inclusion of date column in the output
+    'debug_file': './debug_out.json',  # Path to save debug information
+    'quiet_mode': False,  # Suppress all output except for errors
+    'only_low_CV': False  # Process only low CV columns (False by default)
+}
 
-# Default plugin configuration
-DEFAULT_PLUGIN = 'default_plugin'  # Default preprocessing plugin name
-
-# Remote logging and configuration
-REMOTE_LOG_URL = 'http://remote-log-server/api/logs'  # Default URL for remote logging
-REMOTE_CONFIG_URL = 'http://remote-config-server/api/config'  # Default URL for remote configuration
-
-# Plugin configurations
-PLUGIN_DIRECTORY = 'app/plugins/'  # Directory containing all plugins
-
-# Quiet mode
-DEFAULT_QUIET_MODE = False  # Default setting for quiet mode

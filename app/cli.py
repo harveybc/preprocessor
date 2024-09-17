@@ -17,6 +17,7 @@ def parse_args():
     parser.add_argument('--debug_file', help='Path to save debug information', default='debug_out.json')
     # quiet mode
     parser.add_argument('--quiet_mode', action='store_true', help='Suppress all output except for errors')
+    parser.add_argument('--only_low_CV', action='store_true', help='Suppress all output except for errors')
 
     
     args, unknown = parser.parse_known_args()
