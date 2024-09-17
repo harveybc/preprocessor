@@ -168,14 +168,15 @@ class Plugin:
             print(f"[DEBUG] Normalized column '{column}' using {method} method.")
 
         # Step 6: Reset the index to bring the date into the columns
-        reordered_data = reordered_data.reset_index()  # This will bring the index (date) back as a column
+        # Since the date is an index, reset it to turn it into a regular column
+        reordered_data = reordered_data.reset_index()
 
-        # Rename the index column to 'Date' if necessary (you can adjust based on the actual column name or leave as-is)
-        if 'index' in reordered_data.columns:
-            reordered_data.rename(columns={'index': 'Date'}, inplace=True)
+        # Ensure that 'date' is properly renamed to 'Date' if needed
+        if 'date' in reordered_data.columns:
+            reordered_data.rename(columns={'date': 'Date'}, inplace=True)
 
-        # Ensure that the columns in D1, D2, and D3 are ordered according to 'output_column_order' (['Date', 'o', 'l', 'h', 'c'])
-        output_order = ['Date', 'Open', 'Low', 'High', 'Close']  # Mapping of 'Date', 'o', 'l', 'h', 'c' to column names
+        # Now reorder the columns as per the 'output_column_order'
+        output_order = ['Date', 'Open', 'Low', 'High', 'Close']  # Mapping of 'd', 'o', 'l', 'h', 'c' to column names
 
         # Rearrange the columns according to the output order
         d1_data_reordered = reordered_data[output_order].iloc[:d1_size]
@@ -196,6 +197,7 @@ class Plugin:
         print(f"[DEBUG] D1 data saved to: {d1_data_file}")
         print(f"[DEBUG] D2 data saved to: {d2_data_file}")
         print(f"[DEBUG] D3 data saved to: {d3_data_file}")
+
 
         # Step 7: Ensure columns_to_process is properly set before creating the target file
         numeric_columns = reordered_data.columns.difference(non_numeric_columns)
