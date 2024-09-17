@@ -178,7 +178,7 @@ class Plugin:
 
         # Ensure columns_to_process is properly set before creating the target file
         numeric_columns = reordered_data.columns.difference(non_numeric_columns)
-
+        median_cv = np.median(list(cvs.values()))
         if self.params['only_low_CV']:
             columns_to_process = [col for col, cv in cvs.items() if cv <= median_cv]
         else:
