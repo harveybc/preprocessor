@@ -163,14 +163,25 @@ class Plugin:
 
             print(f"[DEBUG] Normalized column '{column}' using {method} method.")
 
-        # Step 6: Save D1, D2, and D3 datasets
+        # Step 6: Save D1, D2, and D3 datasets in the correct output order without headers
+        # Ensure that the columns in D1, D2, and D3 are ordered according to 'output_column_order' (["d", "o", "l", "h", "c"])
+        output_order = ['Open', 'Low', 'High', 'Close']  # Mapping of 'o', 'l', 'h', 'c' to column names
+
+        # Rearrange the columns according to the output order
+        d1_data_reordered = d1_data[output_order]
+        d2_data_reordered = d2_data[output_order]
+        d3_data_reordered = d3_data[output_order]
+
+        # Save the reordered datasets without headers
         dataset_prefix = self.params['dataset_prefix']
         d1_data_file = f"{dataset_prefix}d1.csv"
         d2_data_file = f"{dataset_prefix}d2.csv"
         d3_data_file = f"{dataset_prefix}d3.csv"
-        d1_data.to_csv(d1_data_file, header=False, index=False)
-        d2_data.to_csv(d2_data_file, header=False, index=False)
-        d3_data.to_csv(d3_data_file, header=False, index=False)
+
+        # Save without headers
+        d1_data_reordered.to_csv(d1_data_file, header=False, index=False)
+        d2_data_reordered.to_csv(d2_data_file, header=False, index=False)
+        d3_data_reordered.to_csv(d3_data_file, header=False, index=False)
 
         print(f"[DEBUG] D1 data saved to: {d1_data_file}")
         print(f"[DEBUG] D2 data saved to: {d2_data_file}")
