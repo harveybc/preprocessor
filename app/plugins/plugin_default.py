@@ -71,12 +71,6 @@ class Plugin:
         """
         Process the data by reordering columns, splitting into three datasets (D1, D2, D3),
         normalizing columns based on D1, and saving the datasets.
-
-        Args:
-            data (pd.DataFrame): The input data to be processed.
-
-        Returns:
-            pd.DataFrame: The summary of processed datasets.
         """
         print(f"[DEBUG] Loaded data shape: {data.shape}")
         print(f"[DEBUG] First few rows of loaded data:\n{data.head()}")
@@ -243,7 +237,6 @@ class Plugin:
         summary_df = pd.DataFrame(summary_data)
 
         return summary_df
-
 
 
 
