@@ -7,7 +7,7 @@ def run_preprocessor_pipeline(config, plugin):
     # Debugging: Print loaded data
     print("Loaded data:\n", data.head())
 
-    processed_data = plugin.process(data, method=config['method'], save_params=config['save_config'], load_params=config['load_config'], single=config['single'], multi=config['multi'])
+    processed_data = plugin.process(data)
 
     # Debugging: Print processed data
     print("Processed data:\n", processed_data.head())
