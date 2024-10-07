@@ -13,8 +13,8 @@ class Plugin:
     plugin_params = {
         'input_column_order': ["d", "o", "h", "l", "c"],
         'output_column_order': ["d", "o", "l", "h", "c"],
-        'dataset_prefix': "x_",
-        'target_prefix': "y_",
+        'dataset_prefix': "original_",
+        'target_prefix': "normalized_",
         'target_column': 4,  # Index in output_column_order (zero-based)
         'pip_value': 0.00001,
         'range': (-1, 1),
