@@ -85,6 +85,10 @@ You can use the Preprocessor application from the command line with various plug
 preprocessor.bat  tests\data\indicators_output_EURUSD_hour_2005_2020.csv
 ```
 
+### Comamnd line parameters:
+
+Use the **-h** or **--help** parameter to get help on the parameters.
+
 ### File Structure (outdated):
 
 ```md
