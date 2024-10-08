@@ -85,9 +85,13 @@ You can use the Preprocessor application from the command line with various plug
 preprocessor.bat  tests\data\indicators_output_EURUSD_hour_2005_2020.csv
 ```
 
+### Comamnd line parameters:
+
+Use the **-h** or **--help** parameter to get help on the parameters.
+
 ### File Structure (outdated):
 
-```md
+```md 
 preprocessor/
 │
 ├── app/                           # Main application package
@@ -99,6 +103,7 @@ preprocessor/
 │   ├── default_plugin.py              # Default plugin (normalizer)
 │   └── plugins/                       # Plugins directory
 │       ├── __init__.py                # Makes plugins a Python package
+
 │       ├── plugin_unbiaser.py
 │       ├── plugin_trimmer.py
 │       ├── plugin_feature_selector_pre.py
@@ -114,6 +119,7 @@ preprocessor/
 ├── README.md                          # Project description and instructions
 ├── requirements.txt                   # External packages needed
 └── .gitignore                         # Specifies intentionally untracked files to ignore
+
 ```
 
 
