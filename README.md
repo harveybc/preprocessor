@@ -91,7 +91,7 @@ Use the **-h** or **--help** parameter to get help on the parameters.
 
 ### File Structure (outdated):
 
-```md
+```md 
 preprocessor/
 │
 ├── app/                           # Main application package
