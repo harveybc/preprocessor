@@ -14,8 +14,16 @@ from pathlib import Path
 # Configure to ignore warnings
 warnings.filterwarnings("ignore")
 
+# Function to ensure output directory exists
+def ensure_output_directory():
+    output_dir = Path("output")
+    if not output_dir.exists():
+        output_dir.mkdir(parents=True)
+    print(f"[INFO] Output directory verified at: {output_dir}")
+
 # Function to download and process datasets
 def descargar_y_procesar_datasets():
+    ensure_output_directory()
     print("[INFO] Iniciando la descarga y procesamiento de los datasets...")
     datasets = [
         "jkalamar/eurusd-foreign-exchange-fx-intraday-1minute",
@@ -34,7 +42,7 @@ def descargar_y_procesar_datasets():
             path = Path(path)
 
             # Verify if download was successful
-            if not os.path.exists(path):
+            if not path.exists():
                 print(f"[ERROR] La ruta de descarga no existe: {path}")
                 continue
 
