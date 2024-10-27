@@ -16,7 +16,6 @@ warnings.filterwarnings("ignore")
 
 # Definir la función para descargar y procesar los últimos 4500 datos de cada dataset
 def descargar_y_procesar_datasets():
-    print("[INFO] Iniciando la descarga y procesamiento de los datasets...")
     datasets = [
         "jkalamar/eurusd-foreign-exchange-fx-intraday-1minute",
         "stijnvanleeuwen/eurusd-forex-pair-15min-2002-2019",
@@ -28,24 +27,19 @@ def descargar_y_procesar_datasets():
     resumen_general = []
     for dataset in datasets:
         try:
-            print(f"[INFO] Descargando dataset: {dataset}")
             path = kagglehub.dataset_download(dataset)
             path = Path(path)
 
             # Verificar si la descarga fue exitosa
             if not os.path.exists(path):
-                print(f"[ERROR] La ruta de descarga no existe: {path}")
                 continue
 
             # Aquí asumimos que el dataset tiene un archivo CSV principal
             csv_files = [file for file in path.glob('**/*.csv')]
             if csv_files:
-                print(f"[INFO] Analizando el archivo CSV: {csv_files[0]}")
                 resumen_dataset = analizar_archivo_csv(csv_files[0], 4500)
                 if resumen_dataset is not None:
                     resumen_general.append(resumen_dataset)
-            else:
-                print(f"[ERROR] No se encontró archivo CSV en el dataset {dataset}")
         except Exception as e:
             print(f"[ERROR] Error durante la descarga o procesamiento del dataset {dataset}: {e}")
 
@@ -58,14 +52,12 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
     try:
         periodicidad = "1min" if "1minute" in str(ruta_archivo_csv).lower() else "15min" if "15min" in str(ruta_archivo_csv).lower() else "1h" if "1h" in str(ruta_archivo_csv).lower() else "1d"
         
-        print(f"[DEBUG] Cargando el archivo CSV desde la ruta: {ruta_archivo_csv}")
         data = pd.read_csv(ruta_archivo_csv, skiprows=3)
 
         if limite_filas is not None and len(data) > limite_filas:
             data = data.tail(limite_filas)
 
         if data.shape[1] < 2:
-            print("[ERROR] El archivo CSV debe tener al menos dos columnas.")
             return None
 
         # Eliminar la primera columna (fecha) y convertir el resto a numérico
@@ -74,20 +66,16 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         data.dropna(axis=1, how='any', inplace=True)
 
         if data.shape[1] < 1:
-            print("[ERROR] No hay suficientes columnas para el análisis después de limpiar los valores nulos.")
             return None
 
-        columnas = data.columns
         resultados = {}
         mejor_columna = None
         mejor_snr = -np.inf
 
-        for idx, columna in enumerate(columnas):
+        for idx in range(data.shape[1]):
             try:
-                print(f"[INFO] Analizando columna {idx + 1}")
-                serie = data[columna]
+                serie = data.iloc[:, idx]
                 if len(serie) < 2:
-                    print(f"[ERROR] La columna '{columna}' no tiene suficientes datos para el análisis.")
                     continue
 
                 # Cálculo de estadísticas
@@ -119,7 +107,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                 # Graficar el espectro de Fourier
                 plt.figure(figsize=(10, 5))
                 plt.plot(frecuencias, espectro)
-                plt.title(f'Espectro de Fourier para dataset {periodicidad}, columna {columna}')
+                plt.title(f'Espectro de Fourier para dataset {periodicidad}, columna col{idx + 1}')
                 plt.xlabel('Frecuencia')
                 plt.ylabel('Amplitud')
                 plt.savefig(f'output/espectro_fourier_{periodicidad}_col{idx + 1}.png')
@@ -128,11 +116,11 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                 # Análisis de estacionalidad, tendencia y residuales
                 descomposicion = sm.tsa.seasonal_decompose(serie, model='additive', period=30)
                 descomposicion.plot()
-                plt.suptitle(f'Descomposición de estacionalidad para dataset {periodicidad}, columna {columna}')
+                plt.suptitle(f'Descomposición de estacionalidad para dataset {periodicidad}, columna col{idx + 1}')
                 plt.savefig(f'output/descomposicion_estacionalidad_{periodicidad}_col{idx + 1}.png')
                 plt.close()
 
-                resultados[columna] = {
+                resultados[f'col{idx + 1}'] = {
                     "media": media,
                     "desviacion_std": desviacion,
                     "SNR": snr,
@@ -149,10 +137,10 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                 # Seleccionar la mejor columna para predicción (con mayor SNR)
                 if snr > mejor_snr:
                     mejor_snr = snr
-                    mejor_columna = columna
+                    mejor_columna = f'col{idx + 1}'
 
             except Exception as e:
-                print(f"[ERROR] Error al analizar la columna '{columna}': {e}")
+                print(f"[ERROR] Error al analizar la columna col{idx + 1}: {e}")
 
         # Evaluar la calidad del dataset para cada escenario
         calificaciones = evaluar_dataset(resultados)
