@@ -140,10 +140,17 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         print(f"[DEBUG] Entropía espectral calculada: {entropia_espectral}")
 
         # Find peaks in Fourier spectrum
-        freqs = np.fft.fftfreq(len(serie))
-        peaks, _ = find_peaks(espectro)
-        peak_indices = np.argsort(espectro[peaks])[-5:][::-1]
-        peak_freqs = freqs[peaks][peak_indices]
+        try:
+            freqs = np.fft.fftfreq(len(serie))
+            peaks, _ = find_peaks(espectro)
+            if len(peaks) == 0:
+                print("[ERROR] No se encontraron picos en el espectro de Fourier.")
+                return None
+            peak_indices = np.argsort(espectro[peaks])[-5:][::-1]
+            peak_freqs = freqs[peaks][peak_indices]
+        except IndexError as ie:
+            print(f"[ERROR] Error durante el análisis de picos del espectro de Fourier: {ie}")
+            return None
 
         # Debug Fourier peaks
         print(f"[DEBUG] Picos principales del espectro de Fourier: {peak_freqs}")
@@ -154,7 +161,11 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
 
         # Seasonal decomposition
         print(f"[DEBUG] Realizando descomposición estacional...")
-        decomposition = sm.tsa.seasonal_decompose(serie, period=int(len(serie) / 2), model='additive')
+        try:
+            decomposition = sm.tsa.seasonal_decompose(serie, period=int(len(serie) / 2), model='additive')
+        except ValueError as ve:
+            print(f"[ERROR] Error durante la descomposición estacional: {ve}")
+            return None
 
         # Plot seasonal decomposition
         plt.figure(figsize=(10, 8))
