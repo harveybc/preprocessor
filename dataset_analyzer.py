@@ -124,21 +124,6 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         plt.figure()
         plt.plot(freqs[:len(freqs)//2], espectro_db[:len(espectro_db)//2])
         plt.title(f"Espectro de Fourier - {dataset_periodicity(dataset_name)}")
-        plt.xlabel('Frecuencia (Hz)')
-        plt.ylabel('Potencia (dB)')
-
-        # Find top 5 peaks in the Fourier spectrum
-        peaks, _ = find_peaks(espectro_db[:len(espectro_db)//2], height=None, distance=5, prominence=10)
-        top_5_peaks = sorted(peaks, key=lambda x: espectro_db[x], reverse=True)[:5]
-        top_5_peaks_values = espectro_db[top_5_peaks] if len(top_5_peaks) > 0 else 'E'
-
-        # Calculate periodicity for top 5 frequency peaks
-        periodicity = dataset_periodicity(ruta_archivo_csv.name)
-        peak_periods = [1 / (freq * periodicity) if freq != 0 else 'E' for freq in freqs[top_5_peaks]] if len(top_5_peaks) > 0 else 'E'
-
-        # Mark the top 5 peaks on the Fourier plot
-        if top_5_peaks != 'E':
-            plt.plot(freqs[top_5_peaks], espectro_db[top_5_peaks], "x")
         plt.savefig(f"output/{dataset_periodicity(dataset_name)}_fourier_spectrum.png")
 
         # Autocorrelation
