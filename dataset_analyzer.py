@@ -62,9 +62,12 @@ def descargar_y_procesar_datasets():
 
 def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
     try:
+        # Determinar la periodicidad del dataset a partir del nombre del archivo
+        periodicidad = "1min" if "1minute" in str(ruta_archivo_csv).lower() else "15min" if "15min" in str(ruta_archivo_csv).lower() else "1h" if "1h" in str(ruta_archivo_csv).lower() else "1d"
+        
         # Cargar el archivo CSV usando pandas
         try:
-            data = pd.read_csv(ruta_archivo_csv)
+            data = pd.read_csv(ruta_archivo_csv, skiprows=3)  # Saltar las primeras tres filas
         except Exception as e:
             print(f"[ERROR] Error al cargar el archivo CSV: {e}")
             return None
@@ -78,9 +81,18 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
             print("[ERROR] El archivo CSV debe tener al menos dos columnas: fecha y una columna de datos.")
             return None
         
-        # Extraer la fecha y eliminar la primera fila (que asumimos que es el encabezado)
-        data = data.iloc[1:]  # Ignorar la primera fila, que es el encabezado
+        # Eliminar espacios de los encabezados y convertir todas las columnas excepto la primera a datos numéricos
         data.columns = data.columns.str.strip()  # Eliminar espacios del encabezado
+        for columna in data.columns[1:]:
+            data[columna] = pd.to_numeric(data[columna], errors='coerce')
+        
+        # Eliminar filas con valores NaN después de la conversión
+        data.dropna(inplace=True)
+        
+        # Validar que todavía hay suficientes filas después de la limpieza
+        if data.shape[0] < 2:
+            print("[ERROR] No hay suficientes datos para el análisis después de la limpieza de valores nulos.")
+            return None
         
         # Extraer las columnas excepto la fecha
         columnas = data.columns[1:]
@@ -95,10 +107,8 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
             try:
                 print(f"[INFO] Analizando columna: {columna}")  # Mensaje de información
                 
-                # Convertir a datos numéricos y eliminar valores nulos
-                serie = pd.to_numeric(data[columna], errors='coerce').dropna()
-                
                 # Validar que la serie tiene datos suficientes para el análisis
+                serie = data[columna]
                 if len(serie) < 2:
                     print(f"[ERROR] La columna '{columna}' no tiene suficientes datos para el análisis.")
                     continue
@@ -125,11 +135,11 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                 # Análisis de autocorrelación (Manual usando pandas)
                 plt.figure(figsize=(12, 6))
                 pd.plotting.autocorrelation_plot(serie)
-                plt.title(f'Función de Autocorrelación (ACF) - {columna}')
+                plt.title(f'{periodicidad} - Función de Autocorrelación (ACF) - {columna}')
                 plt.xlabel('Lags')
                 plt.ylabel('Autocorrelación')
                 plt.grid(True)
-                plt.savefig(f'output/{columna}_acf_plot.png')
+                plt.savefig(f'output/{periodicidad}_{columna}_acf_plot.png')
                 plt.close()
                 
                 # Entropía espectral
@@ -162,10 +172,12 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                     mejor_columna = columna
                 
                 # Visualización de la columna
-                analizar_tendencia_estacionalidad_residuos(serie, columna, save_path=f'output/{columna}_trend.png')
-                analizar_distribucion(serie, retornos, columna, save_path=f'output/{columna}_distribution.png')
-                analizar_fourier(serie, columna, save_path=f'output/{columna}_fourier.png')
+                analizar_tendencia_estacionalidad_residuos(serie, columna, periodicidad, save_path=f'output/{periodicidad}_{columna}_trend.png')
+                analizar_distribucion(serie, retornos, columna, periodicidad, save_path=f'output/{periodicidad}_{columna}_distribution.png')
+                analizar_fourier(serie, columna, periodicidad, save_path=f'output/{periodicidad}_{columna}_fourier.png')
                 
+            except ValueError as ve:
+                print(f"[ERROR] {ve}")
             except Exception as e:
                 print(f"[ERROR] Error al analizar la columna '{columna}': {e}")  # Mensaje de error para la columna
         
@@ -196,12 +208,12 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
 
 # Funciones auxiliares para visualización y análisis
 
-def analizar_tendencia_estacionalidad_residuos(serie, columna, save_path):
+def analizar_tendencia_estacionalidad_residuos(serie, columna, periodicidad, save_path):
     try:
         # Graficar la tendencia y residuos de la serie
         plt.figure(figsize=(10, 6))
         plt.plot(serie, label='Serie Temporal')
-        plt.title(f'Tendencia, Estacionalidad y Residuos - {columna}')
+        plt.title(f'{periodicidad} - Tendencia, Estacionalidad y Residuos - {columna}')
         plt.xlabel('Tiempo')
         plt.ylabel('Valor')
         plt.legend()
@@ -211,12 +223,12 @@ def analizar_tendencia_estacionalidad_residuos(serie, columna, save_path):
     except Exception as e:
         print(f"[ERROR] Error al graficar tendencia, estacionalidad y residuos para '{columna}': {e}")
 
-def analizar_distribucion(serie, retornos, columna, save_path):
+def analizar_distribucion(serie, retornos, columna, periodicidad, save_path):
     try:
         # Graficar distribución de la serie
         plt.figure(figsize=(10, 6))
         sns.histplot(serie, kde=True)
-        plt.title(f'Distribución de {columna}')
+        plt.title(f'{periodicidad} - Distribución de {columna}')
         plt.xlabel('Valor')
         plt.ylabel('Frecuencia')
         plt.grid(True)
@@ -226,7 +238,7 @@ def analizar_distribucion(serie, retornos, columna, save_path):
         # Graficar distribución de retornos
         plt.figure(figsize=(10, 6))
         sns.histplot(retornos, kde=True)
-        plt.title(f'Distribución de Retornos - {columna}')
+        plt.title(f'{periodicidad} - Distribución de Retornos - {columna}')
         plt.xlabel('Retorno')
         plt.ylabel('Frecuencia')
         plt.grid(True)
@@ -235,7 +247,7 @@ def analizar_distribucion(serie, retornos, columna, save_path):
     except Exception as e:
         print(f"[ERROR] Error al graficar distribución para '{columna}': {e}")
 
-def analizar_fourier(serie, columna, save_path):
+def analizar_fourier(serie, columna, periodicidad, save_path):
     try:
         # Realizar la Transformada de Fourier a la serie
         espectro = np.abs(fft(serie))
@@ -249,7 +261,7 @@ def analizar_fourier(serie, columna, save_path):
         plt.figure(figsize=(10, 6))
         plt.plot(frecuencias, espectro)
         plt.scatter(frecuencias[picos_principales], espectro[picos_principales], color='red')
-        plt.title(f'Espectro de Fourier - {columna}')
+        plt.title(f'{periodicidad} - Espectro de Fourier - {columna}')
         plt.xlabel('Frecuencia')
         plt.ylabel('Potencia')
         plt.grid(True)
