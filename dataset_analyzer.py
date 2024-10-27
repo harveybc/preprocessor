@@ -53,7 +53,7 @@ def descargar_y_procesar_datasets():
     print("\n*********************************************")
     print("Resumen de uso:")
     for resumen in resumen_general:
-        print(f"Dataset {resumen['periodicidad']}: mejor para {resumen['mejor_uso']}")
+        print(f"Dataset {resumen['periodicidad']}: mejor para {resumen['mejor_uso']} porque tiene calificación de trading ({resumen['calificaciones']['Trading']:.2f}), calificación de portafolio ({resumen['calificaciones']['Portafolio']:.2f}) y calificación de predicción ({resumen['calificaciones']['Predicción']:.2f})")
     print("\nTotal de datasets analizados:")
     for resumen in resumen_general:
         print(f"{resumen['periodicidad']} = {resumen['filas']} filas")
@@ -112,96 +112,81 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         
         # Proceed with further analysis (placeholder for additional steps)
         # Fourier Transform and other analysis steps
-        columnas = data.columns
-        mejor_columna = None
-        mejor_snr = -np.inf
-        resultados = {}
-        calificaciones = {"Trading": -np.inf, "Predicción": -np.inf, "Portafolio": -np.inf}
+        # Use only column 4 (counting from 0)
+        if data.shape[1] < 4:
+            print("[ERROR] No hay suficientes columnas para realizar el análisis de la columna 4.")
+            return None
+        serie = data.iloc[:, 3]
+        
+        # Validate that the series has enough data points
+        if len(serie) < 2:
+            print("[ERROR] La columna seleccionada no tiene suficientes datos para el análisis.")
+            return None
 
-        for i, columna in enumerate(columnas):
-            try:
-                print(f"[INFO] Analizando columna {i + 1}")
-                serie = data[columna]
-                if len(serie) < 2:
-                    print(f"[ERROR] La columna {i + 1} no tiene suficientes datos para el análisis.")
-                    continue
+        # Calculate statistics
+        media = serie.mean()
+        desviacion = serie.std()
+        snr = (media / desviacion) ** 2 if desviacion != 0 else np.nan
+        ruido_normalizado = 1 / snr if snr != 0 else np.nan
+        desviacion_ruido = np.sqrt(ruido_normalizado) * desviacion if ruido_normalizado != 0 else np.nan
+        amplitud_promedio = desviacion_ruido * np.sqrt(2 / np.pi) if ruido_normalizado != 0 else np.nan
+        retornos = serie.diff().abs().dropna()
+        promedio_retornos = retornos.mean()
 
-                # Calculate statistics
-                media = serie.mean()
-                desviacion = serie.std()
-                snr = (media / desviacion) ** 2 if desviacion != 0 else np.nan
-                ruido_normalizado = 1 / snr if snr != 0 else np.nan
-                desviacion_ruido = np.sqrt(ruido_normalizado) * desviacion if ruido_normalizado != 0 else np.nan
-                amplitud_promedio = desviacion_ruido * np.sqrt(2 / np.pi) if ruido_normalizado != 0 else np.nan
-                retornos = serie.diff().abs().dropna()
-                promedio_retornos = retornos.mean()
-
-                # Perform Fourier Transform
-                espectro = np.abs(np.fft.fft(serie))
-                frecuencias = np.fft.fftfreq(len(serie))
-                picos, _ = find_peaks(espectro)
-                potencias_picos = espectro[picos]
-                indices_ordenados = np.argsort(potencias_picos)[-5:][::-1]
-                picos_principales = frecuencias[picos][indices_ordenados]
-                potencias_principales = potencias_picos[indices_ordenados]
-                
-                # Store results
-                resultados[columna] = {
-                    "media": media,
-                    "desviacion_std": desviacion,
-                    "SNR": snr,
-                    "ruido_normalizado": ruido_normalizado,
-                    "desviacion_ruido": desviacion_ruido,
-                    "amplitud_promedio": amplitud_promedio,
-                    "promedio_retornos": promedio_retornos,
-                    "frecuencias_picos": picos_principales,
-                    "potencia_picos": potencias_principales
-                }
-                
-                # Select the best column based on SNR
-                if snr > mejor_snr:
-                    mejor_snr = snr
-                    mejor_columna = columna
-                
-                # Update scenario scores
-                if snr > calificaciones["Trading"]:
-                    calificaciones["Trading"] = snr
-                if media > calificaciones["Predicción"]:
-                    calificaciones["Predicción"] = media
-                if desviacion < calificaciones["Portafolio"]:
-                    calificaciones["Portafolio"] = desviacion
-                
-                # Plot Fourier Spectrum for the best column
-                if mejor_columna == columna:
-                    plt.figure(figsize=(10, 6))
-                    plt.plot(frecuencias, espectro)
-                    plt.title(f"Espectro de Fourier para la mejor columna - Dataset {periodicidad}")
-                    plt.xlabel("Frecuencia")
-                    plt.ylabel("Potencia")
-                    plt.grid(True)
-                    plt.savefig(f"output/espectro_fourier_{periodicidad}_col{i + 1}.png")
-                    plt.close()
-
-                    # Decompose the series into trend, seasonal, and residual components
-                    descomposicion = sm.tsa.seasonal_decompose(serie, model='additive', period=30)
-                    descomposicion.plot()
-                    plt.savefig(f"output/descomposicion_{periodicidad}_col{i + 1}.png")
-                    plt.close()
-            
-            except Exception as e:
-                print(f"[ERROR] Error al analizar la columna {i + 1}: {e}")
+        # Perform Fourier Transform
+        espectro = np.abs(np.fft.fft(serie))
+        frecuencias = np.fft.fftfreq(len(serie))
+        picos, _ = find_peaks(espectro)
+        potencias_picos = espectro[picos]
+        indices_ordenados = np.argsort(potencias_picos)[-5:][::-1]
+        picos_principales = frecuencias[picos][indices_ordenados]
+        potencias_principales = potencias_picos[indices_ordenados]
+        
+        # Store results
+        resultados = {
+            "media": media,
+            "desviacion_std": desviacion,
+            "SNR": snr,
+            "ruido_normalizado": ruido_normalizado,
+            "desviacion_ruido": desviacion_ruido,
+            "amplitud_promedio": amplitud_promedio,
+            "promedio_retornos": promedio_retornos,
+            "frecuencias_picos": picos_principales,
+            "potencia_picos": potencias_principales
+        }
 
         # Print summary statistics for each dataset
         print("*********************************************")
         print(f"Estadísticas para dataset {periodicidad}:")
-        for columna, stats in resultados.items():
-            print(f"Columna: {columna}")
-            for key, value in stats.items():
-                if isinstance(value, np.ndarray):
-                    print(f"  {key}: {value[:5]}... (truncado)")  # Print only first 5 elements if array
-                else:
-                    print(f"  {key}: {value}")
+        for key, value in resultados.items():
+            if isinstance(value, np.ndarray):
+                print(f"  {key}: {value[:5]}... (truncado)")  # Print only first 5 elements if array
+            else:
+                print(f"  {key}: {value}")
         print("*********************************************")
+
+        # Plot Fourier Spectrum for the column
+        plt.figure(figsize=(10, 6))
+        plt.plot(frecuencias, espectro)
+        plt.title(f"Espectro de Fourier para la columna 4 - Dataset {periodicidad}")
+        plt.xlabel("Frecuencia")
+        plt.ylabel("Potencia")
+        plt.grid(True)
+        plt.savefig(f"output/espectro_fourier_{periodicidad}_col4.png")
+        plt.close()
+
+        # Decompose the series into trend, seasonal, and residual components
+        descomposicion = sm.tsa.seasonal_decompose(serie, model='additive', period=30)
+        descomposicion.plot()
+        plt.savefig(f"output/descomposicion_{periodicidad}_col4.png")
+        plt.close()
+
+        # Scenario scores
+        calificaciones = {
+            "Trading": snr,
+            "Predicción": media,
+            "Portafolio": -desviacion  # Lower deviation is better for portfolio balancing
+        }
 
         # Determine best use case for dataset based on the highest score in each scenario
         mejor_uso = max(calificaciones, key=calificaciones.get)
@@ -209,10 +194,11 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         # Return summary for general use
         return {
             "periodicidad": periodicidad,
-            "mejor_columna": mejor_columna,
-            "mejor_snr": mejor_snr,
+            "mejor_columna": 4,  # Fixed column selection
+            "mejor_snr": snr,
             "mejor_uso": mejor_uso,
-            "filas": data.shape[0]
+            "filas": data.shape[0],
+            "calificaciones": calificaciones
         }
 
     except FileNotFoundError:
