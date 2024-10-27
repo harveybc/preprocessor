@@ -58,9 +58,9 @@ def descargar_y_procesar_datasets():
 # Function to analyze CSV file
 def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
     try:
-        # Load CSV without headers
+        # Load CSV
         print(f"[DEBUG] Cargando el archivo CSV desde la ruta: {ruta_archivo_csv}")
-        data = pd.read_csv(ruta_archivo_csv, header=None, skiprows=3)
+        data = pd.read_csv(ruta_archivo_csv, skiprows=3)
 
         # Limit rows if specified
         if limite_filas is not None and len(data) > limite_filas:
@@ -70,22 +70,25 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         # Drop the first column (assumed to be date)
         data.drop(data.columns[0], axis=1, inplace=True)
 
-        # Ensure there are enough columns for analysis
+        # Convert all columns to numeric
+        for columna in data.columns:
+            data[columna] = pd.to_numeric(data[columna], errors='coerce')
+
+        # Drop rows with NaN values
+        data.dropna(inplace=True)
+        print(f"[DEBUG] Datos después de eliminar filas con NaN: {data.shape}")
+
+        # Ensure there are enough rows after cleaning
+        if data.shape[0] < 2:
+            print("[ERROR] No hay suficientes datos para el análisis después de la limpieza de valores nulos.")
+            return None
+
+        # Analyze only the fourth column (index 3)
         if len(data.columns) < 4:
             print("[ERROR] No hay suficientes columnas para el análisis.")
             return None
 
-        # Convert the fourth column to numeric
-        serie = pd.to_numeric(data.iloc[:, 3], errors='coerce')
-
-        # Drop NaN values from the series
-        serie.dropna(inplace=True)
-        print(f"[DEBUG] Serie después de eliminar NaN: {serie.shape}")
-
-        # Ensure there are enough rows after cleaning
-        if len(serie) < 2:
-            print("[ERROR] No hay suficientes datos para el análisis después de la limpieza de valores nulos.")
-            return None
+        serie = data.iloc[:, 3]
 
         # Calculate statistics
         media = serie.mean()
@@ -113,9 +116,6 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         peaks, _ = find_peaks(espectro)
         peak_freqs = freqs[peaks][:5]
         peak_powers = espectro[peaks][:5]
-
-        # Autocorrelation analysis
-        autocorr_1 = serie.autocorr(lag=1)
 
         # Seasonal decomposition
         decomposition = sm.tsa.seasonal_decompose(serie, period=int(len(serie) / 2), model='additive')
@@ -155,7 +155,6 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
             "hurst_exponent": hurst_exponent,
             "dfa": dfa,
             "promedio_retornos": promedio_retornos,
-            "autocorr_1": autocorr_1
         }
         return resumen_dataset
 
@@ -180,7 +179,6 @@ def generar_tabla_resumen(resumen_general):
         print(f"  Hurst Exponent: {resumen['hurst_exponent']}")
         print(f"  DFA: {resumen['dfa']}")
         print(f"  Promedio de retornos: {resumen['promedio_retornos']}")
-        print(f"  Autocorrelación (lag 1): {resumen['autocorr_1']}")
         print(f"  Frecuencias de los 5 picos principales: {resumen['peak_freqs']}")
         print(f"  Potencias de los 5 picos principales: {resumen['peak_powers']}")
         print("*********************************************")
