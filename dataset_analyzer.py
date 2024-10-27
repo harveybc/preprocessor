@@ -112,11 +112,10 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
 
         # Decompose time series into trend, seasonal, and residual components
         decomposition = sm.tsa.seasonal_decompose(serie, model='additive', period=30)
-        periodicity = dataset_periodicity(dataset_name)
         plt.figure()
         decomposition.plot()
-        plt.suptitle(f"Trend, Seasonality, and Residuals - {periodicity}")
-        plt.savefig(f"output/{periodicity}_decomposition.png")
+        plt.suptitle(f"Trend, Seasonality, and Residuals - {ruta_archivo_csv.name}")
+        plt.savefig(f"output/{dataset_name.split('-')[0]}_decomposition.png")
 
         # Fourier analysis
         espectro = np.abs(fft(serie))
@@ -124,7 +123,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         freqs = np.fft.fftfreq(len(espectro_db))
         plt.figure()
         plt.plot(freqs[:len(freqs)//2], espectro_db[:len(espectro_db)//2])
-        plt.title(f"Espectro de Fourier - {periodicity}")
+        plt.title(f"Espectro de Fourier - {ruta_archivo_csv.name}")
         plt.xlabel('Frecuencia (Hz)')
         plt.ylabel('Potencia (dB)')
 
@@ -134,12 +133,13 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         top_5_peaks_values = espectro_db[top_5_peaks] if len(top_5_peaks) > 0 else 'E'
 
         # Calculate periodicity for top 5 frequency peaks
+        periodicity = dataset_periodicity(ruta_archivo_csv.name)
         peak_periods = [1 / (freq * periodicity) if freq != 0 else 'E' for freq in freqs[top_5_peaks]] if len(top_5_peaks) > 0 else 'E'
 
         # Mark the top 5 peaks on the Fourier plot
         if top_5_peaks != 'E':
             plt.plot(freqs[top_5_peaks], espectro_db[top_5_peaks], "x")
-        plt.savefig(f"output/{periodicity}_fourier_spectrum.png")
+        plt.savefig(f"output/{dataset_name.split('-')[0]}_fourier_spectrum.png")
 
         # Autocorrelation
         autocorrelacion = [serie.autocorr(lag) for lag in range(1, 11)] if not serie.empty else 'E'
@@ -147,12 +147,12 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         # Plot autocorrelation
         plt.figure()
         pd.plotting.autocorrelation_plot(serie)
-        plt.title(f"Autocorrelación - {periodicity}")
-        plt.savefig(f"output/{periodicity}_autocorrelation.png")
+        plt.title(f"Autocorrelación - {ruta_archivo_csv.name}")
+        plt.savefig(f"output/{dataset_name.split('-')[0]}_autocorrelation.png")
 
         # Prepare the summary for this dataset
         resumen = {
-            "dataset": periodicity,
+            "dataset": str(ruta_archivo_csv),
             "media": media,
             "desviacion": desviacion,
             "snr": snr,
@@ -169,7 +169,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
     except Exception as e:
         print(f"[ERROR] Ocurrió un error inesperado: {e}")
         return {
-            "dataset": dataset_periodicity(ruta_archivo_csv.name),
+            "dataset": str(ruta_archivo_csv),
             "media": 'E',
             "desviacion": 'E',
             "snr": 'E',
@@ -184,14 +184,14 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
 # Function to get the periodicity of the dataset
 def dataset_periodicity(dataset_name):
     periodicity_dict = {
-        'eurusd-foreign-exchange-fx-intraday-1minute.csv': '1min',  # 1min data
-        'eurusd-forex-pair-15min-2002-2019.csv': '5min',  # 5min data
-        'EURUSD.csv': '15min',  # 15min data
-        'eur-usd-forex-pair-historical-data-2002-2019.csv': '1h',  # 1h data
-        'eurusd-forex-trading-data-20032021.csv': '4h',  # 4h data
-        'eur-usd-historical-daily-data-test.csv': 'daily'  # Daily data
+        'eurusd-foreign-exchange-fx-intraday-1minute.csv': 1,  # 1min data
+        'eurusd-forex-pair-15min-2002-2019.csv': 5,  # 5min data
+        'EURUSD.csv': 15,  # 15min data
+        'eur-usd-forex-pair-historical-data-2002-2019.csv': 60,  # 1h data
+        'eurusd-forex-trading-data-20032021.csv': 240,  # 4h data
+        'eur-usd-historical-daily-data-test.csv': 1440  # Daily data
     }
-    return periodicity_dict.get(dataset_name, 'unknown')  # Default to 'unknown' if not found
+    return periodicity_dict.get(dataset_name, 1)  # Default to 1 if not found
 
 # Function to generate summary CSV
 def generar_csv_resumen(resumen_general):
