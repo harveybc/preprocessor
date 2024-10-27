@@ -98,9 +98,9 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
             print("[ERROR] No hay suficientes datos para el análisis después de la limpieza de valores nulos.")
             return None
         
-        # Asegurarse de que las columnas no tengan nombres duplicados
+        # Asegurarse de que las columnas no tengan nombres duplicados manualmente
         print(f"[DEBUG] Asegurándose de que no haya nombres duplicados en las columnas.")
-        data.columns = pd.io.common._maybe_dedup_names(data.columns)
+        data.columns = pd.io.parsers.ParserBase({'names': data.columns})._maybe_dedup_names(data.columns)
         
         # Extraer las columnas excepto la fecha
         columnas = data.columns[1:]
@@ -150,7 +150,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                 plt.xlabel('Lags')
                 plt.ylabel('Autocorrelación')
                 plt.grid(True)
-                plt.savefig(f'output/{periodicidad}_{columna}_acf_plot.png')
+                plt.savefig(f'output/{periodicidad}_acf_plot_{columna}.png')
                 plt.close()
                 
                 # Entropía espectral
@@ -184,9 +184,9 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                 
                 # Visualización de la columna
                 print(f"[DEBUG] Realizando visualizaciones para la columna: {columna}")
-                analizar_tendencia_estacionalidad_residuos(serie, columna, periodicidad, save_path=f'output/{periodicidad}_{columna}_trend.png')
-                analizar_distribucion(serie, retornos, columna, periodicidad, save_path=f'output/{periodicidad}_{columna}_distribution.png')
-                analizar_fourier(serie, columna, periodicidad, save_path=f'output/{periodicidad}_{columna}_fourier.png')
+                analizar_tendencia_estacionalidad_residuos(serie, columna, periodicidad, save_path=f'output/{periodicidad}_trend_{columna}.png')
+                analizar_distribucion(serie, retornos, columna, periodicidad, save_path=f'output/{periodicidad}_distribution_{columna}.png')
+                analizar_fourier(serie, columna, periodicidad, save_path=f'output/{periodicidad}_fourier_{columna}.png')
                 
             except ValueError as ve:
                 print(f"[ERROR] {ve}")
@@ -197,12 +197,12 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         calificaciones = evaluar_dataset(resultados)
         
         # Generar resumen en una tabla
-        generar_resumen(resultados, ruta_archivo_csv)
+        generar_resumen(resultados, periodicidad)
         
         # Resumen del dataset para la mejor columna
         if mejor_columna:
             resumen_dataset = {
-                "dataset": Path(ruta_archivo_csv).stem,
+                "dataset": periodicidad,
                 "mejor_columna": mejor_columna,
                 "mejor_snr": mejor_snr,
                 "calificaciones": calificaciones
@@ -316,9 +316,9 @@ def evaluar_dataset(resultados):
         print(f"  [TRADING AUTOMÁTICO]: {trading_automatico}")
     return calificaciones
 
-def generar_resumen(resultados, ruta_archivo_csv):
+def generar_resumen(resultados, periodicidad):
     resumen = pd.DataFrame(resultados).T
-    resumen_path = f"output/resumen_{Path(ruta_archivo_csv).stem}.csv"
+    resumen_path = f"output/resumen_{periodicidad}.csv"
     resumen.to_csv(resumen_path)
     print(f"[INFO] Resumen generado y guardado en: {resumen_path}")
 
