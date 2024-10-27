@@ -5,6 +5,7 @@ import warnings
 import kagglehub
 import os
 from pathlib import Path
+from scipy.signal import find_peaks
 
 # Configuration to ignore numpy/pandas warnings that do not affect processing
 warnings.filterwarnings("ignore")
