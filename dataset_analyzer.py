@@ -94,6 +94,9 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
             print("[ERROR] No hay suficientes datos para el análisis después de la limpieza de valores nulos.")
             return None
         
+        # Asegurarse de que las columnas no tengan nombres duplicados
+        data.columns = pd.io.parsers.ParserBase({'names': data.columns})._maybe_dedup_names(data.columns)
+        
         # Extraer las columnas excepto la fecha
         columnas = data.columns[1:]
         
