@@ -62,6 +62,9 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         print(f"[DEBUG] Cargando el archivo CSV desde la ruta: {ruta_archivo_csv}")
         data = pd.read_csv(ruta_archivo_csv, header=None, skiprows=1, index_col=False)
 
+        # Debug the initial dataset load
+        print(f"[DEBUG] Primeras 10 filas del dataset cargado:\n{data.head(10)}")
+
         # Limit rows if specified
         if limite_filas is not None and len(data) > limite_filas:
             data = data.tail(limite_filas)
@@ -69,6 +72,9 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
 
         # Drop the first column (assumed to be date)
         data.drop(data.columns[0], axis=1, inplace=True)
+
+        # Debug after dropping the date column
+        print(f"[DEBUG] Dataset después de eliminar la columna de fecha:\n{data.head(10)}")
 
         # Ensure there are enough columns for analysis
         if len(data.columns) < 4:
