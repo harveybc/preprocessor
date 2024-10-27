@@ -9,16 +9,46 @@ from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 import pywt
 import nolds
 import warnings
+import kagglehub
 
 # Configuración para ignorar advertencias de numpy/pandas que no afectan el procesamiento
 warnings.filterwarnings("ignore")
 
+# Definir la función para descargar y cargar los últimos 4500 datos de cada dataset
+
+def descargar_y_procesar_datasets():
+    datasets = [
+        "jkalamar/eurusd-foreign-exchange-fx-intraday-1minute",
+        "stijnvanleeuwen/eurusd-forex-pair-15min-2002-2019",
+        "meehau/EURUSD",
+        "imetomi/eur-usd-forex-pair-historical-data-2002-2019",
+        "rsalaschile/forex-eurusd-dataset",
+        "gabrielmv/eurusd-daily-historical-data-20012019"
+    ]
+    
+    for dataset in datasets:
+        path = kagglehub.dataset_download(dataset)
+        print("Path to dataset files:", path)
+        # Aquí asumimos que el dataset tiene un archivo CSV principal
+        csv_files = [file for file in path.glob('**/*.csv')]
+        if csv_files:
+            analizar_archivo_csv(csv_files[0], 4500)
+        else:
+            print(f"[ERROR] No se encontró archivo CSV en el dataset {dataset}")
+
 # Definir la función principal que analizará el archivo CSV
-def analizar_archivo_csv(ruta_archivo_csv):
+# Ahora también acepta un parámetro de límite de filas
+
+def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
     try:
         # Cargar el archivo CSV usando pandas
         data = pd.read_csv(ruta_archivo_csv)
         print(f"[DEBUG] Tamaño del DataFrame original: {data.shape}")  # Debug: Tamaño inicial del archivo
+        
+        # Limitar los datos a las últimas 'limite_filas' si se especifica
+        if limite_filas is not None and len(data) > limite_filas:
+            data = data.tail(limite_filas)
+            print(f"[DEBUG] Tamaño del DataFrame después de limitar a {limite_filas} filas: {data.shape}")
         
         # Validar que el archivo tiene al menos dos columnas (fecha y datos)
         if data.shape[1] < 2:
@@ -210,12 +240,4 @@ def evaluar_dataset(resultados):
             print("  [TRADING AUTOMÁTICO]: Baja coherencia en frecuencias de corto plazo, menos adecuado para trading.")
 
 # Ejemplo de uso del programa
-if __name__ == "__main__":
-    ruta_archivo = 'ruta_al_archivo.csv'  # Cambiar por la ruta del archivo CSV
-    resultados = analizar_archivo_csv(ruta_archivo)
-    if resultados:
-        print("\n[RESULTADOS FINALES]")
-        for columna, stats in resultados.items():
-            print(f"\nColumna: {columna}")
-            for key, value in stats.items():
-                print(f"  {key}: {value}")
+descargar_y_procesar_datasets()
