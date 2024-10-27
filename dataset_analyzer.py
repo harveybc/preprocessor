@@ -70,25 +70,22 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         # Drop the first column (assumed to be date)
         data.drop(data.columns[0], axis=1, inplace=True)
 
-        # Convert all columns to numeric
-        for columna in data.columns:
-            data[columna] = pd.to_numeric(data[columna], errors='coerce')
-
-        # Drop rows with NaN values
-        data.dropna(inplace=True)
-        print(f"[DEBUG] Datos después de eliminar filas con NaN: {data.shape}")
-
-        # Ensure there are enough rows after cleaning
-        if data.shape[0] < 2:
-            print("[ERROR] No hay suficientes datos para el análisis después de la limpieza de valores nulos.")
-            return None
-
-        # Analyze only the fourth column (index 3)
+        # Ensure there are enough columns for analysis
         if len(data.columns) < 4:
             print("[ERROR] No hay suficientes columnas para el análisis.")
             return None
 
-        serie = data.iloc[:, 3]
+        # Convert the fourth column to numeric
+        serie = pd.to_numeric(data.iloc[:, 3], errors='coerce')
+
+        # Drop NaN values from the series
+        serie.dropna(inplace=True)
+        print(f"[DEBUG] Serie después de eliminar NaN: {serie.shape}")
+
+        # Ensure there are enough rows after cleaning
+        if len(serie) < 2:
+            print("[ERROR] No hay suficientes datos para el análisis después de la limpieza de valores nulos.")
+            return None
 
         # Calculate statistics
         media = serie.mean()
