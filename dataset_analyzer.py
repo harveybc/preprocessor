@@ -55,6 +55,10 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         # Leer archivo CSV sin encabezados y tomando solo datos numéricos
         data = pd.read_csv(ruta_archivo_csv, header=None, skiprows=3)
 
+        # Imprimir las primeras 10 filas para verificar el contenido
+        print("Primeras 10 filas del dataset antes del procesamiento:")
+        print(data.head(10))
+
         if limite_filas is not None and len(data) > limite_filas:
             data = data.tail(limite_filas)
 
