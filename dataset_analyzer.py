@@ -60,7 +60,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
     try:
         # Load CSV without headers
         print(f"[DEBUG] Cargando el archivo CSV desde la ruta: {ruta_archivo_csv}")
-        data = pd.read_csv(ruta_archivo_csv, header=None, skiprows=3, index_col=False)
+        data = pd.read_csv(ruta_archivo_csv, header=None, skiprows=1, index_col=False)
 
         # Limit rows if specified
         if limite_filas is not None and len(data) > limite_filas:
@@ -111,8 +111,9 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         # Find peaks in Fourier spectrum
         freqs = np.fft.fftfreq(len(serie))
         peaks, _ = find_peaks(espectro)
-        peak_freqs = freqs[peaks][:5]
-        peak_powers = espectro[peaks][:5]
+        peak_indices = np.argsort(espectro[peaks])[-5:][::-1]
+        peak_freqs = freqs[peaks][peak_indices]
+        peak_powers = espectro[peaks][peak_indices]
 
         # Autocorrelation analysis
         autocorr_1 = serie.autocorr(lag=1)
