@@ -26,4 +26,5 @@ nolds
 kagglehub
 matplotlib
 pandas
+pillow
 #
