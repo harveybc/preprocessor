@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
 from scipy.fft import fft
+from scipy.signal import find_peaks
 import warnings
 import kagglehub
 import os
@@ -95,6 +96,8 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         desviacion = serie.std() if not serie.empty else 'E'
         snr = (media / desviacion) ** 2 if desviacion != 0 else 'E'
         promedio_retornos = serie.diff().abs().mean() if not serie.empty else 'E'
+        desviacion_error_normalizado = np.sqrt(1/snr) if snr != 'E' and snr != 0 else 'E'
+        media_error_normalizado = (desviacion_error_normalizado * (np.sqrt(2/np.pi))) if desviacion_error_normalizado != 'E' else 'E'
 
         # Decompose time series into trend, seasonal, and residual components
         decomposition = sm.tsa.seasonal_decompose(serie, model='additive', period=30)
@@ -105,10 +108,32 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
 
         # Fourier analysis
         espectro = np.abs(fft(serie))
+        espectro_db = 20 * np.log10(espectro + 1e-10)  # Adding small value to avoid log(0)
+        freqs = np.fft.fftfreq(len(espectro_db))
         plt.figure()
-        plt.plot(espectro[:len(espectro)//2])
+        plt.plot(freqs[:len(freqs)//2], espectro_db[:len(espectro_db)//2])
         plt.title(f"Espectro de Fourier - {ruta_archivo_csv.name}")
+        plt.xlabel('Frecuencia (Hz)')
+        plt.ylabel('Potencia (dB)')
+
+        # Find top 5 peaks in the Fourier spectrum
+        peaks, _ = find_peaks(espectro_db[:len(espectro_db)//2], height=None, distance=5, prominence=10)
+        top_5_peaks = sorted(peaks, key=lambda x: espectro_db[x], reverse=True)[:5]
+        top_5_peaks_values = espectro_db[top_5_peaks] if len(top_5_peaks) > 0 else 'E'
+
+        # Mark the top 5 peaks on the Fourier plot
+        if top_5_peaks != 'E':
+            plt.plot(freqs[top_5_peaks], espectro_db[top_5_peaks], "x")
         plt.savefig(f"output/{ruta_archivo_csv.stem}_fourier_spectrum.png")
+
+        # Autocorrelation
+        autocorrelacion = [serie.autocorr(lag) for lag in range(1, 11)] if not serie.empty else 'E'
+
+        # Plot autocorrelation
+        plt.figure()
+        pd.plotting.autocorrelation_plot(serie)
+        plt.title(f"Autocorrelación - {ruta_archivo_csv.name}")
+        plt.savefig(f"output/{ruta_archivo_csv.stem}_autocorrelation.png")
 
         # Prepare the summary for this dataset
         resumen = {
@@ -116,7 +141,11 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
             "media": media,
             "desviacion": desviacion,
             "snr": snr,
-            "promedio_retornos": promedio_retornos
+            "promedio_retornos": promedio_retornos,
+            "desviacion_error_normalizado": desviacion_error_normalizado,
+            "media_error_normalizado": media_error_normalizado,
+            "autocorrelacion": autocorrelacion,
+            "top_5_peaks_values": top_5_peaks_values
         }
 
         return resumen
@@ -128,7 +157,11 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
             "media": 'E',
             "desviacion": 'E',
             "snr": 'E',
-            "promedio_retornos": 'E'
+            "promedio_retornos": 'E',
+            "desviacion_error_normalizado": 'E',
+            "media_error_normalizado": 'E',
+            "autocorrelacion": 'E',
+            "top_5_peaks_values": 'E'
         }
 
 # Function to generate summary CSV
@@ -146,6 +179,10 @@ def generar_tabla_resumen(resumen_general):
         print(f"  Desviación estándar: {resumen['desviacion']}")
         print(f"  SNR: {resumen['snr']}")
         print(f"  Promedio de retornos: {resumen['promedio_retornos']}")
+        print(f"  Desviación del error normalizado: {resumen['desviacion_error_normalizado']}")
+        print(f"  Media del error normalizado: {resumen['media_error_normalizado']}")
+        print(f"  Autocorrelación (lags 1-10): {resumen['autocorrelacion']}")
+        print(f"  Top 5 picos del espectro de Fourier (dB): {resumen['top_5_peaks_values']}")
         print("*********************************************")
 
 # Execute the script
