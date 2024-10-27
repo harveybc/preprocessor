@@ -116,6 +116,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         mejor_columna = None
         mejor_snr = -np.inf
         resultados = {}
+        calificaciones = {"Trading": -np.inf, "Predicción": -np.inf, "Portafolio": -np.inf}
 
         for i, columna in enumerate(columnas):
             try:
@@ -162,6 +163,14 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                     mejor_snr = snr
                     mejor_columna = columna
                 
+                # Update scenario scores
+                if snr > calificaciones["Trading"]:
+                    calificaciones["Trading"] = snr
+                if media > calificaciones["Predicción"]:
+                    calificaciones["Predicción"] = media
+                if desviacion < calificaciones["Portafolio"]:
+                    calificaciones["Portafolio"] = desviacion
+                
                 # Plot Fourier Spectrum for the best column
                 if mejor_columna == columna:
                     plt.figure(figsize=(10, 6))
@@ -194,13 +203,8 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                     print(f"  {key}: {value}")
         print("*********************************************")
 
-        # Determine best use case for dataset based on SNR and other metrics
-        if mejor_snr > 10:
-            mejor_uso = "Trading"
-        elif mejor_snr > 5:
-            mejor_uso = "Predicción"
-        else:
-            mejor_uso = "Portafolio"
+        # Determine best use case for dataset based on the highest score in each scenario
+        mejor_uso = max(calificaciones, key=calificaciones.get)
         
         # Return summary for general use
         return {
