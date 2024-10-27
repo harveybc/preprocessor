@@ -111,18 +111,33 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         desviacion = serie.std()
         snr = (media / desviacion) ** 2 if desviacion != 0 else np.nan
 
+        # Debug statistics
+        print(f"[DEBUG] Media calculada: {media}")
+        print(f"[DEBUG] Desviación calculada: {desviacion}")
+        print(f"[DEBUG] SNR calculado: {snr}")
+
         # Calculate returns
         retornos = serie.diff().abs().dropna()
         promedio_retornos = retornos.mean()
+
+        # Debug returns
+        print(f"[DEBUG] Promedio de retornos: {promedio_retornos}")
 
         # Additional analysis
         hurst_exponent = nolds.hurst_rs(serie)
         dfa = nolds.dfa(serie)
 
+        # Debug nolds analysis
+        print(f"[DEBUG] Hurst exponent calculado: {hurst_exponent}")
+        print(f"[DEBUG] DFA calculado: {dfa}")
+
         # Fourier analysis
         espectro = np.abs(fft(serie))
         espectro_normalizado = espectro / espectro.sum()
         entropia_espectral = -np.sum(espectro_normalizado * np.log2(espectro_normalizado + 1e-10))
+
+        # Debug Fourier analysis
+        print(f"[DEBUG] Entropía espectral calculada: {entropia_espectral}")
 
         # Find peaks in Fourier spectrum
         freqs = np.fft.fftfreq(len(serie))
