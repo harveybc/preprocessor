@@ -52,15 +52,13 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
     try:
         periodicidad = "1min" if "1minute" in str(ruta_archivo_csv).lower() else "15min" if "15min" in str(ruta_archivo_csv).lower() else "1h" if "1h" in str(ruta_archivo_csv).lower() else "1d"
         
-        data = pd.read_csv(ruta_archivo_csv, skiprows=3)
+        # Leer archivo CSV ignorando encabezados y tomando solo datos numéricos
+        data = pd.read_csv(ruta_archivo_csv, header=None, skiprows=3)
 
         if limite_filas is not None and len(data) > limite_filas:
             data = data.tail(limite_filas)
 
-        if data.shape[1] < 2:
-            return None
-
-        # Eliminar la primera columna (fecha) y convertir el resto a numérico
+        # Eliminar la primera columna (asumida como fecha) y convertir el resto a numérico
         data = data.iloc[:, 1:]
         data = data.apply(pd.to_numeric, errors='coerce')
         data.dropna(axis=1, how='any', inplace=True)
