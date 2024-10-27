@@ -117,9 +117,9 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         # Calculate statistics
         print(f"[DEBUG] LABEL: Calculating statistics for series")
         print(f"[DEBUG] Calculando estadísticas para la serie...")
-        media = serie.mean()
-        desviacion = serie.std()
-        snr = (media / desviacion) ** 2 if desviacion != 0 else np.nan
+        media = serie.mean() if not serie.empty else 'E'
+        desviacion = serie.std() if not serie.empty else 'E'
+        snr = (media / desviacion) ** 2 if desviacion != 0 else 'E'
 
         # Debug statistics
         print(f"[DEBUG] Media calculada: {media}")
@@ -129,7 +129,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         # Calculate returns
         print(f"[DEBUG] LABEL: Calculating returns")
         retornos = serie.diff().abs().dropna()
-        promedio_retornos = retornos.mean()
+        promedio_retornos = retornos.mean() if not retornos.empty else 'E'
 
         # Debug returns
         print(f"[DEBUG] Promedio de retornos: {promedio_retornos}")
@@ -137,28 +137,28 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         # Additional analysis
         print(f"[DEBUG] LABEL: Calculating Hurst exponent")
         print(f"[DEBUG] Calculando Hurst exponent...")
-        hurst_exponent = nolds.hurst_rs(serie)
+        hurst_exponent = nolds.hurst_rs(serie) if len(serie) > 10 else 'E'
         print(f"[DEBUG] Hurst exponent calculado: {hurst_exponent}")
 
         print(f"[DEBUG] LABEL: Calculating DFA")
         print(f"[DEBUG] Calculando DFA...")
-        dfa = nolds.dfa(serie)
+        dfa = nolds.dfa(serie) if len(serie) > 10 else 'E'
         print(f"[DEBUG] DFA calculado: {dfa}")
 
         # Fourier analysis
         print(f"[DEBUG] LABEL: Calculating Fourier spectrum")
         print(f"[DEBUG] Calculando espectro de Fourier...")
-        espectro = np.abs(fft(serie))
+        espectro = np.abs(fft(serie)) if not serie.empty else np.array(['E'])
 
         # Debug Fourier spectrum before normalization
         print(f"[DEBUG] Espectro de Fourier (sin normalizar): {espectro[:10]}")
 
-        espectro_normalizado = espectro / espectro.sum()
+        espectro_normalizado = espectro / espectro.sum() if espectro.sum() != 0 else espectro
 
         # Debug normalized Fourier spectrum
         print(f"[DEBUG] Espectro de Fourier (normalizado): {espectro_normalizado[:10]}")
 
-        entropia_espectral = -np.sum(espectro_normalizado * np.log2(espectro_normalizado + 1e-10))
+        entropia_espectral = -np.sum(espectro_normalizado * np.log2(espectro_normalizado + 1e-10)) if not serie.empty else 'E'
 
         # Debug Fourier analysis
         print(f"[DEBUG] Entropía espectral calculada: {entropia_espectral}")
@@ -187,7 +187,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
 
         except IndexError as ie:
             print(f"[ERROR] Error durante el análisis de picos del espectro de Fourier: {ie}")
-            peak_freqs = [np.nan] * 5
+            peak_freqs = ['E'] * 5
 
         # Debug Fourier peaks
         print(f"[DEBUG] Picos principales del espectro de Fourier: {peak_freqs}")
@@ -202,11 +202,11 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
             "dfa": dfa,
             "promedio_retornos": promedio_retornos,
             "entropia_espectral": entropia_espectral,
-            "pico_frecuencia 1": peak_freqs[0] if len(peak_freqs) > 0 else np.nan,
-            "pico_frecuencia 2": peak_freqs[1] if len(peak_freqs) > 1 else np.nan,
-            "pico_frecuencia 3": peak_freqs[2] if len(peak_freqs) > 2 else np.nan,
-            "pico_frecuencia 4": peak_freqs[3] if len(peak_freqs) > 3 else np.nan,
-            "pico_frecuencia 5": peak_freqs[4] if len(peak_freqs) > 4 else np.nan,
+            "pico_frecuencia 1": peak_freqs[0] if len(peak_freqs) > 0 else 'E',
+            "pico_frecuencia 2": peak_freqs[1] if len(peak_freqs) > 1 else 'E',
+            "pico_frecuencia 3": peak_freqs[2] if len(peak_freqs) > 2 else 'E',
+            "pico_frecuencia 4": peak_freqs[3] if len(peak_freqs) > 3 else 'E',
+            "pico_frecuencia 5": peak_freqs[4] if len(peak_freqs) > 4 else 'E',
         }
 
         return resumen
@@ -214,7 +214,21 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
     except Exception as e:
         print(f"[ERROR] Ocurrió un error inesperado: {e}")
         print(f"[DEBUG] Contexto del error: Dataset - {ruta_archivo_csv}, Serie - {serie if 'serie' in locals() else 'No definida'}")
-        return None
+        return {
+            "dataset": str(ruta_archivo_csv),
+            "media": 'E',
+            "desviacion": 'E',
+            "snr": 'E',
+            "hurst_exponent": 'E',
+            "dfa": 'E',
+            "promedio_retornos": 'E',
+            "entropia_espectral": 'E',
+            "pico_frecuencia 1": 'E',
+            "pico_frecuencia 2": 'E',
+            "pico_frecuencia 3": 'E',
+            "pico_frecuencia 4": 'E',
+            "pico_frecuencia 5": 'E',
+        }
 
 # Function to generate summary CSV
 def generar_csv_resumen(resumen_general):
