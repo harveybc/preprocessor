@@ -124,14 +124,16 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         print(f"[DEBUG] Promedio de retornos: {promedio_retornos}")
 
         # Additional analysis
+        print(f"[DEBUG] Calculando Hurst exponent...")
         hurst_exponent = nolds.hurst_rs(serie)
-        dfa = nolds.dfa(serie)
-
-        # Debug nolds analysis
         print(f"[DEBUG] Hurst exponent calculado: {hurst_exponent}")
+
+        print(f"[DEBUG] Calculando DFA...")
+        dfa = nolds.dfa(serie)
         print(f"[DEBUG] DFA calculado: {dfa}")
 
         # Fourier analysis
+        print(f"[DEBUG] Calculando espectro de Fourier...")
         espectro = np.abs(fft(serie))
         espectro_normalizado = espectro / espectro.sum()
         entropia_espectral = -np.sum(espectro_normalizado * np.log2(espectro_normalizado + 1e-10))
@@ -141,6 +143,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
 
         # Find peaks in Fourier spectrum
         try:
+            print(f"[DEBUG] Buscando picos en el espectro de Fourier...")
             freqs = np.fft.fftfreq(len(serie))
             peaks, _ = find_peaks(espectro)
             if len(peaks) == 0:
@@ -156,6 +159,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         print(f"[DEBUG] Picos principales del espectro de Fourier: {peak_freqs}")
 
         # Autocorrelation analysis
+        print(f"[DEBUG] Calculando autocorrelación (lag 1)...")
         autocorr_1 = serie.autocorr(lag=1)
         print(f"[DEBUG] Autocorrelación (lag 1): {autocorr_1}")
 
