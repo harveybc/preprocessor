@@ -67,23 +67,28 @@ def descargar_y_procesar_datasets():
 # Function to analyze CSV file
 def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
     try:
+        print(f"[DEBUG] LABEL: Loading CSV file")
         # Load CSV without headers
         print(f"[DEBUG] Cargando el archivo CSV desde la ruta: {ruta_archivo_csv}")
         data = pd.read_csv(ruta_archivo_csv, header=None, skiprows=1, index_col=False)
 
         # Debug the initial dataset load
+        print(f"[DEBUG] LABEL: Initial dataset load")
         print(f"[DEBUG] Primeras 10 filas del dataset cargado:\n{data.head(10)}")
 
         # Limit rows if specified
         if limite_filas is not None and len(data) > limite_filas:
+            print(f"[DEBUG] LABEL: Limiting dataset rows")
             data = data.tail(limite_filas)
             print(f"[DEBUG] Limitando los datos a las últimas {limite_filas} filas.")
 
         # Drop the first column (assumed to be date)
+        print(f"[DEBUG] LABEL: Dropping date column")
         print(f"[DEBUG] Columnas antes de eliminar la columna de fecha: {data.columns}")
         data.drop(data.columns[0], axis=1, inplace=True)
 
         # Debug after dropping the date column
+        print(f"[DEBUG] LABEL: Dataset after dropping date column")
         print(f"[DEBUG] Dataset después de eliminar la columna de fecha:\n{data.head(10)}")
 
         # Ensure there are enough columns for analysis
@@ -92,10 +97,12 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
             return None
 
         # Convert the fourth column to numeric
+        print(f"[DEBUG] LABEL: Converting fourth column to numeric")
         print(f"[DEBUG] Valores antes de convertir la cuarta columna a numérico:\n{data.iloc[:, 3].head(10)}")
         serie = pd.to_numeric(data.iloc[:, 3], errors='coerce')
 
         # Drop NaN values from the series
+        print(f"[DEBUG] LABEL: Dropping NaN values from series")
         print(f"[DEBUG] Serie antes de eliminar NaN: {serie.shape}")
         serie.dropna(inplace=True)
         print(f"[DEBUG] Serie después de eliminar NaN: {serie.shape}")
@@ -106,6 +113,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
             return None
 
         # Calculate statistics
+        print(f"[DEBUG] LABEL: Calculating statistics for series")
         print(f"[DEBUG] Calculando estadísticas para la serie...")
         media = serie.mean()
         desviacion = serie.std()
@@ -117,6 +125,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         print(f"[DEBUG] SNR calculado: {snr}")
 
         # Calculate returns
+        print(f"[DEBUG] LABEL: Calculating returns")
         retornos = serie.diff().abs().dropna()
         promedio_retornos = retornos.mean()
 
@@ -124,15 +133,18 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         print(f"[DEBUG] Promedio de retornos: {promedio_retornos}")
 
         # Additional analysis
+        print(f"[DEBUG] LABEL: Calculating Hurst exponent")
         print(f"[DEBUG] Calculando Hurst exponent...")
         hurst_exponent = nolds.hurst_rs(serie)
         print(f"[DEBUG] Hurst exponent calculado: {hurst_exponent}")
 
+        print(f"[DEBUG] LABEL: Calculating DFA")
         print(f"[DEBUG] Calculando DFA...")
         dfa = nolds.dfa(serie)
         print(f"[DEBUG] DFA calculado: {dfa}")
 
         # Fourier analysis
+        print(f"[DEBUG] LABEL: Calculating Fourier spectrum")
         print(f"[DEBUG] Calculando espectro de Fourier...")
         espectro = np.abs(fft(serie))
 
@@ -150,6 +162,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         print(f"[DEBUG] Entropía espectral calculada: {entropia_espectral}")
 
         # Find peaks in Fourier spectrum
+        print(f"[DEBUG] LABEL: Finding peaks in Fourier spectrum")
         try:
             print(f"[DEBUG] Buscando picos en el espectro de Fourier...")
             freqs = np.fft.fftfreq(len(serie))
