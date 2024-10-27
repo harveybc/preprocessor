@@ -26,22 +26,22 @@ def descargar_y_procesar_datasets():
     print("[INFO] Iniciando la descarga y procesamiento de los datasets...")
     datasets = [
         # 1min data
-        "jkalamar/eurusd-foreign-exchange-fx-intraday-1minute",
+        ("jkalamar/eurusd-foreign-exchange-fx-intraday-1minute", "1min"),
         # 5min data
-        "stijnvanleeuwen/eurusd-forex-pair-15min-2002-2019",
+        ("stijnvanleeuwen/eurusd-forex-pair-15min-2002-2019", "5min"),
         # 15min data
-        "meehau/EURUSD",
+        ("meehau/EURUSD", "15min"),
         # 1 hour data
-        "imetomi/eur-usd-forex-pair-historical-data-2002-2019",
+        ("imetomi/eur-usd-forex-pair-historical-data-2002-2019", "1h"),
         # 4 hour data
-        "chandrimad31/eurusd-forex-trading-data-20032021",
+        ("chandrimad31/eurusd-forex-trading-data-20032021", "4h"),
         # Daily data
-        "gabrielmv/eurusd-daily-historical-data-20012019"
+        ("gabrielmv/eurusd-daily-historical-data-20012019", "daily")
     ]
 
     resumen_general = []
 
-    for dataset in datasets:
+    for dataset, periodicity in datasets:
         try:
             print(f"[INFO] Descargando dataset: {dataset}")
             path = kagglehub.dataset_download(dataset)
@@ -56,7 +56,7 @@ def descargar_y_procesar_datasets():
             csv_files = [file for file in path.glob('**/*.csv')]
             if csv_files:
                 print(f"[INFO] Analizando el archivo CSV: {csv_files[0]}")
-                resumen_dataset = analizar_archivo_csv(csv_files[0], 4500)
+                resumen_dataset = analizar_archivo_csv(csv_files[0], 4500, periodicity)
                 if resumen_dataset is not None:
                     resumen_general.append(resumen_dataset)
             else:
@@ -72,7 +72,7 @@ def descargar_y_procesar_datasets():
         print("[INFO] No se generó ningún resumen general debido a errores en el procesamiento de los datasets.")
 
 # Function to analyze CSV file
-def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
+def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None, periodicity="unknown"):
     try:
         # Load CSV without headers
         data = pd.read_csv(ruta_archivo_csv, header=None, skiprows=1, index_col=False)
@@ -106,37 +106,36 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         media = serie.mean() if not serie.empty else 'E'
         desviacion = serie.std() if not serie.empty else 'E'
         snr = (media / desviacion) ** 2 if desviacion != 0 else 'E'
-        potencia_error = 1 / snr if snr != 'E' and snr != 0 else 'E'
-        desviacion_error = np.sqrt(potencia_error) if potencia_error != 'E' else 'E'
-        media_error = (desviacion_error * (np.sqrt(2/np.pi))) if desviacion_error != 'E' else 'E'
         promedio_retornos = serie.diff().abs().mean() if not serie.empty else 'E'
+        desviacion_error_normalizado = np.sqrt(1/snr) if snr != 'E' and snr != 0 else 'E'
+        media_error_normalizado = (desviacion_error_normalizado * (np.sqrt(2/np.pi))) if desviacion_error_normalizado != 'E' else 'E'
 
         # Decompose time series into trend, seasonal, and residual components
         decomposition = sm.tsa.seasonal_decompose(serie, model='additive', period=30)
         plt.figure()
         decomposition.plot()
-        plt.suptitle(f"Trend, Seasonality, and Residuals - {get_periodicity_name(dataset_name)}")
-        plt.savefig(f"output/{get_periodicity_name(dataset_name)}_decomposition.png")
+        plt.suptitle(f"Trend, Seasonality, and Residuals - {periodicity}")
+        plt.savefig(f"output/{periodicity}_decomposition.png")
 
-        # Fourier analysis (Log-scaled for better peak visibility)
+        # Fourier analysis
         espectro = np.abs(fft(serie))
-        espectro_db = 10 * np.log10(espectro + 1e-10)  # Using 10*log10 for log scaling and better peak perception
+        espectro_db = 20 * np.log10(espectro + 1e-10)  # Adding small value to avoid log(0)
         freqs = np.fft.fftfreq(len(espectro_db))
         plt.figure()
         plt.plot(freqs[:len(freqs)//2], espectro_db[:len(espectro_db)//2])
-        plt.title(f"Espectro de Fourier - {get_periodicity_name(dataset_name)}")
+        plt.title(f"Espectro de Fourier - {periodicity}")
         plt.xlabel('Frecuencia (Hz)')
         plt.ylabel('Potencia (dB)')
 
         # Find top 5 peaks in the Fourier spectrum
         peaks, _ = find_peaks(espectro_db[:len(espectro_db)//2], height=None, distance=5, prominence=10)
         top_5_peaks = sorted(peaks, key=lambda x: espectro_db[x], reverse=True)[:5]
-        top_5_peak_freqs = freqs[top_5_peaks] if len(top_5_peaks) > 0 else 'E'
+        top_5_peaks_values = espectro_db[top_5_peaks] if len(top_5_peaks) > 0 else 'E'
 
         # Mark the top 5 peaks on the Fourier plot
         if top_5_peaks != 'E':
             plt.plot(freqs[top_5_peaks], espectro_db[top_5_peaks], "x")
-        plt.savefig(f"output/{get_periodicity_name(dataset_name)}_fourier_spectrum.png")
+        plt.savefig(f"output/{periodicity}_fourier_spectrum.png")
 
         # Autocorrelation
         autocorrelacion = [serie.autocorr(lag) for lag in range(1, 11)] if not serie.empty else 'E'
@@ -144,8 +143,8 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         # Plot autocorrelation
         plt.figure()
         pd.plotting.autocorrelation_plot(serie)
-        plt.title(f"Autocorrelación - {get_periodicity_name(dataset_name)}")
-        plt.savefig(f"output/{get_periodicity_name(dataset_name)}_autocorrelation.png")
+        plt.title(f"Autocorrelación - {periodicity}")
+        plt.savefig(f"output/{periodicity}_autocorrelation.png")
 
         # Prepare the summary for this dataset
         resumen = {
@@ -153,12 +152,11 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
             "media": media,
             "desviacion": desviacion,
             "snr": snr,
-            "potencia_error": potencia_error,
-            "desviacion_error": desviacion_error,
-            "media_error": media_error,
             "promedio_retornos": promedio_retornos,
+            "desviacion_error_normalizado": desviacion_error_normalizado,
+            "media_error_normalizado": media_error_normalizado,
             "autocorrelacion": autocorrelacion,
-            "top_5_peak_freqs": top_5_peak_freqs
+            "top_5_peaks_values": top_5_peaks_values
         }
 
         return resumen
@@ -170,25 +168,12 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
             "media": 'E',
             "desviacion": 'E',
             "snr": 'E',
-            "potencia_error": 'E',
-            "desviacion_error": 'E',
-            "media_error": 'E',
             "promedio_retornos": 'E',
+            "desviacion_error_normalizado": 'E',
+            "media_error_normalizado": 'E',
             "autocorrelacion": 'E',
-            "top_5_peak_freqs": 'E'
+            "top_5_peaks_values": 'E'
         }
-
-# Function to get the periodicity name for the dataset
-def get_periodicity_name(dataset_name):
-    periodicity_dict = {
-        'eurusd-foreign-exchange-fx-intraday-1minute.csv': '1min',  # 1min data
-        'eurusd-forex-pair-15min-2002-2019.csv': '5min',  # 5min data
-        'EURUSD.csv': '15min',  # 15min data
-        'eur-usd-forex-pair-historical-data-2002-2019.csv': '1h',  # 1h data
-        'eurusd-forex-trading-data-20032021.csv': '4h',  # 4h data
-        'eur-usd-historical-daily-data-test.csv': 'daily'  # Daily data
-    }
-    return periodicity_dict.get(dataset_name, 'unknown')  # Default to 'unknown' if not found
 
 # Function to generate summary CSV
 def generar_csv_resumen(resumen_general):
@@ -197,19 +182,18 @@ def generar_csv_resumen(resumen_general):
     print("[INFO] Resumen general generado y guardado en: output/resumen_general.csv")
 
 # Function to generate summary table
-def generar_tabla_resumen(resumen_general):
+def generar_tabla_resumen(resumen_general):  
     print("\n*********************************************")
     for resumen in resumen_general:
-        print(f"Estadísticas para dataset {get_periodicity_name(Path(resumen['dataset']).name)}:")
+        print(f"Estadísticas para dataset {resumen['dataset']}:")
         print(f"  Media: {resumen['media']}")
         print(f"  Desviación estándar: {resumen['desviacion']}")
         print(f"  SNR: {resumen['snr']}")
-        print(f"  Potencia del Error (PE): {resumen['potencia_error']}")
-        print(f"  Desviación del Error (DE): {resumen['desviacion_error']}")
-        print(f"  Media del Error: {resumen['media_error']}")
         print(f"  Promedio de retornos: {resumen['promedio_retornos']}")
+        print(f"  Desviación del error normalizado: {resumen['desviacion_error_normalizado']}")
+        print(f"  Media del error normalizado: {resumen['media_error_normalizado']}")
         print(f"  Autocorrelación (lags 1-10): {resumen['autocorrelacion']}")
-        print(f"  Frecuencias de los top 5 picos del espectro de Fourier: {resumen['top_5_peak_freqs']}")
+        print(f"  Top 5 picos del espectro de Fourier (dB): {resumen['top_5_peaks_values']}")
         print("*********************************************")
 
 # Execute the script
