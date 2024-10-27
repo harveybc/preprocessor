@@ -22,4 +22,6 @@ pdoc3
 boruta
 statsmodels
 PyWavelets
+nolds
+kagglehub
 #

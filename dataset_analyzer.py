@@ -9,6 +9,7 @@ import pywt
 import nolds
 import warnings
 import kagglehub
+import os
 
 # Configuración para ignorar advertencias de numpy/pandas que no afectan el procesamiento
 warnings.filterwarnings("ignore")
@@ -16,6 +17,7 @@ warnings.filterwarnings("ignore")
 # Definir la función para descargar y cargar los últimos 4500 datos de cada dataset
 
 def descargar_y_procesar_datasets():
+    print("[INFO] Iniciando la descarga y procesamiento de los datasets...")  # Agregar mensaje de inicio
     datasets = [
         "jkalamar/eurusd-foreign-exchange-fx-intraday-1minute",
         "stijnvanleeuwen/eurusd-forex-pair-15min-2002-2019",
@@ -26,14 +28,24 @@ def descargar_y_procesar_datasets():
     ]
     
     for dataset in datasets:
-        path = kagglehub.dataset_download(dataset)
-        print("Path to dataset files:", path)
-        # Aquí asumimos que el dataset tiene un archivo CSV principal
-        csv_files = [file for file in path.glob('**/*.csv')]
-        if csv_files:
-            analizar_archivo_csv(csv_files[0], 4500)
-        else:
-            print(f"[ERROR] No se encontró archivo CSV en el dataset {dataset}")
+        try:
+            print(f"[INFO] Descargando dataset: {dataset}")  # Mensaje de descarga
+            path = kagglehub.dataset_download(dataset)
+            print("Path to dataset files:", path)
+            # Verificar si la descarga fue exitosa
+            if not os.path.exists(path):
+                print(f"[ERROR] La ruta de descarga no existe: {path}")
+                continue
+            
+            # Aquí asumimos que el dataset tiene un archivo CSV principal
+            csv_files = [file for file in path.glob('**/*.csv')]
+            if csv_files:
+                print(f"[INFO] Analizando el archivo CSV: {csv_files[0]}")
+                analizar_archivo_csv(csv_files[0], 4500)
+            else:
+                print(f"[ERROR] No se encontró archivo CSV en el dataset {dataset}")
+        except Exception as e:
+            print(f"[ERROR] Error durante la descarga o procesamiento del dataset {dataset}: {e}")
 
 # Definir la función principal que analizará el archivo CSV
 # Ahora también acepta un parámetro de límite de filas
@@ -41,8 +53,12 @@ def descargar_y_procesar_datasets():
 def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
     try:
         # Cargar el archivo CSV usando pandas
-        data = pd.read_csv(ruta_archivo_csv)
-        print(f"[DEBUG] Tamaño del DataFrame original: {data.shape}")  # Debug: Tamaño inicial del archivo
+        try:
+            data = pd.read_csv(ruta_archivo_csv)
+            print(f"[DEBUG] Tamaño del DataFrame original: {data.shape}")  # Debug: Tamaño inicial del archivo
+        except Exception as e:
+            print(f"[ERROR] Error al cargar el archivo CSV: {e}")
+            return
         
         # Limitar los datos a las últimas 'limite_filas' si se especifica
         if limite_filas is not None and len(data) > limite_filas:
@@ -51,7 +67,8 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         
         # Validar que el archivo tiene al menos dos columnas (fecha y datos)
         if data.shape[1] < 2:
-            raise ValueError("El archivo CSV debe tener al menos dos columnas: fecha y una columna de datos.")
+            print("[ERROR] El archivo CSV debe tener al menos dos columnas: fecha y una columna de datos.")
+            return
         
         # Extraer la fecha y eliminar la primera fila (que asumimos que es el encabezado)
         data = data.iloc[1:]  # Ignorar la primera fila, que es el encabezado
@@ -67,7 +84,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         # Iterar sobre cada columna para analizarla
         for columna in columnas:
             try:
-                print(f"[DEBUG] Analizando columna: {columna}")  # Debug: Nombre de la columna actual
+                print(f"[INFO] Analizando columna: {columna}")  # Debug: Nombre de la columna actual
                 
                 # Convertir a datos numéricos y eliminar valores nulos
                 serie = pd.to_numeric(data[columna], errors='coerce').dropna()
@@ -75,7 +92,8 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                 
                 # Validar que la serie tiene datos suficientes para el análisis
                 if len(serie) < 2:
-                    raise ValueError(f"La columna '{columna}' no tiene suficientes datos para el análisis.")
+                    print(f"[ERROR] La columna '{columna}' no tiene suficientes datos para el análisis.")
+                    continue
                 
                 # Calcular estadísticas
                 media = serie.mean()
@@ -103,7 +121,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                 plt.xlabel('Lags')
                 plt.ylabel('Autocorrelación')
                 plt.grid(True)
-                plt.show()
+                plt.show(block=True)
                 
                 # Entropía espectral
                 espectro = np.abs(fft(serie))
@@ -161,7 +179,7 @@ def analizar_tendencia_estacionalidad_residuos(serie, columna):
         plt.ylabel('Valor')
         plt.legend()
         plt.grid(True)
-        plt.show()
+        plt.show(block=True)
     except Exception as e:
         print(f"[ERROR] Error al graficar tendencia, estacionalidad y residuos para '{columna}': {e}")
 
@@ -174,7 +192,7 @@ def analizar_distribucion(serie, retornos, columna):
         plt.xlabel('Valor')
         plt.ylabel('Frecuencia')
         plt.grid(True)
-        plt.show()
+        plt.show(block=True)
         
         # Graficar distribución de retornos
         plt.figure(figsize=(10, 6))
@@ -183,7 +201,7 @@ def analizar_distribucion(serie, retornos, columna):
         plt.xlabel('Retorno')
         plt.ylabel('Frecuencia')
         plt.grid(True)
-        plt.show()
+        plt.show(block=True)
     except Exception as e:
         print(f"[ERROR] Error al graficar distribución para '{columna}': {e}")
 
@@ -205,7 +223,7 @@ def analizar_fourier(serie, columna):
         plt.xlabel('Frecuencia')
         plt.ylabel('Potencia')
         plt.grid(True)
-        plt.show()
+        plt.show(block=True)
         
         # Mostrar las frecuencias de los picos principales
         print(f"Principales frecuencias para {columna}:")
@@ -242,4 +260,5 @@ def evaluar_dataset(resultados):
         else:
             print("  [TRADING AUTOMÁTICO]: Baja coherencia en frecuencias de corto plazo, menos adecuado para trading.")
 
-
+# Ejemplo de uso del programa
+descargar_y_procesar_datasets()
