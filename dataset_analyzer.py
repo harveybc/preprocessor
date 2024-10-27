@@ -24,15 +24,14 @@ def descargar_y_procesar_datasets():
         "stijnvanleeuwen/eurusd-forex-pair-15min-2002-2019",
         "meehau/EURUSD",
         "imetomi/eur-usd-forex-pair-historical-data-2002-2019",
-        "rsalaschile/forex-eurusd-dataset",
         "gabrielmv/eurusd-daily-historical-data-20012019"
     ]
     
+    resumen_general = []
     for dataset in datasets:
         try:
             print(f"[INFO] Descargando dataset: {dataset}")  # Mensaje de descarga
             path = kagglehub.dataset_download(dataset)
-            print("[DEBUG] Path to dataset files:", path)
             
             # Convertir path en un objeto Path si es necesario
             path = Path(path)
@@ -44,14 +43,19 @@ def descargar_y_procesar_datasets():
             
             # Aquí asumimos que el dataset tiene un archivo CSV principal
             csv_files = [file for file in path.glob('**/*.csv')]
-            print(f"[DEBUG] Archivos CSV encontrados: {csv_files}")  # Agregar chequeo para archivos CSV
             if csv_files:
                 print(f"[INFO] Analizando el archivo CSV: {csv_files[0]}")
-                analizar_archivo_csv(csv_files[0], 4500)
+                resumen_dataset = analizar_archivo_csv(csv_files[0], 4500)
+                if resumen_dataset is not None:
+                    resumen_general.append(resumen_dataset)
             else:
                 print(f"[ERROR] No se encontró archivo CSV en el dataset {dataset}")
         except Exception as e:
             print(f"[ERROR] Error durante la descarga o procesamiento del dataset {dataset}: {e}")
+    
+    # Generar tabla resumen de todos los datasets
+    if resumen_general:
+        generar_tabla_resumen(resumen_general)
 
 # Definir la función principal que analizará el archivo CSV
 # Ahora también acepta un parámetro de límite de filas
@@ -61,40 +65,38 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         # Cargar el archivo CSV usando pandas
         try:
             data = pd.read_csv(ruta_archivo_csv)
-            print(f"[DEBUG] Tamaño del DataFrame original: {data.shape}")  # Debug: Tamaño inicial del archivo
         except Exception as e:
             print(f"[ERROR] Error al cargar el archivo CSV: {e}")
-            return
+            return None
         
         # Limitar los datos a las últimas 'limite_filas' si se especifica
         if limite_filas is not None and len(data) > limite_filas:
             data = data.tail(limite_filas)
-            print(f"[DEBUG] Tamaño del DataFrame después de limitar a {limite_filas} filas: {data.shape}")
         
         # Validar que el archivo tiene al menos dos columnas (fecha y datos)
         if data.shape[1] < 2:
             print("[ERROR] El archivo CSV debe tener al menos dos columnas: fecha y una columna de datos.")
-            return
+            return None
         
         # Extraer la fecha y eliminar la primera fila (que asumimos que es el encabezado)
         data = data.iloc[1:]  # Ignorar la primera fila, que es el encabezado
         data.columns = data.columns.str.strip()  # Eliminar espacios del encabezado
-        print(f"[DEBUG] Tamaño del DataFrame sin la primera fila: {data.shape}")  # Debug: Tamaño tras eliminar la primera fila
         
         # Extraer las columnas excepto la fecha
         columnas = data.columns[1:]
         
         # Diccionario para almacenar resultados de cada columna
         resultados = {}
+        mejor_columna = None
+        mejor_snr = -np.inf
         
         # Iterar sobre cada columna para analizarla
         for columna in columnas:
             try:
-                print(f"[INFO] Analizando columna: {columna}")  # Debug: Nombre de la columna actual
+                print(f"[INFO] Analizando columna: {columna}")  # Mensaje de información
                 
                 # Convertir a datos numéricos y eliminar valores nulos
                 serie = pd.to_numeric(data[columna], errors='coerce').dropna()
-                print(f"[DEBUG] Tamaño de la serie sin nulos para columna '{columna}': {len(serie)}")  # Debug: Tamaño de la serie
                 
                 # Validar que la serie tiene datos suficientes para el análisis
                 if len(serie) < 2:
@@ -108,21 +110,17 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                 ruido_normalizado = 1 / snr if snr != 0 else np.nan
                 desviacion_ruido = np.sqrt(ruido_normalizado) * desviacion if ruido_normalizado != 0 else np.nan
                 amplitud_promedio = desviacion_ruido * np.sqrt(2 / np.pi) if ruido_normalizado != 0 else np.nan
-                print(f"[DEBUG] Estadísticas calculadas para '{columna}': Media={media}, Desviación={desviacion}, SNR={snr}")
                 
                 # Cálculo de retornos
                 retornos = serie.diff().abs().dropna()
                 promedio_retornos = retornos.mean()
-                print(f"[DEBUG] Promedio de retornos para '{columna}': {promedio_retornos}")
                 
                 # Análisis adicional
                 # Exponente de Hurst
                 hurst_exponent = nolds.hurst_rs(serie)
-                print(f"[DEBUG] Exponente de Hurst para '{columna}': {hurst_exponent}")
                 
                 # Detrended Fluctuation Analysis (DFA)
                 dfa = nolds.dfa(serie)
-                print(f"[DEBUG] DFA para '{columna}': {dfa}")
                 
                 # Análisis de autocorrelación (Manual usando pandas)
                 plt.figure(figsize=(12, 6))
@@ -138,12 +136,10 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                 espectro = np.abs(fft(serie))
                 espectro_normalizado = espectro / espectro.sum()
                 entropia_espectral = -np.sum(espectro_normalizado * np.log2(espectro_normalizado + 1e-10))
-                print(f"[DEBUG] Entropía espectral para '{columna}': {entropia_espectral}")
                 
                 # Análisis de coherencia Wavelet
                 coeficientes, _ = pywt.cwt(serie, scales=np.arange(1, 128), wavelet='morl')
                 potencia_wavelet = np.sum(np.abs(coeficientes) ** 2, axis=1)
-                print(f"[DEBUG] Potencia wavelet para '{columna}': {potencia_wavelet.mean()}")
                 
                 # Almacenar resultados en el diccionario
                 resultados[columna] = {
@@ -160,21 +156,35 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                     "potencia_wavelet": potencia_wavelet
                 }
                 
+                # Seleccionar la mejor columna para predicción (con mayor SNR)
+                if snr > mejor_snr:
+                    mejor_snr = snr
+                    mejor_columna = columna
+                
                 # Visualización de la columna
                 analizar_tendencia_estacionalidad_residuos(serie, columna, save_path=f'output/{columna}_trend.png')
                 analizar_distribucion(serie, retornos, columna, save_path=f'output/{columna}_distribution.png')
                 analizar_fourier(serie, columna, save_path=f'output/{columna}_fourier.png')
                 
             except Exception as e:
-                print(f"[ERROR] Error al analizar la columna '{columna}': {e}")  # Debug: Mensaje de error para la columna
+                print(f"[ERROR] Error al analizar la columna '{columna}': {e}")  # Mensaje de error para la columna
         
         # Evaluar la calidad del dataset para cada escenario
-        evaluar_dataset(resultados)
+        calificaciones = evaluar_dataset(resultados)
         
         # Generar resumen en una tabla
         generar_resumen(resultados, ruta_archivo_csv)
         
-        return resultados
+        # Resumen del dataset para la mejor columna
+        if mejor_columna:
+            resumen_dataset = {
+                "dataset": Path(ruta_archivo_csv).stem,
+                "mejor_columna": mejor_columna,
+                "mejor_snr": mejor_snr,
+                "calificaciones": calificaciones
+            }
+            return resumen_dataset
+        return None
     
     except FileNotFoundError:
         print("[ERROR] El archivo especificado no se encontró. Por favor verifique la ruta.")
@@ -182,6 +192,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         print("[ERROR] El archivo CSV está vacío.")
     except Exception as e:
         print(f"[ERROR] Ocurrió un error inesperado: {e}")
+    return None
 
 # Funciones auxiliares para visualización y análisis
 
@@ -253,6 +264,7 @@ def analizar_fourier(serie, columna, save_path):
         print(f"[ERROR] Error en el análisis de Fourier para '{columna}': {e}")
 
 def evaluar_dataset(resultados):
+    calificaciones = {}
     print("\n[CALIFICACIÓN DEL DATASET]")
     for columna, stats in resultados.items():
         print(f"\nColumna: {columna}")
@@ -265,26 +277,33 @@ def evaluar_dataset(resultados):
         print(f"  Potencia Wavelet: {stats['potencia_wavelet']}")
         
         # Criterios de evaluación para cada escenario
-        if stats['SNR'] > 10 and stats['hurst_exponent'] > 0.5:
-            print("  [PREDICCIÓN DE TENDENCIAS]: Alta calidad para predicción de tendencias.")
-        else:
-            print("  [PREDICCIÓN DE TENDENCIAS]: Baja calidad para predicción de tendencias.")
+        prediccion_tendencias = "Alta calidad" if stats['SNR'] > 10 and stats['hurst_exponent'] > 0.5 else "Baja calidad"
+        balanceo_portafolios = "Adecuada" if stats['dfa'] < 1.5 else "No adecuada"
+        trading_automatico = "Buena" if stats['potencia_wavelet'].mean() > 1000 else "Baja"
         
-        if stats['dfa'] < 1.5:
-            print("  [BALANCEO DE PORTAFOLIOS]: La serie muestra características estables, adecuada para balanceo de portafolios.")
-        else:
-            print("  [BALANCEO DE PORTAFOLIOS]: Serie altamente volátil, menor estabilidad para balanceo.")
+        calificaciones[columna] = {
+            "Predicción de Tendencias": prediccion_tendencias,
+            "Balanceo de Portafolios": balanceo_portafolios,
+            "Trading Automático": trading_automatico
+        }
         
-        if stats['potencia_wavelet'].mean() > 1000:
-            print("  [TRADING AUTOMÁTICO]: Buena coherencia en frecuencias de corto plazo, adecuado para trading en vivo.")
-        else:
-            print("  [TRADING AUTOMÁTICO]: Baja coherencia en frecuencias de corto plazo, menos adecuado para trading.")
+        print(f"  [PREDICCIÓN DE TENDENCIAS]: {prediccion_tendencias}")
+        print(f"  [BALANCEO DE PORTAFOLIOS]: {balanceo_portafolios}")
+        print(f"  [TRADING AUTOMÁTICO]: {trading_automatico}")
+    return calificaciones
 
 def generar_resumen(resultados, ruta_archivo_csv):
     resumen = pd.DataFrame(resultados).T
     resumen_path = f"output/resumen_{Path(ruta_archivo_csv).stem}.csv"
     resumen.to_csv(resumen_path)
     print(f"[INFO] Resumen generado y guardado en: {resumen_path}")
+
+def generar_tabla_resumen(resumen_general):
+    # Crear un DataFrame resumen de todos los datasets
+    df_resumen = pd.DataFrame(resumen_general)
+    resumen_path = "output/resumen_general.csv"
+    df_resumen.to_csv(resumen_path, index=False)
+    print(f"[INFO] Resumen general generado y guardado en: {resumen_path}")
 
 # Llamar a la función principal para iniciar el análisis
 descargar_y_procesar_datasets()
