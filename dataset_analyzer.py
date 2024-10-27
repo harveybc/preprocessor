@@ -25,10 +25,17 @@ def descargar_y_procesar_datasets():
     ensure_output_directory()
     print("[INFO] Iniciando la descarga y procesamiento de los datasets...")
     datasets = [
+        # 1min data
         "jkalamar/eurusd-foreign-exchange-fx-intraday-1minute",
+        # 5min data
         "stijnvanleeuwen/eurusd-forex-pair-15min-2002-2019",
+        # 15min data
         "meehau/EURUSD",
+        # 1 hour data
         "imetomi/eur-usd-forex-pair-historical-data-2002-2019",
+        # 4 hour data
+        "chandrimad31/eurusd-forex-trading-data-20032021",
+        # Daily data
         "gabrielmv/eurusd-daily-historical-data-20012019"
     ]
 
@@ -82,8 +89,12 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
             print("[ERROR] No hay suficientes columnas para el análisis.")
             return None
 
-        # Convert the fourth column to numeric
-        serie = pd.to_numeric(data.iloc[:, 3], errors='coerce')
+        # Convert the correct column to numeric
+        dataset_name = ruta_archivo_csv.name
+        if dataset_name == 'eur-usd-forex-pair-historical-data-2002-2019.csv':
+            serie = pd.to_numeric(data.iloc[:, 5], errors='coerce')
+        else:
+            serie = pd.to_numeric(data.iloc[:, 3], errors='coerce')
         serie.dropna(inplace=True)
 
         # Ensure there are enough rows after cleaning
@@ -104,7 +115,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         plt.figure()
         decomposition.plot()
         plt.suptitle(f"Trend, Seasonality, and Residuals - {ruta_archivo_csv.name}")
-        plt.savefig(f"output/{ruta_archivo_csv.stem}_decomposition.png")
+        plt.savefig(f"output/{dataset_name.split('-')[0]}_decomposition.png")
 
         # Fourier analysis
         espectro = np.abs(fft(serie))
@@ -121,10 +132,14 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         top_5_peaks = sorted(peaks, key=lambda x: espectro_db[x], reverse=True)[:5]
         top_5_peaks_values = espectro_db[top_5_peaks] if len(top_5_peaks) > 0 else 'E'
 
+        # Calculate periodicity for top 5 frequency peaks
+        periodicity = dataset_periodicity(ruta_archivo_csv.name)
+        peak_periods = [1 / (freq * periodicity) if freq != 0 else 'E' for freq in freqs[top_5_peaks]] if len(top_5_peaks) > 0 else 'E'
+
         # Mark the top 5 peaks on the Fourier plot
         if top_5_peaks != 'E':
             plt.plot(freqs[top_5_peaks], espectro_db[top_5_peaks], "x")
-        plt.savefig(f"output/{ruta_archivo_csv.stem}_fourier_spectrum.png")
+        plt.savefig(f"output/{dataset_name.split('-')[0]}_fourier_spectrum.png")
 
         # Autocorrelation
         autocorrelacion = [serie.autocorr(lag) for lag in range(1, 11)] if not serie.empty else 'E'
@@ -133,7 +148,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         plt.figure()
         pd.plotting.autocorrelation_plot(serie)
         plt.title(f"Autocorrelación - {ruta_archivo_csv.name}")
-        plt.savefig(f"output/{ruta_archivo_csv.stem}_autocorrelation.png")
+        plt.savefig(f"output/{dataset_name.split('-')[0]}_autocorrelation.png")
 
         # Prepare the summary for this dataset
         resumen = {
@@ -145,7 +160,8 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
             "desviacion_error_normalizado": desviacion_error_normalizado,
             "media_error_normalizado": media_error_normalizado,
             "autocorrelacion": autocorrelacion,
-            "top_5_peaks_values": top_5_peaks_values
+            "top_5_peaks_values": top_5_peaks_values,
+            "peak_periods": peak_periods
         }
 
         return resumen
@@ -161,8 +177,21 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
             "desviacion_error_normalizado": 'E',
             "media_error_normalizado": 'E',
             "autocorrelacion": 'E',
-            "top_5_peaks_values": 'E'
+            "top_5_peaks_values": 'E',
+            "peak_periods": 'E'
         }
+
+# Function to get the periodicity of the dataset
+def dataset_periodicity(dataset_name):
+    periodicity_dict = {
+        'eurusd-foreign-exchange-fx-intraday-1minute.csv': 1,  # 1min data
+        'eurusd-forex-pair-15min-2002-2019.csv': 5,  # 5min data
+        'EURUSD.csv': 15,  # 15min data
+        'eur-usd-forex-pair-historical-data-2002-2019.csv': 60,  # 1h data
+        'eurusd-forex-trading-data-20032021.csv': 240,  # 4h data
+        'eur-usd-historical-daily-data-test.csv': 1440  # Daily data
+    }
+    return periodicity_dict.get(dataset_name, 1)  # Default to 1 if not found
 
 # Function to generate summary CSV
 def generar_csv_resumen(resumen_general):
@@ -183,6 +212,7 @@ def generar_tabla_resumen(resumen_general):
         print(f"  Media del error normalizado: {resumen['media_error_normalizado']}")
         print(f"  Autocorrelación (lags 1-10): {resumen['autocorrelacion']}")
         print(f"  Top 5 picos del espectro de Fourier (dB): {resumen['top_5_peaks_values']}")
+        print(f"  Periodicidades de los picos del espectro de Fourier: {resumen['peak_periods']}")
         print("*********************************************")
 
 # Execute the script
