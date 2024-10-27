@@ -10,6 +10,7 @@ import nolds
 import warnings
 import kagglehub
 import os
+from pathlib import Path
 
 # Configuración para ignorar advertencias de numpy/pandas que no afectan el procesamiento
 warnings.filterwarnings("ignore")
@@ -31,7 +32,11 @@ def descargar_y_procesar_datasets():
         try:
             print(f"[INFO] Descargando dataset: {dataset}")  # Mensaje de descarga
             path = kagglehub.dataset_download(dataset)
-            print("Path to dataset files:", path)
+            print("[DEBUG] Path to dataset files:", path)
+            
+            # Convertir path en un objeto Path si es necesario
+            path = Path(path)
+
             # Verificar si la descarga fue exitosa
             if not os.path.exists(path):
                 print(f"[ERROR] La ruta de descarga no existe: {path}")
@@ -39,6 +44,7 @@ def descargar_y_procesar_datasets():
             
             # Aquí asumimos que el dataset tiene un archivo CSV principal
             csv_files = [file for file in path.glob('**/*.csv')]
+            print(f"[DEBUG] Archivos CSV encontrados: {csv_files}")  # Agregar chequeo para archivos CSV
             if csv_files:
                 print(f"[INFO] Analizando el archivo CSV: {csv_files[0]}")
                 analizar_archivo_csv(csv_files[0], 4500)
@@ -102,17 +108,21 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                 ruido_normalizado = 1 / snr if snr != 0 else np.nan
                 desviacion_ruido = np.sqrt(ruido_normalizado) * desviacion if ruido_normalizado != 0 else np.nan
                 amplitud_promedio = desviacion_ruido * np.sqrt(2 / np.pi) if ruido_normalizado != 0 else np.nan
+                print(f"[DEBUG] Estadísticas calculadas para '{columna}': Media={media}, Desviación={desviacion}, SNR={snr}")
                 
                 # Cálculo de retornos
                 retornos = serie.diff().abs().dropna()
                 promedio_retornos = retornos.mean()
+                print(f"[DEBUG] Promedio de retornos para '{columna}': {promedio_retornos}")
                 
                 # Análisis adicional
                 # Exponente de Hurst
                 hurst_exponent = nolds.hurst_rs(serie)
+                print(f"[DEBUG] Exponente de Hurst para '{columna}': {hurst_exponent}")
                 
                 # Detrended Fluctuation Analysis (DFA)
                 dfa = nolds.dfa(serie)
+                print(f"[DEBUG] DFA para '{columna}': {dfa}")
                 
                 # Análisis de autocorrelación (Manual usando pandas)
                 plt.figure(figsize=(12, 6))
@@ -127,10 +137,12 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                 espectro = np.abs(fft(serie))
                 espectro_normalizado = espectro / espectro.sum()
                 entropia_espectral = -np.sum(espectro_normalizado * np.log2(espectro_normalizado + 1e-10))
+                print(f"[DEBUG] Entropía espectral para '{columna}': {entropia_espectral}")
                 
                 # Análisis de coherencia Wavelet
                 coeficientes, _ = pywt.cwt(serie, scales=np.arange(1, 128), wavelet='morl')
                 potencia_wavelet = np.sum(np.abs(coeficientes) ** 2, axis=1)
+                print(f"[DEBUG] Potencia wavelet para '{columna}': {potencia_wavelet.mean()}")
                 
                 # Almacenar resultados en el diccionario
                 resultados[columna] = {
@@ -211,24 +223,8 @@ def analizar_fourier(serie, columna):
         espectro = np.abs(fft(serie))
         frecuencias = np.fft.fftfreq(len(serie))
         
-        # Encontrar los picos principales en el espectro de potencia
-        picos, _ = find_peaks(espectro)
-        picos_principales = sorted(picos, key=lambda x: espectro[x], reverse=True)[:5]
+        # Encontrar los picos principales en el espectro de
         
-        # Graficar el espectro de Fourier y marcar los picos principales
-        plt.figure(figsize=(10, 6))
-        plt.plot(frecuencias, espectro)
-        plt.scatter(frecuencias[picos_principales], espectro[picos_principales], color='red')
-        plt.title(f'Espectro de Fourier - {columna}')
-        plt.xlabel('Frecuencia')
-        plt.ylabel('Potencia')
-        plt.grid(True)
-        plt.show(block=True)
-        
-        # Mostrar las frecuencias de los picos principales
-        print(f"Principales frecuencias para {columna}:")
-        for i, pico in enumerate(picos_principales, start=1):
-            print(f"Pico {i}: Frecuencia = {frecuencias[pico]}, Potencia = {espectro[pico]}")
     except Exception as e:
         print(f"[ERROR] Error en el análisis de Fourier para '{columna}': {e}")
 
@@ -260,5 +256,5 @@ def evaluar_dataset(resultados):
         else:
             print("  [TRADING AUTOMÁTICO]: Baja coherencia en frecuencias de corto plazo, menos adecuado para trading.")
 
-# Ejemplo de uso del programa
+# Llamar a la función principal para iniciar el análisis
 descargar_y_procesar_datasets()
