@@ -67,6 +67,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         
         # Cargar el archivo CSV usando pandas
         try:
+            print(f"[DEBUG] Cargando el archivo CSV desde la ruta: {ruta_archivo_csv}")
             data = pd.read_csv(ruta_archivo_csv, skiprows=3)  # Saltar las primeras tres filas
         except Exception as e:
             print(f"[ERROR] Error al cargar el archivo CSV: {e}")
@@ -75,6 +76,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         # Limitar los datos a las últimas 'limite_filas' si se especifica
         if limite_filas is not None and len(data) > limite_filas:
             data = data.tail(limite_filas)
+            print(f"[DEBUG] Limitando los datos a las últimas {limite_filas} filas.")
         
         # Validar que el archivo tiene al menos dos columnas (fecha y datos)
         if data.shape[1] < 2:
@@ -84,10 +86,12 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         # Eliminar espacios de los encabezados y convertir todas las columnas excepto la primera a datos numéricos
         data.columns = data.columns.str.strip()  # Eliminar espacios del encabezado
         for columna in data.columns[1:]:
+            print(f"[DEBUG] Convirtiendo la columna '{columna}' a numérico.")
             data[columna] = pd.to_numeric(data[columna], errors='coerce')
         
         # Eliminar filas con valores NaN después de la conversión
         data.dropna(inplace=True)
+        print(f"[DEBUG] Datos después de eliminar filas con NaN: {data.shape}")
         
         # Validar que todavía hay suficientes filas después de la limpieza
         if data.shape[0] < 2:
@@ -95,7 +99,8 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
             return None
         
         # Asegurarse de que las columnas no tengan nombres duplicados
-        data.columns = pd.io.parsers.ParserBase({'names': data.columns})._maybe_dedup_names(data.columns)
+        print(f"[DEBUG] Asegurándose de que no haya nombres duplicados en las columnas.")
+        data.columns = pd.io.common._maybe_dedup_names(data.columns)
         
         # Extraer las columnas excepto la fecha
         columnas = data.columns[1:]
@@ -117,6 +122,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                     continue
                 
                 # Calcular estadísticas
+                print(f"[DEBUG] Calculando estadísticas para la columna: {columna}")
                 media = serie.mean()
                 desviacion = serie.std()
                 snr = (media / desviacion) ** 2 if desviacion != 0 else np.nan
@@ -125,10 +131,12 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                 amplitud_promedio = desviacion_ruido * np.sqrt(2 / np.pi) if ruido_normalizado != 0 else np.nan
                 
                 # Cálculo de retornos
+                print(f"[DEBUG] Calculando retornos para la columna: {columna}")
                 retornos = serie.diff().abs().dropna()
                 promedio_retornos = retornos.mean()
                 
                 # Análisis adicional
+                print(f"[DEBUG] Calculando análisis adicionales para la columna: {columna}")
                 # Exponente de Hurst
                 hurst_exponent = nolds.hurst_rs(serie)
                 
@@ -175,6 +183,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                     mejor_columna = columna
                 
                 # Visualización de la columna
+                print(f"[DEBUG] Realizando visualizaciones para la columna: {columna}")
                 analizar_tendencia_estacionalidad_residuos(serie, columna, periodicidad, save_path=f'output/{periodicidad}_{columna}_trend.png')
                 analizar_distribucion(serie, retornos, columna, periodicidad, save_path=f'output/{periodicidad}_{columna}_distribution.png')
                 analizar_fourier(serie, columna, periodicidad, save_path=f'output/{periodicidad}_{columna}_fourier.png')
