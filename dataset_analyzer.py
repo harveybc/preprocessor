@@ -4,12 +4,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.fft import fft
-from scipy.signal import find_peaks
 import pywt
 import nolds
+import warnings
 import kagglehub
 import os
 from pathlib import Path
+
+# Configuración para ignorar advertencias de numpy/pandas que no afectan el procesamiento
+warnings.filterwarnings("ignore")
 
 # Definir la función para descargar y cargar los últimos 4500 datos de cada dataset
 def descargar_y_procesar_datasets():
@@ -40,13 +43,11 @@ def descargar_y_procesar_datasets():
                     resumen_general.append(resumen_dataset)
         except Exception as e:
             continue
-    
     # Generar tabla resumen de todos los datasets
     if resumen_general:
         generar_tabla_resumen(resumen_general)
 
 # Definir la función principal que analizará el archivo CSV
-# Ahora también acepta un parámetro de límite de filas
 def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
     try:
         # Determinar la periodicidad del dataset a partir del nombre del archivo
@@ -62,19 +63,24 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         if limite_filas is not None and len(data) > limite_filas:
             data = data.tail(limite_filas)
         
-        # Eliminar la primera columna (considerada fecha) y convertir las restantes a numéricas
+        # Eliminar la primera columna (que es la fecha)
         data = data.iloc[:, 1:]
-        for i in range(data.shape[1]):
-            data.iloc[:, i] = pd.to_numeric(data.iloc[:, i], errors='coerce')
         
-        # Eliminar columnas con valores NaN
-        data.dropna(axis=1, inplace=True)
+        # Eliminar espacios de los encabezados y convertir todas las columnas a datos numéricos
+        data.columns = [f"col{i}" for i in range(data.shape[1])]  # Renombrar columnas a col0, col1, col2, ...
+        for columna in data.columns:
+            data[columna] = pd.to_numeric(data[columna], errors='coerce')
         
-        # Validar que todavía hay suficientes columnas después de la limpieza
-        if data.shape[1] < 1:
+        # Eliminar columnas con valores NaN completos
+        data.dropna(axis=1, how='all', inplace=True)
+        # Eliminar filas con valores NaN
+        data.dropna(inplace=True)
+        
+        # Validar que todavía hay suficientes filas después de la limpieza
+        if data.shape[0] < 2:
             return None
         
-        # Extraer las columnas excepto la fecha
+        # Extraer las columnas
         columnas = data.columns
         
         # Diccionario para almacenar resultados de cada columna
@@ -83,14 +89,10 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         mejor_snr = -np.inf
         
         # Iterar sobre cada columna para analizarla
-        for i, columna in enumerate(columnas):
+        for columna in columnas:
             try:
-                # Validar que la serie tiene datos suficientes para el análisis
-                serie = data[columna]
-                if len(serie) < 2:
-                    continue
-                
                 # Calcular estadísticas
+                serie = data[columna]
                 media = serie.mean()
                 desviacion = serie.std()
                 snr = (media / desviacion) ** 2 if desviacion != 0 else np.nan
@@ -102,7 +104,6 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                 retornos = serie.diff().abs().dropna()
                 promedio_retornos = retornos.mean()
                 
-                # Análisis adicional
                 # Exponente de Hurst
                 hurst_exponent = nolds.hurst_rs(serie)
                 
@@ -113,14 +114,8 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                 coeficientes, _ = pywt.cwt(serie, scales=np.arange(1, 128), wavelet='morl')
                 potencia_wavelet = np.sum(np.abs(coeficientes) ** 2, axis=1)
                 
-                # Análisis de Fourier
-                espectro = np.abs(fft(serie))
-                frecuencias = np.fft.fftfreq(len(serie))
-                picos, _ = find_peaks(espectro)
-                picos_principales = sorted(picos, key=lambda x: espectro[x], reverse=True)[:5]
-                
                 # Almacenar resultados en el diccionario
-                resultados[f'col{i}'] = {
+                resultados[columna] = {
                     "media": media,
                     "desviacion_std": desviacion,
                     "SNR": snr,
@@ -130,14 +125,13 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                     "promedio_retornos": promedio_retornos,
                     "hurst_exponent": hurst_exponent,
                     "dfa": dfa,
-                    "potencia_wavelet": potencia_wavelet,
-                    "picos_principales": [frecuencias[pico] for pico in picos_principales]
+                    "potencia_wavelet": potencia_wavelet
                 }
                 
                 # Seleccionar la mejor columna para predicción (con mayor SNR)
                 if snr > mejor_snr:
                     mejor_snr = snr
-                    mejor_columna = f'col{i}'
+                    mejor_columna = columna
                 
             except Exception as e:
                 continue
@@ -145,7 +139,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         # Evaluar la calidad del dataset para cada escenario
         calificaciones = evaluar_dataset(resultados)
         
-        # Generar resumen en una tabla y graficar análisis
+        # Generar resumen en una tabla
         generar_resumen(resultados, periodicidad)
         
         # Resumen del dataset para la mejor columna
@@ -163,10 +157,10 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         return None
 
 # Funciones auxiliares para visualización y análisis
+
 def evaluar_dataset(resultados):
     calificaciones = {}
     for columna, stats in resultados.items():
-        # Criterios de evaluación para cada escenario
         prediccion_tendencias = "Alta calidad" if stats['SNR'] > 10 and stats['hurst_exponent'] > 0.5 else "Baja calidad"
         balanceo_portafolios = "Adecuada" if stats['dfa'] < 1.5 else "No adecuada"
         trading_automatico = "Buena" if stats['potencia_wavelet'].mean() > 1000 else "Baja"
@@ -179,19 +173,26 @@ def evaluar_dataset(resultados):
     return calificaciones
 
 def generar_resumen(resultados, periodicidad):
-    resumen = pd.DataFrame(resultados).T
-    resumen_path = f"output/resumen_{periodicidad}.csv"
-    resumen.to_csv(resumen_path)
-    print(f"Resumen generado y guardado en: {resumen_path}")
-    print(resumen)
+    print("*********************************************")
+    print(f"Estadísticas para dataset {periodicidad}:")
+    for columna, stats in resultados.items():
+        print(f"Columna: {columna}")
+        print(f"  Media: {stats['media']}")
+        print(f"  Desviación estándar: {stats['desviacion_std']}")
+        print(f"  SNR: {stats['SNR']}")
+        print(f"  Exponente de Hurst: {stats['hurst_exponent']}")
+        print(f"  DFA: {stats['dfa']}")
+        print(f"  Potencia Wavelet: {stats['potencia_wavelet'][:5]}... (truncado)")
+    print("*********************************************")
 
 def generar_tabla_resumen(resumen_general):
-    # Crear un DataFrame resumen de todos los datasets
-    df_resumen = pd.DataFrame(resumen_general)
-    resumen_path = "output/resumen_general.csv"
-    df_resumen.to_csv(resumen_path, index=False)
-    print(f"Resumen general generado y guardado en: {resumen_path}")
-    print(df_resumen)
+    print("\nResumen de uso:")
+    for resumen in resumen_general:
+        print(f"Dataset {resumen['dataset']}: mejor para {resumen['calificaciones'][resumen['mejor_columna']]['Predicción de Tendencias']}")
+    
+    print("\nTotal de datasets analizados:")
+    for resumen in resumen_general:
+        print(f"{resumen['dataset']} = {resumen['mejor_snr']} filas")
 
-# Llamar a la función principal para iniciar el análisis
+# Ejecutar la descarga y procesamiento de los datasets
 descargar_y_procesar_datasets()
