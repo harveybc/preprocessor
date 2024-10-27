@@ -21,4 +21,11 @@ pytest
 pdoc3
 boruta
 statsmodels
+PyWavelets
+nolds
+kagglehub
+matplotlib
+pandas
+pillow
+kiwisolver.
 #
