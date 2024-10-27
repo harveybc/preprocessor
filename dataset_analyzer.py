@@ -62,6 +62,7 @@ def descargar_y_procesar_datasets():
     if resumen_general:
         generar_tabla_resumen(resumen_general)
         generar_csv_resumen(resumen_general)
+        print_resumen_separador(resumen_general)
 
 # Function to analyze CSV file
 def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
@@ -79,6 +80,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
             print(f"[DEBUG] Limitando los datos a las últimas {limite_filas} filas.")
 
         # Drop the first column (assumed to be date)
+        print(f"[DEBUG] Columnas antes de eliminar la columna de fecha: {data.columns}")
         data.drop(data.columns[0], axis=1, inplace=True)
 
         # Debug after dropping the date column
@@ -90,9 +92,11 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
             return None
 
         # Convert the fourth column to numeric
+        print(f"[DEBUG] Valores antes de convertir la cuarta columna a numérico:\n{data.iloc[:, 3].head(10)}")
         serie = pd.to_numeric(data.iloc[:, 3], errors='coerce')
 
         # Drop NaN values from the series
+        print(f"[DEBUG] Serie antes de eliminar NaN: {serie.shape}")
         serie.dropna(inplace=True)
         print(f"[DEBUG] Serie después de eliminar NaN: {serie.shape}")
 
@@ -102,6 +106,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
             return None
 
         # Calculate statistics
+        print(f"[DEBUG] Calculando estadísticas para la serie...")
         media = serie.mean()
         desviacion = serie.std()
         snr = (media / desviacion) ** 2 if desviacion != 0 else np.nan
@@ -125,10 +130,15 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         peak_indices = np.argsort(espectro[peaks])[-5:][::-1]
         peak_freqs = freqs[peaks][peak_indices]
 
+        # Debug Fourier peaks
+        print(f"[DEBUG] Picos principales del espectro de Fourier: {peak_freqs}")
+
         # Autocorrelation analysis
         autocorr_1 = serie.autocorr(lag=1)
+        print(f"[DEBUG] Autocorrelación (lag 1): {autocorr_1}")
 
         # Seasonal decomposition
+        print(f"[DEBUG] Realizando descomposición estacional...")
         decomposition = sm.tsa.seasonal_decompose(serie, period=int(len(serie) / 2), model='additive')
 
         # Plot seasonal decomposition
@@ -145,6 +155,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         plt.tight_layout()
         plt.savefig(f"output/estacionalidad_{Path(ruta_archivo_csv).stem}_col4.png")
         plt.close()
+        print(f"[INFO] Guardado el gráfico de descomposición estacional para: {Path(ruta_archivo_csv).stem}")
 
         # Save Fourier spectrum plot
         plt.figure()
@@ -154,6 +165,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         plt.ylabel('Potencia')
         plt.savefig(f"output/fourier_{Path(ruta_archivo_csv).stem}_col4.png")
         plt.close()
+        print(f"[INFO] Guardado el gráfico del espectro de Fourier para: {Path(ruta_archivo_csv).stem}")
 
         # Return dataset summary
         resumen_dataset = {
@@ -175,6 +187,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
 
     except Exception as e:
         print(f"[ERROR] Ocurrió un error inesperado: {e}")
+        print(f"[DEBUG] Contexto del error: Dataset - {ruta_archivo_csv}, Serie - {serie if 'serie' in locals() else 'No definida'}")
         return None
 
 # Function to generate summary CSV
@@ -201,6 +214,13 @@ def generar_tabla_resumen(resumen_general):
         print(f"  Pico Frecuencia 4: {resumen['pico_frecuencia 4']}")
         print(f"  Pico Frecuencia 5: {resumen['pico_frecuencia 5']}")
         print("*********************************************")
+
+# Function to print the summary separated by asterisks
+def print_resumen_separador(resumen_general):
+    print("\n*********************************************")
+    for resumen in resumen_general:
+        print(f"Dataset {resumen['dataset']}: Media={resumen['media']}, Desviación={resumen['desviacion']}, SNR={resumen['snr']}")
+    print("*********************************************")
 
 # Execute the script
 descargar_y_procesar_datasets()
