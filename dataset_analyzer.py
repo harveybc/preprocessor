@@ -20,7 +20,6 @@ def descargar_y_procesar_datasets():
         "gabrielmv/eurusd-daily-historical-data-20012019"
     ]
 
-    resumen_general = []
     for dataset in datasets:
         try:
             print(f"[INFO] Descargando dataset: {dataset}")
@@ -61,13 +60,13 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
             print(f"[DEBUG] Convirtiendo la columna {i + 1} a numérico.")
             data.iloc[:, i] = pd.to_numeric(data.iloc[:, i], errors='coerce')
 
-        # Eliminar filas con valores NaN
-        data.dropna(inplace=True)
-        print(f"[DEBUG] Datos después de eliminar filas con NaN: {data.shape}")
+        # Eliminar columnas completas que contengan cualquier valor NaN
+        data.dropna(axis=1, inplace=True)
+        print(f"[DEBUG] Datos después de eliminar columnas con NaN: {data.shape}")
 
-        # Validar que todavía hay suficientes filas después de la limpieza
-        if data.shape[0] < 2:
-            print("[ERROR] No hay suficientes datos para el análisis después de la limpieza de valores nulos.")
+        # Validar que todavía hay suficientes columnas después de la limpieza
+        if data.shape[1] < 1:
+            print("[ERROR] No hay suficientes columnas para el análisis después de la limpieza de valores nulos.")
             return
 
         # Iterar sobre cada columna (por índice) para analizarla
