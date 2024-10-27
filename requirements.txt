@@ -24,4 +24,6 @@ statsmodels
 PyWavelets
 nolds
 kagglehub
+matplotlib
+pandas
 #
