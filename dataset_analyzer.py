@@ -67,7 +67,7 @@ def descargar_y_procesar_datasets():
 def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
     try:
         # Load CSV without headers
-        data = pd.read_csv(ruta_archivo_csv, header=True, skiprows=1, index_col=False)
+        data = pd.read_csv(ruta_archivo_csv, header=int, skiprows=1, index_col=False)
 
         # Limit rows if specified
         if limite_filas is not None and len(data) > limite_filas:
