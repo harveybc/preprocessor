@@ -21,4 +21,5 @@ pytest
 pdoc3
 boruta
 statsmodels
+PyWavelets
 #
