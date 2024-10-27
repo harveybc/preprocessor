@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.fft import fft
 from scipy.signal import find_peaks
-from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 import pywt
 import nolds
 import warnings
@@ -97,9 +96,13 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                 # Detrended Fluctuation Analysis (DFA)
                 dfa = nolds.dfa(serie)
                 
-                # Análisis de autocorrelación (ACF/PACF)
-                acf_fig = plot_acf(serie, lags=20)
-                pacf_fig = plot_pacf(serie, lags=20)
+                # Análisis de autocorrelación (Manual usando pandas)
+                plt.figure(figsize=(12, 6))
+                pd.plotting.autocorrelation_plot(serie)
+                plt.title(f'Función de Autocorrelación (ACF) - {columna}')
+                plt.xlabel('Lags')
+                plt.ylabel('Autocorrelación')
+                plt.grid(True)
                 plt.show()
                 
                 # Entropía espectral
@@ -239,5 +242,4 @@ def evaluar_dataset(resultados):
         else:
             print("  [TRADING AUTOMÁTICO]: Baja coherencia en frecuencias de corto plazo, menos adecuado para trading.")
 
-# Ejemplo de uso del programa
-descargar_y_procesar_datasets()
+
