@@ -26,22 +26,22 @@ def descargar_y_procesar_datasets():
     print("[INFO] Iniciando la descarga y procesamiento de los datasets...")
     datasets = [
         # 1min data
-        ("jkalamar/eurusd-foreign-exchange-fx-intraday-1minute", "1min"),
+        "jkalamar/eurusd-foreign-exchange-fx-intraday-1minute",
         # 5min data
-        ("stijnvanleeuwen/eurusd-forex-pair-15min-2002-2019", "5min"),
+        "stijnvanleeuwen/eurusd-forex-pair-15min-2002-2019",
         # 15min data
-        ("meehau/EURUSD", "15min"),
+        "meehau/EURUSD",
         # 1 hour data
-        ("imetomi/eur-usd-forex-pair-historical-data-2002-2019", "1h"),
+        "imetomi/eur-usd-forex-pair-historical-data-2002-2019",
         # 4 hour data
-        ("chandrimad31/eurusd-forex-trading-data-20032021", "4h"),
+        "chandrimad31/eurusd-forex-trading-data-20032021",
         # Daily data
-        ("gabrielmv/eurusd-daily-historical-data-20012019", "daily")
+        "gabrielmv/eurusd-daily-historical-data-20012019"
     ]
 
     resumen_general = []
 
-    for dataset, periodicity in datasets:
+    for dataset in datasets:
         try:
             print(f"[INFO] Descargando dataset: {dataset}")
             path = kagglehub.dataset_download(dataset)
@@ -56,7 +56,7 @@ def descargar_y_procesar_datasets():
             csv_files = [file for file in path.glob('**/*.csv')]
             if csv_files:
                 print(f"[INFO] Analizando el archivo CSV: {csv_files[0]}")
-                resumen_dataset = analizar_archivo_csv(csv_files[0], 4500, periodicity)
+                resumen_dataset = analizar_archivo_csv(csv_files[0], 4500)
                 if resumen_dataset is not None:
                     resumen_general.append(resumen_dataset)
             else:
@@ -72,7 +72,7 @@ def descargar_y_procesar_datasets():
         print("[INFO] No se generó ningún resumen general debido a errores en el procesamiento de los datasets.")
 
 # Function to analyze CSV file
-def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None, periodicity="unknown"):
+def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
     try:
         # Load CSV without headers
         data = pd.read_csv(ruta_archivo_csv, header=None, skiprows=1, index_col=False)
@@ -114,16 +114,16 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None, periodicity="unkno
         decomposition = sm.tsa.seasonal_decompose(serie, model='additive', period=30)
         plt.figure()
         decomposition.plot()
-        plt.suptitle(f"Trend, Seasonality, and Residuals - {periodicity}")
-        plt.savefig(f"output/{periodicity}_decomposition.png")
+        plt.suptitle(f"Trend, Seasonality, and Residuals - {dataset_periodicity(dataset_name)}")
+        plt.savefig(f"output/{dataset_periodicity(dataset_name)}_decomposition.png")
 
-        # Fourier analysis
+        # Fourier analysis (Log-scaled for better peak visibility)
         espectro = np.abs(fft(serie))
-        espectro_db = 20 * np.log10(espectro + 1e-10)  # Adding small value to avoid log(0)
+        espectro_db = 10 * np.log10(espectro + 1e-10)  # Using 10*log10 for log scaling and better peak perception
         freqs = np.fft.fftfreq(len(espectro_db))
         plt.figure()
         plt.plot(freqs[:len(freqs)//2], espectro_db[:len(espectro_db)//2])
-        plt.title(f"Espectro de Fourier - {periodicity}")
+        plt.title(f"Espectro de Fourier - {dataset_periodicity(dataset_name)}")
         plt.xlabel('Frecuencia (Hz)')
         plt.ylabel('Potencia (dB)')
 
@@ -135,7 +135,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None, periodicity="unkno
         # Mark the top 5 peaks on the Fourier plot
         if top_5_peaks != 'E':
             plt.plot(freqs[top_5_peaks], espectro_db[top_5_peaks], "x")
-        plt.savefig(f"output/{periodicity}_fourier_spectrum.png")
+        plt.savefig(f"output/{dataset_periodicity(dataset_name)}_fourier_spectrum.png")
 
         # Autocorrelation
         autocorrelacion = [serie.autocorr(lag) for lag in range(1, 11)] if not serie.empty else 'E'
@@ -143,8 +143,8 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None, periodicity="unkno
         # Plot autocorrelation
         plt.figure()
         pd.plotting.autocorrelation_plot(serie)
-        plt.title(f"Autocorrelación - {periodicity}")
-        plt.savefig(f"output/{periodicity}_autocorrelation.png")
+        plt.title(f"Autocorrelación - {dataset_periodicity(dataset_name)}")
+        plt.savefig(f"output/{dataset_periodicity(dataset_name)}_autocorrelation.png")
 
         # Prepare the summary for this dataset
         resumen = {
@@ -175,6 +175,18 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None, periodicity="unkno
             "top_5_peaks_values": 'E'
         }
 
+# Function to get the periodicity of the dataset
+def dataset_periodicity(dataset_name):
+    periodicity_dict = {
+        'eurusd-foreign-exchange-fx-intraday-1minute.csv': '1min',  # 1min data
+        'eurusd-forex-pair-15min-2002-2019.csv': '5min',  # 5min data
+        'EURUSD.csv': '15min',  # 15min data
+        'eur-usd-forex-pair-historical-data-2002-2019.csv': '1h',  # 1h data
+        'eurusd-forex-trading-data-20032021.csv': '4h',  # 4h data
+        'eur-usd-historical-daily-data-test.csv': 'daily'  # Daily data
+    }
+    return periodicity_dict.get(dataset_name, 'unknown')  # Default to 'unknown' if not found
+
 # Function to generate summary CSV
 def generar_csv_resumen(resumen_general):
     df_resumen = pd.DataFrame(resumen_general)
@@ -185,7 +197,7 @@ def generar_csv_resumen(resumen_general):
 def generar_tabla_resumen(resumen_general):
     print("\n*********************************************")
     for resumen in resumen_general:
-        print(f"Estadísticas para dataset {resumen['dataset']}:")
+        print(f"Estadísticas para dataset {dataset_periodicity(Path(resumen['dataset']).name)}:")
         print(f"  Media: {resumen['media']}")
         print(f"  Desviación estándar: {resumen['desviacion']}")
         print(f"  SNR: {resumen['snr']}")
