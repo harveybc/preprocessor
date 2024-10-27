@@ -63,6 +63,8 @@ def descargar_y_procesar_datasets():
         generar_tabla_resumen(resumen_general)
         generar_csv_resumen(resumen_general)
         print_resumen_separador(resumen_general)
+    else:
+        print("[INFO] No se generó ningún resumen general debido a errores en el procesamiento de los datasets.")
 
 # Function to analyze CSV file
 def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
@@ -185,12 +187,29 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
 
         except IndexError as ie:
             print(f"[ERROR] Error durante el análisis de picos del espectro de Fourier: {ie}")
-            return None
+            peak_freqs = [np.nan] * 5
 
         # Debug Fourier peaks
         print(f"[DEBUG] Picos principales del espectro de Fourier: {peak_freqs}")
 
-        # Rest of the analysis continues as before...
+        # Prepare the summary for this dataset
+        resumen = {
+            "dataset": str(ruta_archivo_csv),
+            "media": media,
+            "desviacion": desviacion,
+            "snr": snr,
+            "hurst_exponent": hurst_exponent,
+            "dfa": dfa,
+            "promedio_retornos": promedio_retornos,
+            "entropia_espectral": entropia_espectral,
+            "pico_frecuencia 1": peak_freqs[0] if len(peak_freqs) > 0 else np.nan,
+            "pico_frecuencia 2": peak_freqs[1] if len(peak_freqs) > 1 else np.nan,
+            "pico_frecuencia 3": peak_freqs[2] if len(peak_freqs) > 2 else np.nan,
+            "pico_frecuencia 4": peak_freqs[3] if len(peak_freqs) > 3 else np.nan,
+            "pico_frecuencia 5": peak_freqs[4] if len(peak_freqs) > 4 else np.nan,
+        }
+
+        return resumen
 
     except Exception as e:
         print(f"[ERROR] Ocurrió un error inesperado: {e}")
@@ -214,7 +233,7 @@ def generar_tabla_resumen(resumen_general):
         print(f"  Hurst Exponent: {resumen['hurst_exponent']}")
         print(f"  DFA: {resumen['dfa']}")
         print(f"  Promedio de retornos: {resumen['promedio_retornos']}")
-        print(f"  Autocorrelación (lag 1): {resumen['autocorr_1']}")
+        print(f"  Entropía Espectral: {resumen['entropia_espectral']}")
         print(f"  Pico Frecuencia 1: {resumen['pico_frecuencia 1']}")
         print(f"  Pico Frecuencia 2: {resumen['pico_frecuencia 2']}")
         print(f"  Pico Frecuencia 3: {resumen['pico_frecuencia 3']}")
