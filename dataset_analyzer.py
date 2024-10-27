@@ -49,9 +49,18 @@ def descargar_y_procesar_datasets():
         except Exception as e:
             print(f"[ERROR] Error durante la descarga o procesamiento del dataset {dataset}: {e}")
     
+    # Generate summary CSV
+    summary_df = pd.DataFrame(resumen_general)
+    summary_df.to_csv('output/resumen_general.csv', index=False)
+    
     # Print the overall summary
     print("\n*********************************************")
-    print("Resumen de uso:")
+    print("Criterios utilizados para la calificación:")
+    print("- Trading: Basado en la relación Señal/Ruido (SNR). Cuanto mayor es el SNR, mejor es la calidad para Trading.")
+    print("- Predicción: Basado en la media. Un valor más alto indica una mejor capacidad predictiva.")
+    print("- Portafolio: Basado en la desviación estándar (en negativo). Menor desviación implica un menor riesgo.")
+    print("*********************************************")
+    print("\nResumen de uso:")
     for resumen in resumen_general:
         print(f"Dataset {resumen['periodicidad']}: mejor para {resumen['mejor_uso']} porque tiene calificación de trading ({resumen['calificaciones']['Trading']:.2f}), calificación de portafolio ({resumen['calificaciones']['Portafolio']:.2f}) y calificación de predicción ({resumen['calificaciones']['Predicción']:.2f})")
     print("\nTotal de datasets analizados:")
