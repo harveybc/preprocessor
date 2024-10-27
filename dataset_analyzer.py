@@ -157,11 +157,11 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
             "dfa": dfa,
             "promedio_retornos": promedio_retornos,
             "autocorr_1": autocorr_1,
-            "pico_frecuencia_1": peak_freqs[0] if len(peak_freqs) > 0 else np.nan,
-            "pico_frecuencia_2": peak_freqs[1] if len(peak_freqs) > 1 else np.nan,
-            "pico_frecuencia_3": peak_freqs[2] if len(peak_freqs) > 2 else np.nan,
-            "pico_frecuencia_4": peak_freqs[3] if len(peak_freqs) > 3 else np.nan,
-            "pico_frecuencia_5": peak_freqs[4] if len(peak_freqs) > 4 else np.nan
+            "pico_frecuencia 1": peak_freqs[0] if len(peak_freqs) > 0 else np.nan,
+            "pico_frecuencia 2": peak_freqs[1] if len(peak_freqs) > 1 else np.nan,
+            "pico_frecuencia 3": peak_freqs[2] if len(peak_freqs) > 2 else np.nan,
+            "pico_frecuencia 4": peak_freqs[3] if len(peak_freqs) > 3 else np.nan,
+            "pico_frecuencia 5": peak_freqs[4] if len(peak_freqs) > 4 else np.nan
         }
         return resumen_dataset
 
@@ -187,11 +187,11 @@ def generar_tabla_resumen(resumen_general):
         print(f"  DFA: {resumen['dfa']}")
         print(f"  Promedio de retornos: {resumen['promedio_retornos']}")
         print(f"  Autocorrelación (lag 1): {resumen['autocorr_1']}")
-        print(f"  Pico Frecuencia 1: {resumen['pico_frecuencia_1']}")
-        print(f"  Pico Frecuencia 2: {resumen['pico_frecuencia_2']}")
-        print(f"  Pico Frecuencia 3: {resumen['pico_frecuencia_3']}")
-        print(f"  Pico Frecuencia 4: {resumen['pico_frecuencia_4']}")
-        print(f"  Pico Frecuencia 5: {resumen['pico_frecuencia_5']}")
+        print(f"  Pico Frecuencia 1: {resumen['pico_frecuencia 1']}")
+        print(f"  Pico Frecuencia 2: {resumen['pico_frecuencia 2']}")
+        print(f"  Pico Frecuencia 3: {resumen['pico_frecuencia 3']}")
+        print(f"  Pico Frecuencia 4: {resumen['pico_frecuencia 4']}")
+        print(f"  Pico Frecuencia 5: {resumen['pico_frecuencia 5']}")
         print("*********************************************")
 
 # Execute the script
