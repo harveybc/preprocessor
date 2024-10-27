@@ -58,9 +58,9 @@ def descargar_y_procesar_datasets():
 # Function to analyze CSV file
 def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
     try:
-        # Load CSV
+        # Load CSV without headers
         print(f"[DEBUG] Cargando el archivo CSV desde la ruta: {ruta_archivo_csv}")
-        data = pd.read_csv(ruta_archivo_csv, skiprows=3)
+        data = pd.read_csv(ruta_archivo_csv, header=None, skiprows=3)
 
         # Limit rows if specified
         if limite_filas is not None and len(data) > limite_filas:
@@ -117,6 +117,9 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         peak_freqs = freqs[peaks][:5]
         peak_powers = espectro[peaks][:5]
 
+        # Autocorrelation analysis
+        autocorr_1 = serie.autocorr(lag=1)
+
         # Seasonal decomposition
         decomposition = sm.tsa.seasonal_decompose(serie, period=int(len(serie) / 2), model='additive')
 
@@ -155,6 +158,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
             "hurst_exponent": hurst_exponent,
             "dfa": dfa,
             "promedio_retornos": promedio_retornos,
+            "autocorr_1": autocorr_1
         }
         return resumen_dataset
 
@@ -179,6 +183,7 @@ def generar_tabla_resumen(resumen_general):
         print(f"  Hurst Exponent: {resumen['hurst_exponent']}")
         print(f"  DFA: {resumen['dfa']}")
         print(f"  Promedio de retornos: {resumen['promedio_retornos']}")
+        print(f"  Autocorrelación (lag 1): {resumen['autocorr_1']}")
         print(f"  Frecuencias de los 5 picos principales: {resumen['peak_freqs']}")
         print(f"  Potencias de los 5 picos principales: {resumen['peak_powers']}")
         print("*********************************************")
