@@ -6,6 +6,8 @@ import kagglehub
 import os
 from pathlib import Path
 from scipy.signal import find_peaks
+import matplotlib.pyplot as plt
+import statsmodels.api as sm
 
 # Configuration to ignore numpy/pandas warnings that do not affect processing
 warnings.filterwarnings("ignore")
@@ -117,6 +119,31 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                 picos_principales = frecuencias[picos][indices_ordenados]
                 potencias_principales = potencias_picos[indices_ordenados]
                 
+                # Decompose the time series using seasonal_decompose
+                decomposition = sm.tsa.seasonal_decompose(serie, model='additive', period=30)
+                tendencia = decomposition.trend
+                estacionalidad = decomposition.seasonal
+                residuales = decomposition.resid
+                
+                # Plot and save decomposition
+                plt.figure()
+                plt.plot(tendencia, label='Tendencia')
+                plt.plot(estacionalidad, label='Estacionalidad')
+                plt.plot(residuales, label='Residuales')
+                plt.legend()
+                plt.title(f"Descomposición de la serie - Dataset Periodicidad {ruta_archivo_csv.stem} Columna {columna}")
+                plt.savefig(f"output/decomposition_{ruta_archivo_csv.stem}_col{columna}.png")
+                plt.close()
+
+                # Plot and save Fourier Spectrum for the best column
+                plt.figure()
+                plt.plot(frecuencias, espectro)
+                plt.title(f"Espectro de Fourier - Dataset Periodicidad {ruta_archivo_csv.stem} Columna {columna}")
+                plt.xlabel('Frecuencia')
+                plt.ylabel('Potencia')
+                plt.savefig(f"output/fourier_spectrum_{ruta_archivo_csv.stem}_col{columna}.png")
+                plt.close()
+                
                 # Store results
                 resultados[columna] = {
                     "media": media,
@@ -146,6 +173,18 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
             for key, value in stats.items():
                 if isinstance(value, np.ndarray):
                     print(f"  {key}: {value[:5]}... (truncado)")  # Print only first 5 elements if array
+                else:
+                    print(f"  {key}: {value}")
+        print("*********************************************")
+
+        # Print summary for the best dataset for each scenario
+        print("Resumen de uso:")
+        if mejor_columna is not None:
+            print(f"Mejor columna para predicción de tendencias: Columna {mejor_columna} del dataset {ruta_archivo_csv.stem}")
+            print(f"Características de la mejor columna:")
+            for key, value in resultados[mejor_columna].items():
+                if isinstance(value, np.ndarray):
+                    print(f"  {key}: {value[:5]}... (truncado)")
                 else:
                     print(f"  {key}: {value}")
         print("*********************************************")
