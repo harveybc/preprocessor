@@ -248,6 +248,7 @@ def evaluar_dataset(resultados):
         print(f"  [PREDICCIÓN DE TENDENCIAS]: {prediccion_tendencias}")
         print(f"  [BALANCEO DE PORTAFOLIOS]: {balanceo_portafolios}")
         print(f"  [TRADING AUTOMÁTICO]: {trading_automatico}")
+
     return calificaciones
 
 def generar_resumen(resultados, periodicidad):
