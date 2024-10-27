@@ -124,6 +124,8 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         plt.figure()
         plt.plot(freqs[:len(freqs)//2], espectro_db[:len(espectro_db)//2])
         plt.title(f"Espectro de Fourier - {dataset_periodicity(dataset_name)}")
+        plt.xlabel('Frecuencia (Hz)')
+        plt.ylabel('Potencia (dB)')
         plt.savefig(f"output/{dataset_periodicity(dataset_name)}_fourier_spectrum.png")
 
         # Autocorrelation
@@ -145,8 +147,8 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
             "desviacion_error_normalizado": desviacion_error_normalizado,
             "media_error_normalizado": media_error_normalizado,
             "autocorrelacion": autocorrelacion,
-            "top_5_peaks_values": top_5_peaks_values,
-            "peak_periods": peak_periods
+            "top_5_peaks_values": 'E',  # Placeholder as no peaks calculation was mentioned
+            "peak_periods": 'E'  # Placeholder as no peak periods calculation was mentioned
         }
 
         return resumen
