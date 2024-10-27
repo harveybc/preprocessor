@@ -52,15 +52,14 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
     try:
         periodicidad = "1min" if "1minute" in str(ruta_archivo_csv).lower() else "15min" if "15min" in str(ruta_archivo_csv).lower() else "1h" if "1h" in str(ruta_archivo_csv).lower() else "1d"
         
-        # Leer archivo CSV ignorando encabezados y tomando solo datos numéricos
+        # Leer archivo CSV sin encabezados y tomando solo datos numéricos
         data = pd.read_csv(ruta_archivo_csv, header=None, skiprows=3)
 
         if limite_filas is not None and len(data) > limite_filas:
             data = data.tail(limite_filas)
 
         # Eliminar la primera columna (asumida como fecha) y convertir el resto a numérico
-        data = data.iloc[:, 1:]
-        data = data.apply(pd.to_numeric, errors='coerce')
+        data = data.iloc[:, 1:].apply(pd.to_numeric, errors='coerce')
         data.dropna(axis=1, how='any', inplace=True)
 
         if data.shape[1] < 1:
@@ -164,9 +163,9 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
 def evaluar_dataset(resultados):
     calificaciones = {}
     for columna, stats in resultados.items():
-        prediccion_tendencias = "Alta calidad" if stats['SNR'] > 10 and stats['hurst_exponent'] > 0.5 else "Baja calidad"
-        balanceo_portafolios = "Adecuada" if stats['dfa'] < 1.5 else "No adecuada"
-        trading_automatico = "Buena" if stats['potencias_picos'].mean() > 1000 else "Baja"
+        prediccion_tendencias = "Mejor para Predicción" if stats['SNR'] > 10 and stats['hurst_exponent'] > 0.5 else "No ideal para Predicción"
+        balanceo_portafolios = "Mejor para Portafolio" if stats['dfa'] < 1.5 else "No ideal para Portafolio"
+        trading_automatico = "Mejor para Trading" if stats['potencias_picos'].mean() > 1000 else "No ideal para Trading"
 
         calificaciones[columna] = {
             "Predicción de Tendencias": prediccion_tendencias,
