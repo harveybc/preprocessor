@@ -100,7 +100,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         
         # Asegurarse de que las columnas no tengan nombres duplicados manualmente
         print(f"[DEBUG] Asegurándose de que no haya nombres duplicados en las columnas.")
-        data.columns = pd.io.parsers.ParserBase({'names': data.columns})._maybe_dedup_names(data.columns)
+        print(f"[DEBUG] Columnas antes de la deduplicación: {data.columns.tolist()}")
 
         # Alternativa para eliminar nombres de columnas duplicados manualmente
         seen = set()
@@ -118,6 +118,8 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                 new_columns.append(col)
                 seen.add(col)
         data.columns = new_columns
+
+        print(f"[DEBUG] Columnas después de la deduplicación: {data.columns.tolist()}")
 
         # Extraer las columnas excepto la fecha
         columnas = data.columns[1:]
