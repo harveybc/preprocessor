@@ -97,9 +97,6 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         media = serie.mean()
         desviacion = serie.std()
         snr = (media / desviacion) ** 2 if desviacion != 0 else np.nan
-        ruido_normalizado = 1 / snr if snr != 0 else np.nan
-        desviacion_ruido = np.sqrt(ruido_normalizado) * desviacion if ruido_normalizado != 0 else np.nan
-        amplitud_promedio = desviacion_ruido * np.sqrt(2 / np.pi) if ruido_normalizado != 0 else np.nan
 
         # Calculate returns
         retornos = serie.diff().abs().dropna()
@@ -119,7 +116,6 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
         peaks, _ = find_peaks(espectro)
         peak_indices = np.argsort(espectro[peaks])[-5:][::-1]
         peak_freqs = freqs[peaks][peak_indices]
-        peak_powers = espectro[peaks][peak_indices]
 
         # Autocorrelation analysis
         autocorr_1 = serie.autocorr(lag=1)
@@ -157,12 +153,15 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
             "media": media,
             "desviacion": desviacion,
             "snr": snr,
-            "peak_freqs": ','.join(map(str, peak_freqs)),
-            "peak_powers": ','.join(map(str, peak_powers)),
             "hurst_exponent": hurst_exponent,
             "dfa": dfa,
             "promedio_retornos": promedio_retornos,
-            "autocorr_1": autocorr_1
+            "autocorr_1": autocorr_1,
+            "pico_frecuencia_1": peak_freqs[0] if len(peak_freqs) > 0 else np.nan,
+            "pico_frecuencia_2": peak_freqs[1] if len(peak_freqs) > 1 else np.nan,
+            "pico_frecuencia_3": peak_freqs[2] if len(peak_freqs) > 2 else np.nan,
+            "pico_frecuencia_4": peak_freqs[3] if len(peak_freqs) > 3 else np.nan,
+            "pico_frecuencia_5": peak_freqs[4] if len(peak_freqs) > 4 else np.nan
         }
         return resumen_dataset
 
@@ -188,8 +187,11 @@ def generar_tabla_resumen(resumen_general):
         print(f"  DFA: {resumen['dfa']}")
         print(f"  Promedio de retornos: {resumen['promedio_retornos']}")
         print(f"  Autocorrelación (lag 1): {resumen['autocorr_1']}")
-        print(f"  Frecuencias de los 5 picos principales: {resumen['peak_freqs']}")
-        print(f"  Potencias de los 5 picos principales: {resumen['peak_powers']}")
+        print(f"  Pico Frecuencia 1: {resumen['pico_frecuencia_1']}")
+        print(f"  Pico Frecuencia 2: {resumen['pico_frecuencia_2']}")
+        print(f"  Pico Frecuencia 3: {resumen['pico_frecuencia_3']}")
+        print(f"  Pico Frecuencia 4: {resumen['pico_frecuencia_4']}")
+        print(f"  Pico Frecuencia 5: {resumen['pico_frecuencia_5']}")
         print("*********************************************")
 
 # Execute the script
