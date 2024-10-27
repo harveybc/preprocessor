@@ -23,6 +23,7 @@ def descargar_y_procesar_datasets():
         "gabrielmv/eurusd-daily-historical-data-20012019"
     ]
     
+    resumen_general = []
     for dataset in datasets:
         try:
             print(f"[INFO] Descargando dataset: {dataset}")
@@ -40,15 +41,39 @@ def descargar_y_procesar_datasets():
             csv_files = [file for file in path.glob('**/*.csv')]
             if csv_files:
                 print(f"[INFO] Analizando el archivo CSV: {csv_files[0]}")
-                analizar_archivo_csv(csv_files[0], 4500)
+                resumen = analizar_archivo_csv(csv_files[0], 4500)
+                if resumen:
+                    resumen_general.append(resumen)
             else:
                 print(f"[ERROR] No se encontró archivo CSV en el dataset {dataset}")
         except Exception as e:
             print(f"[ERROR] Error durante la descarga o procesamiento del dataset {dataset}: {e}")
+    
+    # Print the overall summary
+    print("\n*********************************************")
+    print("Resumen de uso:")
+    for resumen in resumen_general:
+        print(f"Dataset {resumen['periodicidad']}: mejor para {resumen['mejor_uso']}")
+    print("\nTotal de datasets analizados:")
+    for resumen in resumen_general:
+        print(f"{resumen['periodicidad']} = {resumen['filas']} filas")
+    print("*********************************************")
 
 # Define the main function that analyzes the CSV file
 def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
     try:
+        # Determine the periodicity of the dataset based on the file name
+        if "1minute" in str(ruta_archivo_csv).lower():
+            periodicidad = "1min"
+        elif "15min" in str(ruta_archivo_csv).lower():
+            periodicidad = "15min"
+        elif "1h" in str(ruta_archivo_csv).lower():
+            periodicidad = "1h"
+        elif "1d" in str(ruta_archivo_csv).lower():
+            periodicidad = "1d"
+        else:
+            periodicidad = "desconocido"
+        
         # Load the CSV file using pandas
         try:
             print(f"[DEBUG] Cargando el archivo CSV desde la ruta: {ruta_archivo_csv}")
@@ -119,31 +144,6 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                 picos_principales = frecuencias[picos][indices_ordenados]
                 potencias_principales = potencias_picos[indices_ordenados]
                 
-                # Decompose the time series using seasonal_decompose
-                decomposition = sm.tsa.seasonal_decompose(serie, model='additive', period=30)
-                tendencia = decomposition.trend
-                estacionalidad = decomposition.seasonal
-                residuales = decomposition.resid
-                
-                # Plot and save decomposition
-                plt.figure()
-                plt.plot(tendencia, label='Tendencia')
-                plt.plot(estacionalidad, label='Estacionalidad')
-                plt.plot(residuales, label='Residuales')
-                plt.legend()
-                plt.title(f"Descomposición de la serie - Dataset Periodicidad {ruta_archivo_csv.stem} Columna {columna}")
-                plt.savefig(f"output/decomposition_{ruta_archivo_csv.stem}_col{columna}.png")
-                plt.close()
-
-                # Plot and save Fourier Spectrum for the best column
-                plt.figure()
-                plt.plot(frecuencias, espectro)
-                plt.title(f"Espectro de Fourier - Dataset Periodicidad {ruta_archivo_csv.stem} Columna {columna}")
-                plt.xlabel('Frecuencia')
-                plt.ylabel('Potencia')
-                plt.savefig(f"output/fourier_spectrum_{ruta_archivo_csv.stem}_col{columna}.png")
-                plt.close()
-                
                 # Store results
                 resultados[columna] = {
                     "media": media,
@@ -161,13 +161,30 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                 if snr > mejor_snr:
                     mejor_snr = snr
                     mejor_columna = columna
+                
+                # Plot Fourier Spectrum for the best column
+                if mejor_columna == columna:
+                    plt.figure(figsize=(10, 6))
+                    plt.plot(frecuencias, espectro)
+                    plt.title(f"Espectro de Fourier para la mejor columna - Dataset {periodicidad}")
+                    plt.xlabel("Frecuencia")
+                    plt.ylabel("Potencia")
+                    plt.grid(True)
+                    plt.savefig(f"output/espectro_fourier_{periodicidad}_col{i + 1}.png")
+                    plt.close()
+
+                    # Decompose the series into trend, seasonal, and residual components
+                    descomposicion = sm.tsa.seasonal_decompose(serie, model='additive', period=30)
+                    descomposicion.plot()
+                    plt.savefig(f"output/descomposicion_{periodicidad}_col{i + 1}.png")
+                    plt.close()
             
             except Exception as e:
                 print(f"[ERROR] Error al analizar la columna {i + 1}: {e}")
 
         # Print summary statistics for each dataset
         print("*********************************************")
-        print(f"Estadísticas para dataset:")
+        print(f"Estadísticas para dataset {periodicidad}:")
         for columna, stats in resultados.items():
             print(f"Columna: {columna}")
             for key, value in stats.items():
@@ -177,17 +194,22 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                     print(f"  {key}: {value}")
         print("*********************************************")
 
-        # Print summary for the best dataset for each scenario
-        print("Resumen de uso:")
-        if mejor_columna is not None:
-            print(f"Mejor columna para predicción de tendencias: Columna {mejor_columna} del dataset {ruta_archivo_csv.stem}")
-            print(f"Características de la mejor columna:")
-            for key, value in resultados[mejor_columna].items():
-                if isinstance(value, np.ndarray):
-                    print(f"  {key}: {value[:5]}... (truncado)")
-                else:
-                    print(f"  {key}: {value}")
-        print("*********************************************")
+        # Determine best use case for dataset based on SNR and other metrics
+        if mejor_snr > 10:
+            mejor_uso = "Trading"
+        elif mejor_snr > 5:
+            mejor_uso = "Predicción"
+        else:
+            mejor_uso = "Portafolio"
+        
+        # Return summary for general use
+        return {
+            "periodicidad": periodicidad,
+            "mejor_columna": mejor_columna,
+            "mejor_snr": mejor_snr,
+            "mejor_uso": mejor_uso,
+            "filas": data.shape[0]
+        }
 
     except FileNotFoundError:
         print("[ERROR] El archivo especificado no se encontró. Por favor verifique la ruta.")
