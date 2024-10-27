@@ -16,7 +16,6 @@ from pathlib import Path
 warnings.filterwarnings("ignore")
 
 # Definir la función para descargar y cargar los últimos 4500 datos de cada dataset
-
 def descargar_y_procesar_datasets():
     print("[INFO] Iniciando la descarga y procesamiento de los datasets...")  # Agregar mensaje de inicio
     datasets = [
@@ -59,7 +58,6 @@ def descargar_y_procesar_datasets():
 
 # Definir la función principal que analizará el archivo CSV
 # Ahora también acepta un parámetro de límite de filas
-
 def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
     try:
         # Determinar la periodicidad del dataset a partir del nombre del archivo
@@ -162,16 +160,6 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                 # Detrended Fluctuation Analysis (DFA)
                 dfa = nolds.dfa(serie)
                 
-                # Análisis de autocorrelación (Manual usando pandas)
-                plt.figure(figsize=(12, 6))
-                pd.plotting.autocorrelation_plot(serie)
-                plt.title(f'{periodicidad} - Función de Autocorrelación (ACF) - {columna}')
-                plt.xlabel('Lags')
-                plt.ylabel('Autocorrelación')
-                plt.grid(True)
-                plt.savefig(f'output/{periodicidad}_acf_plot_{columna}.png')
-                plt.close()
-                
                 # Entropía espectral
                 espectro = np.abs(fft(serie))
                 espectro_normalizado = espectro / espectro.sum()
@@ -200,12 +188,6 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                 if snr > mejor_snr:
                     mejor_snr = snr
                     mejor_columna = columna
-                
-                # Visualización de la columna
-                print(f"[DEBUG] Realizando visualizaciones para la columna: {columna}")
-                analizar_tendencia_estacionalidad_residuos(serie, columna, periodicidad, save_path=f'output/{periodicidad}_trend_{columna}.png')
-                analizar_distribucion(serie, retornos, columna, periodicidad, save_path=f'output/{periodicidad}_distribution_{columna}.png')
-                analizar_fourier(serie, columna, periodicidad, save_path=f'output/{periodicidad}_fourier_{columna}.png')
                 
             except ValueError as ve:
                 print(f"[ERROR] {ve}")
@@ -238,73 +220,6 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
     return None
 
 # Funciones auxiliares para visualización y análisis
-
-def analizar_tendencia_estacionalidad_residuos(serie, columna, periodicidad, save_path):
-    try:
-        # Graficar la tendencia y residuos de la serie
-        plt.figure(figsize=(10, 6))
-        plt.plot(serie, label='Serie Temporal')
-        plt.title(f'{periodicidad} - Tendencia, Estacionalidad y Residuos - {columna}')
-        plt.xlabel('Tiempo')
-        plt.ylabel('Valor')
-        plt.legend()
-        plt.grid(True)
-        plt.savefig(save_path)
-        plt.close()
-    except Exception as e:
-        print(f"[ERROR] Error al graficar tendencia, estacionalidad y residuos para '{columna}': {e}")
-
-def analizar_distribucion(serie, retornos, columna, periodicidad, save_path):
-    try:
-        # Graficar distribución de la serie
-        plt.figure(figsize=(10, 6))
-        sns.histplot(serie, kde=True)
-        plt.title(f'{periodicidad} - Distribución de {columna}')
-        plt.xlabel('Valor')
-        plt.ylabel('Frecuencia')
-        plt.grid(True)
-        plt.savefig(save_path)
-        plt.close()
-        
-        # Graficar distribución de retornos
-        plt.figure(figsize=(10, 6))
-        sns.histplot(retornos, kde=True)
-        plt.title(f'{periodicidad} - Distribución de Retornos - {columna}')
-        plt.xlabel('Retorno')
-        plt.ylabel('Frecuencia')
-        plt.grid(True)
-        plt.savefig(save_path.replace("distribution", "returns_distribution"))
-        plt.close()
-    except Exception as e:
-        print(f"[ERROR] Error al graficar distribución para '{columna}': {e}")
-
-def analizar_fourier(serie, columna, periodicidad, save_path):
-    try:
-        # Realizar la Transformada de Fourier a la serie
-        espectro = np.abs(fft(serie))
-        frecuencias = np.fft.fftfreq(len(serie))
-        
-        # Encontrar los picos principales en el espectro de potencia
-        picos, _ = find_peaks(espectro)
-        picos_principales = sorted(picos, key=lambda x: espectro[x], reverse=True)[:5]
-        
-        # Graficar el espectro de Fourier y marcar los picos principales
-        plt.figure(figsize=(10, 6))
-        plt.plot(frecuencias, espectro)
-        plt.scatter(frecuencias[picos_principales], espectro[picos_principales], color='red')
-        plt.title(f'{periodicidad} - Espectro de Fourier - {columna}')
-        plt.xlabel('Frecuencia')
-        plt.ylabel('Potencia')
-        plt.grid(True)
-        plt.savefig(save_path)
-        plt.close()
-        
-        # Mostrar las frecuencias de los picos principales
-        print(f"Principales frecuencias para {columna}:")
-        for i, pico in enumerate(picos_principales, start=1):
-            print(f"Pico {i}: Frecuencia = {frecuencias[pico]}, Potencia = {espectro[pico]}")
-    except Exception as e:
-        print(f"[ERROR] Error en el análisis de Fourier para '{columna}': {e}")
 
 def evaluar_dataset(resultados):
     calificaciones = {}
