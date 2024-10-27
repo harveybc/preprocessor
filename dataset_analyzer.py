@@ -131,7 +131,8 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                 plt.xlabel('Lags')
                 plt.ylabel('Autocorrelación')
                 plt.grid(True)
-                plt.show(block=True)
+                plt.savefig(f'output/{columna}_acf_plot.png')
+                plt.close()
                 
                 # Entropía espectral
                 espectro = np.abs(fft(serie))
@@ -160,15 +161,18 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
                 }
                 
                 # Visualización de la columna
-                analizar_tendencia_estacionalidad_residuos(serie, columna)
-                analizar_distribucion(serie, retornos, columna)
-                analizar_fourier(serie, columna)
+                analizar_tendencia_estacionalidad_residuos(serie, columna, save_path=f'output/{columna}_trend.png')
+                analizar_distribucion(serie, retornos, columna, save_path=f'output/{columna}_distribution.png')
+                analizar_fourier(serie, columna, save_path=f'output/{columna}_fourier.png')
                 
             except Exception as e:
                 print(f"[ERROR] Error al analizar la columna '{columna}': {e}")  # Debug: Mensaje de error para la columna
         
         # Evaluar la calidad del dataset para cada escenario
         evaluar_dataset(resultados)
+        
+        # Generar resumen en una tabla
+        generar_resumen(resultados, ruta_archivo_csv)
         
         return resultados
     
@@ -181,7 +185,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None):
 
 # Funciones auxiliares para visualización y análisis
 
-def analizar_tendencia_estacionalidad_residuos(serie, columna):
+def analizar_tendencia_estacionalidad_residuos(serie, columna, save_path):
     try:
         # Graficar la tendencia y residuos de la serie
         plt.figure(figsize=(10, 6))
@@ -191,11 +195,12 @@ def analizar_tendencia_estacionalidad_residuos(serie, columna):
         plt.ylabel('Valor')
         plt.legend()
         plt.grid(True)
-        plt.show(block=True)
+        plt.savefig(save_path)
+        plt.close()
     except Exception as e:
         print(f"[ERROR] Error al graficar tendencia, estacionalidad y residuos para '{columna}': {e}")
 
-def analizar_distribucion(serie, retornos, columna):
+def analizar_distribucion(serie, retornos, columna, save_path):
     try:
         # Graficar distribución de la serie
         plt.figure(figsize=(10, 6))
@@ -204,7 +209,8 @@ def analizar_distribucion(serie, retornos, columna):
         plt.xlabel('Valor')
         plt.ylabel('Frecuencia')
         plt.grid(True)
-        plt.show(block=True)
+        plt.savefig(save_path)
+        plt.close()
         
         # Graficar distribución de retornos
         plt.figure(figsize=(10, 6))
@@ -213,18 +219,36 @@ def analizar_distribucion(serie, retornos, columna):
         plt.xlabel('Retorno')
         plt.ylabel('Frecuencia')
         plt.grid(True)
-        plt.show(block=True)
+        plt.savefig(save_path.replace("distribution", "returns_distribution"))
+        plt.close()
     except Exception as e:
         print(f"[ERROR] Error al graficar distribución para '{columna}': {e}")
 
-def analizar_fourier(serie, columna):
+def analizar_fourier(serie, columna, save_path):
     try:
         # Realizar la Transformada de Fourier a la serie
         espectro = np.abs(fft(serie))
         frecuencias = np.fft.fftfreq(len(serie))
         
-        # Encontrar los picos principales en el espectro de
+        # Encontrar los picos principales en el espectro de potencia
+        picos, _ = find_peaks(espectro)
+        picos_principales = sorted(picos, key=lambda x: espectro[x], reverse=True)[:5]
         
+        # Graficar el espectro de Fourier y marcar los picos principales
+        plt.figure(figsize=(10, 6))
+        plt.plot(frecuencias, espectro)
+        plt.scatter(frecuencias[picos_principales], espectro[picos_principales], color='red')
+        plt.title(f'Espectro de Fourier - {columna}')
+        plt.xlabel('Frecuencia')
+        plt.ylabel('Potencia')
+        plt.grid(True)
+        plt.savefig(save_path)
+        plt.close()
+        
+        # Mostrar las frecuencias de los picos principales
+        print(f"Principales frecuencias para {columna}:")
+        for i, pico in enumerate(picos_principales, start=1):
+            print(f"Pico {i}: Frecuencia = {frecuencias[pico]}, Potencia = {espectro[pico]}")
     except Exception as e:
         print(f"[ERROR] Error en el análisis de Fourier para '{columna}': {e}")
 
@@ -255,6 +279,12 @@ def evaluar_dataset(resultados):
             print("  [TRADING AUTOMÁTICO]: Buena coherencia en frecuencias de corto plazo, adecuado para trading en vivo.")
         else:
             print("  [TRADING AUTOMÁTICO]: Baja coherencia en frecuencias de corto plazo, menos adecuado para trading.")
+
+def generar_resumen(resultados, ruta_archivo_csv):
+    resumen = pd.DataFrame(resultados).T
+    resumen_path = f"output/resumen_{Path(ruta_archivo_csv).stem}.csv"
+    resumen.to_csv(resumen_path)
+    print(f"[INFO] Resumen generado y guardado en: {resumen_path}")
 
 # Llamar a la función principal para iniciar el análisis
 descargar_y_procesar_datasets()
