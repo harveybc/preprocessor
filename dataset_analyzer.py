@@ -126,7 +126,7 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None, periodicity="unkno
         # Calculate Shannon-Hartley channel capacity and noise-free information in bits
         if snr != 'E' and sampling_frequency != 'E':
             channel_capacity = sampling_frequency * np.log2(1 + snr)
-            information_bits = channel_capacity * len(serie)
+            information_bits = channel_capacity * 4500
         else:
             channel_capacity = 'E'
             information_bits = 'E'
