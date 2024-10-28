@@ -111,6 +111,26 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None, periodicity="unkno
         media_error = (desviacion_error * (np.sqrt(2/np.pi))) if desviacion_error != 'E' else 'E'
         promedio_retornos = serie.diff().abs().mean() if not serie.empty else 'E'
 
+        # Calculate sampling frequency in Hz
+        periodicity_seconds_map = {
+            "1min": 60,
+            "5min": 5 * 60,
+            "15min": 15 * 60,
+            "1h": 60 * 60,
+            "4h": 4 * 60 * 60,
+            "daily": 24 * 60 * 60
+        }
+        sampling_period_seconds = periodicity_seconds_map.get(periodicity, None)
+        sampling_frequency = 1 / sampling_period_seconds if sampling_period_seconds else 'E'
+
+        # Calculate Shannon-Hartley channel capacity and noise-free information in bits
+        if snr != 'E' and sampling_frequency != 'E':
+            channel_capacity = sampling_frequency * np.log2(1 + snr)
+            information_bits = channel_capacity * len(serie)
+        else:
+            channel_capacity = 'E'
+            information_bits = 'E'
+
         # Decompose time series into trend, seasonal, and residual components
         decomposition = sm.tsa.seasonal_decompose(serie, model='additive', period=30)
         plt.figure()
@@ -161,7 +181,10 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None, periodicity="unkno
             "media_error": media_error,
             "promedio_retornos": promedio_retornos,
             "autocorrelacion": autocorrelacion,
-            "top_5_peak_freqs": top_5_peak_freqs
+            "top_5_peak_freqs": top_5_peak_freqs,
+            "sampling_frequency": sampling_frequency,
+            "channel_capacity": channel_capacity,
+            "information_bits": information_bits
         }
 
         return resumen
@@ -178,7 +201,10 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None, periodicity="unkno
             "media_error": 'E',
             "promedio_retornos": 'E',
             "autocorrelacion": 'E',
-            "top_5_peak_freqs": 'E'
+            "top_5_peak_freqs": 'E',
+            "sampling_frequency": 'E',
+            "channel_capacity": 'E',
+            "information_bits": 'E'
         }
 
 # Function to generate summary CSV
@@ -201,6 +227,9 @@ def generar_tabla_resumen(resumen_general):
         print(f"  Promedio de retornos: {resumen['promedio_retornos']}")
         print(f"  Autocorrelación (lags 1-10): {resumen['autocorrelacion']}")
         print(f"  Frecuencias de los top 5 picos del espectro de Fourier: {resumen['top_5_peak_freqs']}")
+        print(f"  Frecuencia de muestreo (Hz): {resumen['sampling_frequency']}")
+        print(f"  Capacidad del Canal (bits/seg): {resumen['channel_capacity']}")
+        print(f"  Información libre de ruido (bits): {resumen['information_bits']}")
         print("*********************************************")
 
 # Execute the script
