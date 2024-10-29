@@ -56,7 +56,7 @@ def descargar_y_procesar_datasets():
             csv_files = [file for file in path.glob('**/*.csv')]
             if csv_files:
                 print(f"[INFO] Analizando el archivo CSV: {csv_files[0]}")
-                resumen_dataset = analizar_archivo_csv(csv_files[0], 4500, periodicity)
+                resumen_dataset = analizar_archivo_csv(csv_files[0], 600, periodicity)
                 if resumen_dataset is not None:
                     resumen_general.append(resumen_dataset)
             else:
