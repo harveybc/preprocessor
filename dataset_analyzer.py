@@ -56,7 +56,7 @@ def descargar_y_procesar_datasets():
             csv_files = [file for file in path.glob('**/*.csv')]
             if csv_files:
                 print(f"[INFO] Analizando el archivo CSV: {csv_files[0]}")
-                resumen_dataset = analizar_archivo_csv(csv_files[0], 600, periodicity)
+                resumen_dataset = analizar_archivo_csv(csv_files[0], 4500, periodicity)
                 if resumen_dataset is not None:
                     resumen_general.append(resumen_dataset)
             else:
@@ -126,7 +126,9 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None, periodicity="unkno
         # Calculate Shannon-Hartley channel capacity and noise-free information in bits
         if snr != 'E' and sampling_frequency != 'E':
             channel_capacity = sampling_frequency * np.log2(1 + snr)
-            information_bits = channel_capacity * 4500
+            # caculate information bits, have into account that each dataset is 4500 ticks long, and 
+            # the channel capacity is in bits/s so we need to convert the periodicity of the dataset to seconds
+            information_bits = channel_capacity * 4500 * sampling_period_seconds
         else:
             channel_capacity = 'E'
             information_bits = 'E'
