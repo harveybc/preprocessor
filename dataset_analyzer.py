@@ -13,7 +13,7 @@ from pathlib import Path
 # Configure to ignore warnings
 warnings.filterwarnings("ignore")
 
-# Function to ensure output directory exists
+# Ensure output directory exists
 def ensure_output_directory():
     output_dir = Path("output")
     if not output_dir.exists():
@@ -56,7 +56,7 @@ def descargar_y_procesar_datasets():
             csv_files = [file for file in path.glob('**/*.csv')]
             if csv_files:
                 print(f"[INFO] Analizando el archivo CSV: {csv_files[0]}")
-                resumen_dataset = analizar_archivo_csv(csv_files[0], periodicity)
+                resumen_dataset = analizar_archivo_csv(csv_files[0], 4500, periodicity)
                 if resumen_dataset is not None:
                     resumen_general.append(resumen_dataset)
             else:
@@ -67,14 +67,19 @@ def descargar_y_procesar_datasets():
     # Generate summary table for all datasets
     if resumen_general:
         generar_tabla_resumen(resumen_general)
+        generar_csv_resumen(resumen_general)
     else:
         print("[INFO] No se generó ningún resumen general debido a errores en el procesamiento de los datasets.")
 
 # Function to analyze CSV file
-def analizar_archivo_csv(ruta_archivo_csv, periodicity="unknown"):
+def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None, periodicity="unknown"):
     try:
         # Load CSV without headers
         data = pd.read_csv(ruta_archivo_csv, header=None, skiprows=1, index_col=False)
+
+        # Limit rows if specified
+        if limite_filas is not None and len(data) > limite_filas:
+            data = data.tail(limite_filas)
 
         # Drop the first column (assumed to be date)
         data.drop(data.columns[0], axis=1, inplace=True)
@@ -97,21 +102,39 @@ def analizar_archivo_csv(ruta_archivo_csv, periodicity="unknown"):
             print("[ERROR] No hay suficientes datos para el análisis después de la limpieza de valores nulos.")
             return None
 
-        # Normalize returns (new behavior)
-        retornos = serie.diff().dropna()  # Compute returns as the difference between consecutive values
-        normalizacion_retornos = (retornos - retornos.mean()) / retornos.std()  # Normalizing returns
+        # Calculate Min-Max Normalized Returns
+        retornos = serie.diff().dropna()
+
+        # Min-Max Normalization of returns
+        min_retornos = retornos.min()
+        max_retornos = retornos.max()
+
+        # Apply Min-Max normalization
+        normalizacion_retornos = (retornos - min_retornos) / (max_retornos - min_retornos)
+
+        # Debugging: Print normalized returns
+        print("Normalized Returns (Min-Max):")
+        print(normalizacion_retornos.head())
+        print(f"Min of Normalized Returns: {min_retornos}")
+        print(f"Max of Normalized Returns: {max_retornos}")
+
+        # Calculate SNR using the normalized returns
+        if normalizacion_retornos.std() != 0:
+            snr = (normalizacion_retornos.mean() / normalizacion_retornos.std()) ** 2
+        else:
+            snr = 'E'  # If standard deviation is zero, set SNR to 'E'
+            print("[WARNING] Standard deviation of normalized returns is zero, SNR will be 'E'.")
+
+        # Debugging: Print SNR value
+        print(f"Calculated SNR: {snr}")
 
         # Calculate statistics
-        media = serie.mean() if not serie.empty else 'E'
-        desviacion = serie.std() if not serie.empty else 'E'
-        snr = (normalizacion_retornos.mean() / normalizacion_retornos.std()) ** 2 if normalizacion_retornos.std() != 0 else 'E'
+        media = normalizacion_retornos.mean() if not normalizacion_retornos.empty else 'E'
+        desviacion = normalizacion_retornos.std() if not normalizacion_retornos.empty else 'E'
         potencia_error = 1 / snr if snr != 'E' and snr != 0 else 'E'
         desviacion_error = np.sqrt(potencia_error) if potencia_error != 'E' else 'E'
         media_error = (desviacion_error * (np.sqrt(2/np.pi))) if desviacion_error != 'E' else 'E'
-        promedio_retornos = normalizacion_retornos.mean() if not normalizacion_retornos.empty else 'E'
-
-        # Get the size of the dataset dynamically (instead of hardcoding 4500)
-        dataset_size = len(serie)
+        promedio_retornos = normalizacion_retornos.abs().mean() if not normalizacion_retornos.empty else 'E'
 
         # Calculate sampling frequency in Hz
         periodicity_seconds_map = {
@@ -128,32 +151,25 @@ def analizar_archivo_csv(ruta_archivo_csv, periodicity="unknown"):
         # Calculate Shannon-Hartley channel capacity and noise-free information in bits
         if snr != 'E' and sampling_frequency != 'E':
             channel_capacity = sampling_frequency * np.log2(1 + snr)
-            information_bits = channel_capacity * dataset_size * sampling_period_seconds  # Use dataset_size dynamically
+            information_bits = channel_capacity * len(serie) * sampling_period_seconds
         else:
             channel_capacity = 'E'
             information_bits = 'E'
 
-        # Fourier analysis
+        # Perform Fourier analysis
         espectro = np.abs(fft(serie))
         espectro_db = 10 * np.log10(espectro + 1e-10)  # Using 10*log10 for better peak perception
         freqs = np.fft.fftfreq(len(espectro_db))
-        plt.figure()
-        plt.plot(freqs[:len(freqs)//2], espectro_db[:len(espectro_db)//2])
-        plt.title(f"Espectro de Fourier - {periodicity}")
-        plt.xlabel('Frecuencia (Hz)')
-        plt.ylabel('Amplitud (dB)')
-        plt.savefig(f"output/{periodicity}_fourier_spectrum.png")
 
-        # Find peaks in the spectrum
-        peaks, _ = find_peaks(espectro_db[:len(espectro_db)//2], height=0)
-        top_peaks = sorted(peaks, key=lambda x: espectro_db[x], reverse=True)[:5]
-        top_5_peak_freqs = [freqs[peak] for peak in top_peaks]
+        # Find the top 5 peaks
+        top_5_peaks, _ = find_peaks(espectro_db[:len(espectro_db)//2])
+        top_5_peak_freqs = freqs[top_5_peaks][:5] if len(top_5_peaks) > 5 else freqs[top_5_peaks]
 
-        # Calculate autocorrelation for lags 1-10
-        autocorrelation = [serie.autocorr(lag) for lag in range(1, 11)]
+        # Perform autocorrelation analysis (lags 1-10)
+        autocorrelation = [serie.autocorr(lag=i) for i in range(1, 11)]
 
-        # Prepare the summary of results
-        resumen = {
+        # Create summary for the dataset
+        resumen_dataset = {
             'dataset': ruta_archivo_csv.name,
             'media': media,
             'desviacion': desviacion,
@@ -169,14 +185,14 @@ def analizar_archivo_csv(ruta_archivo_csv, periodicity="unknown"):
             'information_bits': information_bits
         }
 
-        return resumen
+        return resumen_dataset
 
     except Exception as e:
-        print(f"[ERROR] Error durante el análisis del archivo CSV: {e}")
+        print(f"[ERROR] Error durante el análisis del archivo CSV {ruta_archivo_csv}: {e}")
         return None
 
-# Function to generate summary table 
-def generar_tabla_resumen(resumen_general):  
+# Function to generate summary table
+def generar_tabla_resumen(resumen_general):
     print("\n*********************************************")
     for resumen in resumen_general:
         print(f"Estadísticas para dataset {resumen['dataset']}:")
