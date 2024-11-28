@@ -128,12 +128,12 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None, periodicity="unkno
         print(f"Calculated SNR: {snr}")
 
         # Calculate statistics
-        media = normalizacion_retornos.mean() if not normalizacion_retornos.empty else 'E'
-        desviacion = normalizacion_retornos.std() if not normalizacion_retornos.empty else 'E'
+        media = retornos.mean() if not retornos.empty else 'E'
+        desviacion = retornos.std() if not retornos.empty else 'E'
         potencia_error = 1 / snr if snr != 'E' and snr != 0 else 'E'
         desviacion_error = np.sqrt(potencia_error) if potencia_error != 'E' else 'E'
         media_error = (desviacion_error * (np.sqrt(2/np.pi))) if desviacion_error != 'E' else 'E'
-        promedio_retornos = normalizacion_retornos.abs().mean() if not normalizacion_retornos.empty else 'E'
+        promedio_retornos = retornos.abs().mean() if not normalizacion_retornos.empty else 'E'
 
         # Calculate sampling frequency in Hz
         periodicity_seconds_map = {
