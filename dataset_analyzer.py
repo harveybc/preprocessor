@@ -67,7 +67,6 @@ def descargar_y_procesar_datasets():
     # Generate summary table for all datasets
     if resumen_general:
         generar_tabla_resumen(resumen_general)
-        generar_csv_resumen(resumen_general)
     else:
         print("[INFO] No se generó ningún resumen general debido a errores en el procesamiento de los datasets.")
 
