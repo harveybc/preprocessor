@@ -13,7 +13,7 @@ from pathlib import Path
 # Configure to ignore warnings
 warnings.filterwarnings("ignore")
 
-# Ensure output directory exists
+# Function to ensure output directory exists
 def ensure_output_directory():
     output_dir = Path("output")
     if not output_dir.exists():
@@ -56,7 +56,7 @@ def descargar_y_procesar_datasets():
             csv_files = [file for file in path.glob('**/*.csv')]
             if csv_files:
                 print(f"[INFO] Analizando el archivo CSV: {csv_files[0]}")
-                resumen_dataset = analizar_archivo_csv(csv_files[0], 4500, periodicity)
+                resumen_dataset = analizar_archivo_csv(csv_files[0], periodicity)
                 if resumen_dataset is not None:
                     resumen_general.append(resumen_dataset)
             else:
@@ -72,14 +72,10 @@ def descargar_y_procesar_datasets():
         print("[INFO] No se generó ningún resumen general debido a errores en el procesamiento de los datasets.")
 
 # Function to analyze CSV file
-def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None, periodicity="unknown"):
+def analizar_archivo_csv(ruta_archivo_csv, periodicity="unknown"):
     try:
         # Load CSV without headers
         data = pd.read_csv(ruta_archivo_csv, header=None, skiprows=1, index_col=False)
-
-        # Limit rows if specified
-        if limite_filas is not None and len(data) > limite_filas:
-            data = data.tail(limite_filas)
 
         # Drop the first column (assumed to be date)
         data.drop(data.columns[0], axis=1, inplace=True)
@@ -102,14 +98,21 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None, periodicity="unkno
             print("[ERROR] No hay suficientes datos para el análisis después de la limpieza de valores nulos.")
             return None
 
+        # Normalize returns (new behavior)
+        retornos = serie.diff().dropna()  # Compute returns as the difference between consecutive values
+        normalizacion_retornos = (retornos - retornos.mean()) / retornos.std()  # Normalizing returns
+
         # Calculate statistics
         media = serie.mean() if not serie.empty else 'E'
         desviacion = serie.std() if not serie.empty else 'E'
-        snr = (media / desviacion) ** 2 if desviacion != 0 else 'E'
+        snr = (normalizacion_retornos.mean() / normalizacion_retornos.std()) ** 2 if normalizacion_retornos.std() != 0 else 'E'
         potencia_error = 1 / snr if snr != 'E' and snr != 0 else 'E'
         desviacion_error = np.sqrt(potencia_error) if potencia_error != 'E' else 'E'
         media_error = (desviacion_error * (np.sqrt(2/np.pi))) if desviacion_error != 'E' else 'E'
-        promedio_retornos = serie.diff().abs().mean() if not serie.empty else 'E'
+        promedio_retornos = normalizacion_retornos.mean() if not normalizacion_retornos.empty else 'E'
+
+        # Get the size of the dataset dynamically (instead of hardcoding 4500)
+        dataset_size = len(serie)
 
         # Calculate sampling frequency in Hz
         periodicity_seconds_map = {
@@ -126,19 +129,10 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None, periodicity="unkno
         # Calculate Shannon-Hartley channel capacity and noise-free information in bits
         if snr != 'E' and sampling_frequency != 'E':
             channel_capacity = sampling_frequency * np.log2(1 + snr)
-            # caculate information bits, have into account that each dataset is 4500 ticks long, and 
-            # the channel capacity is in bits/s so we need to convert the periodicity of the dataset to seconds
-            information_bits = channel_capacity * 4500 * sampling_period_seconds
+            information_bits = channel_capacity * dataset_size * sampling_period_seconds  # Use dataset_size dynamically
         else:
             channel_capacity = 'E'
             information_bits = 'E'
-
-        # Decompose time series into trend, seasonal, and residual components
-        decomposition = sm.tsa.seasonal_decompose(serie, model='additive', period=30)
-        plt.figure()
-        decomposition.plot()
-        plt.suptitle(f"Trend, Seasonality, and Residuals - {periodicity}")
-        plt.savefig(f"output/{periodicity}_decomposition.png")
 
         # Fourier analysis
         espectro = np.abs(fft(serie))
@@ -148,74 +142,41 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None, periodicity="unkno
         plt.plot(freqs[:len(freqs)//2], espectro_db[:len(espectro_db)//2])
         plt.title(f"Espectro de Fourier - {periodicity}")
         plt.xlabel('Frecuencia (Hz)')
-        plt.ylabel('Potencia (dB)')
-        plt.grid(True)
-
-        # Find top 5 peaks in the Fourier spectrum
-        peaks, _ = find_peaks(espectro_db[:len(espectro_db)//2], height=None, distance=5, prominence=10)
-        top_5_peaks = sorted(peaks, key=lambda x: espectro_db[x], reverse=True)[:5]
-        top_5_peak_freqs = freqs[top_5_peaks] if len(top_5_peaks) > 0 else 'E'
-
-        # Mark the top 5 peaks on the Fourier plot
-        if top_5_peaks != 'E':
-            plt.plot(freqs[top_5_peaks], espectro_db[top_5_peaks], "x", label="Top 5 Picos")
-        plt.legend()
+        plt.ylabel('Amplitud (dB)')
         plt.savefig(f"output/{periodicity}_fourier_spectrum.png")
 
-        # Autocorrelation
-        autocorrelacion = [serie.autocorr(lag) for lag in range(1, 11)] if not serie.empty else 'E'
+        # Find peaks in the spectrum
+        peaks, _ = find_peaks(espectro_db[:len(espectro_db)//2], height=0)
+        top_peaks = sorted(peaks, key=lambda x: espectro_db[x], reverse=True)[:5]
+        top_5_peak_freqs = [freqs[peak] for peak in top_peaks]
 
-        # Plot autocorrelation
-        plt.figure()
-        pd.plotting.autocorrelation_plot(serie)
-        plt.title(f"Autocorrelación - {periodicity}")
-        plt.grid(True)
-        plt.savefig(f"output/{periodicity}_autocorrelation.png")
+        # Calculate autocorrelation for lags 1-10
+        autocorrelation = [serie.autocorr(lag) for lag in range(1, 11)]
 
-        # Prepare the summary for this dataset
+        # Prepare the summary of results
         resumen = {
-            "dataset": str(ruta_archivo_csv),
-            "media": media,
-            "desviacion": desviacion,
-            "snr": snr,
-            "potencia_error": potencia_error,
-            "desviacion_error": desviacion_error,
-            "media_error": media_error,
-            "promedio_retornos": promedio_retornos,
-            "autocorrelacion": autocorrelacion,
-            "top_5_peak_freqs": top_5_peak_freqs,
-            "sampling_frequency": sampling_frequency,
-            "channel_capacity": channel_capacity,
-            "information_bits": information_bits
+            'dataset': ruta_archivo_csv.name,
+            'media': media,
+            'desviacion': desviacion,
+            'snr': snr,
+            'potencia_error': potencia_error,
+            'desviacion_error': desviacion_error,
+            'media_error': media_error,
+            'promedio_retornos': promedio_retornos,
+            'autocorrelacion': autocorrelation,
+            'top_5_peak_freqs': top_5_peak_freqs,
+            'sampling_frequency': sampling_frequency,
+            'channel_capacity': channel_capacity,
+            'information_bits': information_bits
         }
 
         return resumen
 
     except Exception as e:
-        print(f"[ERROR] Ocurrió un error inesperado: {e}")
-        return {
-            "dataset": str(ruta_archivo_csv),
-            "media": 'E',
-            "desviacion": 'E',
-            "snr": 'E',
-            "potencia_error": 'E',
-            "desviacion_error": 'E',
-            "media_error": 'E',
-            "promedio_retornos": 'E',
-            "autocorrelacion": 'E',
-            "top_5_peak_freqs": 'E',
-            "sampling_frequency": 'E',
-            "channel_capacity": 'E',
-            "information_bits": 'E'
-        }
+        print(f"[ERROR] Error durante el análisis del archivo CSV: {e}")
+        return None
 
-# Function to generate summary CSV
-def generar_csv_resumen(resumen_general):
-    df_resumen = pd.DataFrame(resumen_general)
-    df_resumen.to_csv("output/resumen_general.csv", index=False)
-    print("[INFO] Resumen general generado y guardado en: output/resumen_general.csv")
-
-# Function to generate summary table
+# Function to generate summary table 
 def generar_tabla_resumen(resumen_general):  
     print("\n*********************************************")
     for resumen in resumen_general:
