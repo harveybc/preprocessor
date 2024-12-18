@@ -1,9 +1,9 @@
 import pkg_resources
 
-def load_plugin(plugin_name):
+def load_plugin(plugin_group ='preprocessor.plugins', plugin_name='default_plugin'):
     print(f"Attempting to load plugin: {plugin_name}")
     try:
-        entry_point = pkg_resources.get_entry_map('preprocessor', 'preprocessor.plugins')[plugin_name]
+        entry_point = pkg_resources.get_entry_map('preprocessor', plugin_group)[plugin_name]
         plugin_class = entry_point.load()
         required_params = list(plugin_class.plugin_params.keys())
         print(f"Successfully loaded plugin: {plugin_name} with params: {plugin_class.plugin_params}")
