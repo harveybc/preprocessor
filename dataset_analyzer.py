@@ -67,7 +67,6 @@ def descargar_y_procesar_datasets():
     # Generate summary table for all datasets
     if resumen_general:
         generar_tabla_resumen(resumen_general)
-        generar_csv_resumen(resumen_general)
     else:
         print("[INFO] No se generó ningún resumen general debido a errores en el procesamiento de los datasets.")
 
@@ -102,14 +101,39 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None, periodicity="unkno
             print("[ERROR] No hay suficientes datos para el análisis después de la limpieza de valores nulos.")
             return None
 
+        # Calculate Min-Max Normalized Returns
+        retornos = serie.diff().dropna()
+
+        # Min-Max Normalization of returns
+        min_retornos = retornos.min()
+        max_retornos = retornos.max()
+
+        # Apply Min-Max normalization
+        normalizacion_retornos = (retornos - min_retornos) / (max_retornos - min_retornos)
+
+        # Debugging: Print normalized returns
+        print("Normalized Returns (Min-Max):")
+        print(normalizacion_retornos.head())
+        print(f"Min of Normalized Returns: {min_retornos}")
+        print(f"Max of Normalized Returns: {max_retornos}")
+
+        # Calculate SNR using the normalized returns
+        if normalizacion_retornos.std() != 0:
+            snr = (normalizacion_retornos.mean() / normalizacion_retornos.std()) ** 2
+        else:
+            snr = 'E'  # If standard deviation is zero, set SNR to 'E'
+            print("[WARNING] Standard deviation of normalized returns is zero, SNR will be 'E'.")
+
+        # Debugging: Print SNR value
+        print(f"Calculated SNR: {snr}")
+
         # Calculate statistics
-        media = serie.mean() if not serie.empty else 'E'
-        desviacion = serie.std() if not serie.empty else 'E'
-        snr = (media / desviacion) ** 2 if desviacion != 0 else 'E'
+        media = retornos.mean() if not retornos.empty else 'E'
+        desviacion = retornos.std() if not retornos.empty else 'E'
         potencia_error = 1 / snr if snr != 'E' and snr != 0 else 'E'
         desviacion_error = np.sqrt(potencia_error) if potencia_error != 'E' else 'E'
         media_error = (desviacion_error * (np.sqrt(2/np.pi))) if desviacion_error != 'E' else 'E'
-        promedio_retornos = serie.diff().abs().mean() if not serie.empty else 'E'
+        promedio_retornos = retornos.abs().mean() if not retornos.empty else 'E'
 
         # Calculate sampling frequency in Hz
         periodicity_seconds_map = {
@@ -126,106 +150,57 @@ def analizar_archivo_csv(ruta_archivo_csv, limite_filas=None, periodicity="unkno
         # Calculate Shannon-Hartley channel capacity and noise-free information in bits
         if snr != 'E' and sampling_frequency != 'E':
             channel_capacity = sampling_frequency * np.log2(1 + snr)
-            # caculate information bits, have into account that each dataset is 4500 ticks long, and 
-            # the channel capacity is in bits/s so we need to convert the periodicity of the dataset to seconds
-            information_bits = channel_capacity * 4500 * sampling_period_seconds
+            information_bits = channel_capacity * len(serie) * sampling_period_seconds
         else:
             channel_capacity = 'E'
             information_bits = 'E'
 
-        # Decompose time series into trend, seasonal, and residual components
-        decomposition = sm.tsa.seasonal_decompose(serie, model='additive', period=30)
-        plt.figure()
-        decomposition.plot()
-        plt.suptitle(f"Trend, Seasonality, and Residuals - {periodicity}")
-        plt.savefig(f"output/{periodicity}_decomposition.png")
-
-        # Fourier analysis
+        # Perform Fourier analysis
         espectro = np.abs(fft(serie))
         espectro_db = 10 * np.log10(espectro + 1e-10)  # Using 10*log10 for better peak perception
         freqs = np.fft.fftfreq(len(espectro_db))
-        plt.figure()
-        plt.plot(freqs[:len(freqs)//2], espectro_db[:len(espectro_db)//2])
-        plt.title(f"Espectro de Fourier - {periodicity}")
-        plt.xlabel('Frecuencia (Hz)')
-        plt.ylabel('Potencia (dB)')
-        plt.grid(True)
 
-        # Find top 5 peaks in the Fourier spectrum
-        peaks, _ = find_peaks(espectro_db[:len(espectro_db)//2], height=None, distance=5, prominence=10)
-        top_5_peaks = sorted(peaks, key=lambda x: espectro_db[x], reverse=True)[:5]
-        top_5_peak_freqs = freqs[top_5_peaks] if len(top_5_peaks) > 0 else 'E'
+        # Find the top 5 peaks
+        top_5_peaks, _ = find_peaks(espectro_db[:len(espectro_db)//2])
+        top_5_peak_freqs = freqs[top_5_peaks][:5] if len(top_5_peaks) > 5 else freqs[top_5_peaks]
 
-        # Mark the top 5 peaks on the Fourier plot
-        if top_5_peaks != 'E':
-            plt.plot(freqs[top_5_peaks], espectro_db[top_5_peaks], "x", label="Top 5 Picos")
-        plt.legend()
-        plt.savefig(f"output/{periodicity}_fourier_spectrum.png")
+        # Perform autocorrelation analysis (lags 1-10)
+        autocorrelation = [serie.autocorr(lag=i) for i in range(1, 11)]
 
-        # Autocorrelation
-        autocorrelacion = [serie.autocorr(lag) for lag in range(1, 11)] if not serie.empty else 'E'
-
-        # Plot autocorrelation
-        plt.figure()
-        pd.plotting.autocorrelation_plot(serie)
-        plt.title(f"Autocorrelación - {periodicity}")
-        plt.grid(True)
-        plt.savefig(f"output/{periodicity}_autocorrelation.png")
-
-        # Prepare the summary for this dataset
-        resumen = {
-            "dataset": str(ruta_archivo_csv),
-            "media": media,
-            "desviacion": desviacion,
-            "snr": snr,
-            "potencia_error": potencia_error,
-            "desviacion_error": desviacion_error,
-            "media_error": media_error,
-            "promedio_retornos": promedio_retornos,
-            "autocorrelacion": autocorrelacion,
-            "top_5_peak_freqs": top_5_peak_freqs,
-            "sampling_frequency": sampling_frequency,
-            "channel_capacity": channel_capacity,
-            "information_bits": information_bits
+        # Create summary for the dataset
+        resumen_dataset = {
+            'dataset': ruta_archivo_csv.name,
+            'media': media,
+            'desviacion': desviacion,
+            'snr': snr,
+            'potencia_error': potencia_error,
+            'desviacion_error': desviacion_error,
+            'media_error': media_error,
+            'promedio_retornos': promedio_retornos,
+            'autocorrelacion': autocorrelation,
+            'top_5_peak_freqs': top_5_peak_freqs,
+            'sampling_frequency': sampling_frequency,
+            'channel_capacity': channel_capacity,
+            'information_bits': information_bits
         }
 
-        return resumen
+        return resumen_dataset
 
     except Exception as e:
-        print(f"[ERROR] Ocurrió un error inesperado: {e}")
-        return {
-            "dataset": str(ruta_archivo_csv),
-            "media": 'E',
-            "desviacion": 'E',
-            "snr": 'E',
-            "potencia_error": 'E',
-            "desviacion_error": 'E',
-            "media_error": 'E',
-            "promedio_retornos": 'E',
-            "autocorrelacion": 'E',
-            "top_5_peak_freqs": 'E',
-            "sampling_frequency": 'E',
-            "channel_capacity": 'E',
-            "information_bits": 'E'
-        }
-
-# Function to generate summary CSV
-def generar_csv_resumen(resumen_general):
-    df_resumen = pd.DataFrame(resumen_general)
-    df_resumen.to_csv("output/resumen_general.csv", index=False)
-    print("[INFO] Resumen general generado y guardado en: output/resumen_general.csv")
+        print(f"[ERROR] Error durante el análisis del archivo CSV {ruta_archivo_csv}: {e}")
+        return None
 
 # Function to generate summary table
-def generar_tabla_resumen(resumen_general):  
+def generar_tabla_resumen(resumen_general):
     print("\n*********************************************")
     for resumen in resumen_general:
         print(f"Estadísticas para dataset {resumen['dataset']}:")
         print(f"  Media: {resumen['media']}")
         print(f"  Desviación estándar: {resumen['desviacion']}")
         print(f"  SNR: {resumen['snr']}")
-        print(f"  Potencia del Error (PE): {resumen['potencia_error']}")
-        print(f"  Desviación del Error (DE): {resumen['desviacion_error']}")
-        print(f"  Media del Error: {resumen['media_error']}")
+        print(f"  Potencia del Ruido (PR): {resumen['potencia_error']}")
+        print(f"  Desviación del Ruido (DR): {resumen['desviacion_error']}")
+        print(f"  Media del Ruido: {resumen['media_error']}")
         print(f"  Promedio de retornos: {resumen['promedio_retornos']}")
         print(f"  Autocorrelación (lags 1-10): {resumen['autocorrelacion']}")
         print(f"  Frecuencias de los top 5 picos del espectro de Fourier: {resumen['top_5_peak_freqs']}")

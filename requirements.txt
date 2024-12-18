@@ -27,5 +27,5 @@ kagglehub
 matplotlib
 pandas
 pillow
-kiwisolver.
+kiwisolver
 #

@@ -45,12 +45,11 @@ To install and set up the Preprocessor application, follow these steps:
 6. **Run the Preprocessor**:
     - On Windows, run the following command to verify installation (it uses all default values, use preprocessor.bat --help, for complete command line arguments description):
         ```bash
-        preprocessor.bat tests\data\indicators_output_EURUSD_hour_2005_2020.csv
-        ```
+        preprocessor.bat 
 
     - On Linux, run:
         ```bash
-        sh preprocessor.sh tests\data\indicators_output_EURUSD_hour_2005_2020.csv
+        sh preprocessor.sh 
         ```
 
 7. **Run Tests (Optional, requires external repo)**:
@@ -82,7 +81,7 @@ You can use the Preprocessor application from the command line with various plug
 ### Default pluigin for preprocessing pipeline with plots
 
 ```bash
-preprocessor.bat  tests\data\indicators_output_EURUSD_hour_2005_2020.csv
+preprocessor.bat  
 ```
 
 ### Comamnd line parameters:

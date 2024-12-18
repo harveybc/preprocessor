@@ -79,195 +79,101 @@ class Plugin:
             pd.DataFrame: The summary of processed datasets.
         """
         print(f"[DEBUG] Loaded data shape: {data.shape}")
-        print(f"[DEBUG] First few rows of loaded data:\n{data.head()}")
+        print(f"[DEBUG] Columns in the data: {list(data.columns)}")
 
-        # Step 1: Reorder columns based on input and output orders without renaming them
-        input_column_order = self.params['input_column_order']
-        output_column_order = self.params['output_column_order']
+        # Step 1: Ensure DATE_TIME column is included as a regular column
+        if isinstance(data.index, pd.DatetimeIndex):
+            print("[DEBUG] DATE_TIME is currently the index. Resetting it to a regular column...")
+            data.reset_index(inplace=True)
+        if 'DATE_TIME' not in data.columns:
+            raise ValueError("[ERROR] DATE_TIME column is missing in the input data!")
 
-        column_indices = list(range(len(input_column_order)))
-        reordered_indices = [input_column_order.index(col) for col in output_column_order]
-        reordered_data = data.iloc[:, column_indices].copy()
-        reordered_data = reordered_data.iloc[:, reordered_indices]
+        # Step 2: Reorder columns based on output order
+        output_column_order = ['DATE_TIME', 'OPEN', 'LOW', 'HIGH', 'CLOSE']
+        print(f"[DEBUG] Expected output column order: {output_column_order}")
+        print(f"[DEBUG] Actual columns before reordering: {list(data.columns)}")
 
-        if data.shape[1] > len(input_column_order):
-            additional_columns = data.iloc[:, len(input_column_order):].copy()
-            reordered_data = pd.concat([reordered_data, additional_columns], axis=1)
+        # Check for missing columns
+        missing_columns = set(output_column_order) - set(data.columns)
+        if missing_columns:
+            raise ValueError(f"[ERROR] Missing columns in input data: {missing_columns}")
 
-        print(f"[DEBUG] Reordered columns: {list(reordered_data.columns)}")
+        base_data = data[output_column_order]
+        print(f"[DEBUG] Reordered data columns: {list(base_data.columns)}")
 
-        # Step 2: Ensure only numeric columns are converted to numeric
-        non_numeric_columns = ['d']
-        numeric_columns = reordered_data.columns.difference(non_numeric_columns)
-        reordered_data[numeric_columns] = reordered_data[numeric_columns].apply(pd.to_numeric, errors='coerce')
-        reordered_data = reordered_data.dropna()
-
-        print(f"[DEBUG] Data shape after dropping NaN rows: {reordered_data.shape}")
-        print(f"[DEBUG] First few rows after dropping NaN rows:\n{reordered_data.head()}")
-
-        # Step 3: Split into three datasets (D1 for training, D2 for validation, D3 for testing)
-        total_len = len(reordered_data)
+        # Step 3: Split data into D1, D2, and D3
+        total_len = len(base_data)
         d1_size = int(total_len * self.params['d1_proportion'])
         d2_size = int(total_len * self.params['d2_proportion'])
 
-        d1_data = reordered_data.iloc[:d1_size].copy()
-        d2_data = reordered_data.iloc[d1_size:d1_size + d2_size].copy()
-        d3_data = reordered_data.iloc[d1_size + d2_size:].copy()
+        d1_data = base_data.iloc[:d1_size].copy()
+        d2_data = base_data.iloc[d1_size:d1_size + d2_size].copy()
+        d3_data = base_data.iloc[d1_size + d2_size:].copy()
 
-        print(f"[DEBUG] D1 data shape: {d1_data.shape}")
-        print(f"[DEBUG] D2 data shape: {d2_data.shape}")
-        print(f"[DEBUG] D3 data shape: {d3_data.shape}")
+        print(f"[DEBUG] Total rows: {total_len}, D1 size: {d1_size}, D2 size: {d2_size}, D3 size: {total_len - d1_size - d2_size}")
+        print(f"[DEBUG] D1 shape: {d1_data.shape}, D2 shape: {d2_data.shape}, D3 shape: {d3_data.shape}")
 
-        # Step 4: Calculate CV (Coefficient of Variation) and decide normalization method
-        cvs = {}
-        high_cv_columns = []
-        low_cv_columns = []
-        for column in numeric_columns:
-            col_data = d1_data[column]
-            mean = col_data.mean()
-            std_dev = col_data.std()
-            cv = std_dev / abs(mean) if abs(mean) > 1e-8 else 0
-            cvs[column] = cv
-
-            # Print CV for each column
-            print(f"[DEBUG] {column} has CV {cv:.5f}")
-
-            # Classify as high or low volatility based on CV
-            if cv > 1:  # Adjust threshold as per your specific needs
-                high_cv_columns.append((column, cv))
-            else:
-                low_cv_columns.append((column, cv))
-
-        # Print high and low CV columns
-        print(f"[DEBUG] High CV columns: {high_cv_columns}")
-        print(f"[DEBUG] Low CV columns: {low_cv_columns}")
-
-        # Step 5: Normalize the selected columns in D1, D2, and D3
-        epsilon = 1e-8
-        for column in numeric_columns:
-            col_data = d1_data[column]
-            # Ensure min-max normalization for 'Close' column in the target files
-            if column == 'Close':
-                method = 'min-max'
-            else:
-                method = 'z-score' if abs(skew(col_data)) <= 0.5 and -1.0 <= kurtosis(col_data) <= 6.0 else 'min-max'
-
-            if method == 'z-score':
-                mean = col_data.mean()
-                std_dev = col_data.std()
-                d1_data[column] = (d1_data[column] - mean) / (std_dev + epsilon)
-                d2_data[column] = (d2_data[column] - mean) / (std_dev + epsilon)
-                d3_data[column] = (d3_data[column] - mean) / (std_dev + epsilon)
-            else:  # min-max normalization
-                min_val = col_data.min()
-                max_val = col_data.max()
-                d1_data[column] = (d1_data[column] - min_val) / (max_val - min_val + epsilon)
-                d2_data[column] = (d2_data[column] - min_val) / (max_val - min_val + epsilon)
-                d3_data[column] = (d3_data[column] - min_val) / (max_val - min_val + epsilon)
-
-            print(f"[DEBUG] Normalized column '{column}' using {method} method.")
-
-        # Step 6: Reset the index to bring the date into the columns
-        # Since the date is an index, reset it to turn it into a regular column
-        reordered_data = reordered_data.reset_index()
-
-        # Ensure that 'date' is properly renamed to 'Date' if needed
-        if 'date' in reordered_data.columns:
-            reordered_data.rename(columns={'date': 'Date'}, inplace=True)
-
-        # Now reorder the columns as per the 'output_column_order'
-        output_order = ['Date', 'Open', 'Low', 'High', 'Close']  # Mapping of 'd', 'o', 'l', 'h', 'c' to column names
-
-        # Rearrange the columns according to the output order
-        d1_data_reordered = reordered_data[output_order].iloc[:d1_size]
-        d2_data_reordered = reordered_data[output_order].iloc[d1_size:d1_size + d2_size]
-        d3_data_reordered = reordered_data[output_order].iloc[d1_size + d2_size:]
-
-        # Save the reordered datasets without headers
+        # Step 4: Save the base datasets (without headers)
         dataset_prefix = self.params['dataset_prefix']
-        d1_data_file = f"{dataset_prefix}d1.csv"
-        d2_data_file = f"{dataset_prefix}d2.csv"
-        d3_data_file = f"{dataset_prefix}d3.csv"
+        d1_data.to_csv(f"{dataset_prefix}d1.csv", index=False, header=False)
+        d2_data.to_csv(f"{dataset_prefix}d2.csv", index=False, header=False)
+        d3_data.to_csv(f"{dataset_prefix}d3.csv", index=False, header=False)
+        print(f"[DEBUG] Saved base_d1.csv, base_d2.csv, base_d3.csv")
 
-        # Save without headers
-        d1_data_reordered.to_csv(d1_data_file, header=False, index=False)
-        d2_data_reordered.to_csv(d2_data_file, header=False, index=False)
-        d3_data_reordered.to_csv(d3_data_file, header=False, index=False)
+        # Step 5: Normalize all numeric columns
+        numeric_columns = data.select_dtypes(include=[np.number]).columns.tolist()
+        print(f"[DEBUG] Numeric columns identified for normalization: {numeric_columns}")
 
-        print(f"[DEBUG] D1 data saved to: {d1_data_file}")
-        print(f"[DEBUG] D2 data saved to: {d2_data_file}")
-        print(f"[DEBUG] D3 data saved to: {d3_data_file}")
+        # Full target datasets: Normalize all numeric columns
+        d1_full = data.iloc[:d1_size].copy()
+        d2_full = data.iloc[d1_size:d1_size + d2_size].copy()
+        d3_full = data.iloc[d1_size + d2_size:].copy()
 
+        # Initialize normalized DataFrames with all columns (including DATE_TIME)
+        normalized_d1 = d1_full.copy()
+        normalized_d2 = d2_full.copy()
+        normalized_d3 = d3_full.copy()
 
-        # Step 7: Ensure columns_to_process is properly set before creating the target file
-        numeric_columns = reordered_data.columns.difference(non_numeric_columns)
+        # Normalize only numeric columns
+        for column in numeric_columns:
+            min_val = d1_full[column].min()
+            max_val = d1_full[column].max()
+            print(f"[DEBUG] Normalizing column '{column}': min={min_val}, max={max_val}")
 
-        if self.params['only_low_CV']:
-            columns_to_process = [col for col, cv in cvs.items() if cv <= 0.3]
-        else:
-            columns_to_process = list(numeric_columns)
+            normalized_d1[column] = (d1_full[column] - min_val) / (max_val - min_val + 1e-8)
+            normalized_d2[column] = (d2_full[column] - min_val) / (max_val - min_val + 1e-8)
+            normalized_d3[column] = (d3_full[column] - min_val) / (max_val - min_val + 1e-8)
 
-        # Step 8: Exclude 'Low', 'High', and 'Open' columns for the target file and reorder to have 'Close' as the first column
-        columns_to_exclude = ['Open', 'Low', 'High']  # Exclude Open, Low, High
-        columns_to_include_in_target = [col for col in columns_to_process if col not in columns_to_exclude and col != 'd']
-
-        # Ensure 'Close' is the first column
-        if 'Close' in columns_to_include_in_target:
-            columns_to_include_in_target.remove('Close')
-        columns_to_include_in_target = ['Close'] + columns_to_include_in_target
-
-        print(f"[DEBUG] Columns included in target file: {columns_to_include_in_target}")
-
-        # Create target datasets with 'Close' as the first column
-        d1_target = d1_data[columns_to_include_in_target]
-        d2_target = d2_data[columns_to_include_in_target]
-        d3_target = d3_data[columns_to_include_in_target]
-
-        # Save the target datasets
+        # Step 6: Save the normalized datasets (without headers)
         target_prefix = self.params['target_prefix']
-        d1_target_file = f"{target_prefix}d1_target.csv"
-        d2_target_file = f"{target_prefix}d2_target.csv"
-        d3_target_file = f"{target_prefix}d3_target.csv"
+        normalized_d1.to_csv(f"{target_prefix}d1.csv", index=False, header=False)
+        normalized_d2.to_csv(f"{target_prefix}d2.csv", index=False, header=False)
+        normalized_d3.to_csv(f"{target_prefix}d3.csv", index=False, header=False)
+        print(f"[DEBUG] Saved normalized_d1.csv, normalized_d2.csv, normalized_d3.csv")
 
-        d1_target.to_csv(d1_target_file, index=False, header=False)
-        d2_target.to_csv(d2_target_file, index=False, header=False)
-        d3_target.to_csv(d3_target_file, index=False, header=False)
+        # Step 6.1: Remove DATE_TIME column from the normalized datasets
+        normalized_d1 = normalized_d1.drop(columns=['DATE_TIME'], errors='ignore')
+        normalized_d2 = normalized_d2.drop(columns=['DATE_TIME'], errors='ignore')
+        normalized_d3 = normalized_d3.drop(columns=['DATE_TIME'], errors='ignore')
 
-        print(f"[DEBUG] D1 target data saved to: {d1_target_file}")
-        print(f"[DEBUG] D2 target data saved to: {d2_target_file}")
-        print(f"[DEBUG] D3 target data saved to: {d3_target_file}")
+        # Resave the normalized datasets without headers and without the DATE_TIME column
+        normalized_d1.to_csv(f"{target_prefix}d1.csv", index=False, header=False)
+        normalized_d2.to_csv(f"{target_prefix}d2.csv", index=False, header=False)
+        normalized_d3.to_csv(f"{target_prefix}d3.csv", index=False, header=False)
+        print(f"[DEBUG] Resaved normalized_d1.csv, normalized_d2.csv, normalized_d3.csv without DATE_TIME column")
 
-        # Step 9: Plot distribution of each column in D1 target dataset
-        num_columns = len(d1_target.columns)
-        num_rows = (num_columns + 3) // 4  # Create a grid of 4 plots per row
-        fig, axes = plt.subplots(num_rows, 4, figsize=(20, num_rows * 5))
-        axes = axes.flatten()
-
-        for i, column in enumerate(d1_target.columns):
-            sns.histplot(d1_target[column], kde=True, ax=axes[i])
-            axes[i].set_title(f'Distribution of {column}')
-
-        plt.tight_layout(h_pad=10, pad=3)  # Adjust layout to prevent overlap
-        plt.savefig('d1_target_distributions.png')
-        plt.show()
-
-        print(f"[DEBUG] Distribution plots saved for D1 target.")
-
-        # Step 10: Save debug information
-        debug_info = self.get_debug_info()
-        debug_info_file = f"{target_prefix}debug_info.json"
-        with open(debug_info_file, 'w') as f:
-            json.dump(debug_info, f, indent=4)
-
-        print(f"[DEBUG] Debug information saved to: {debug_info_file}")
-
-        # Step 11: Create a summary DataFrame with the dataset details
+        # Step 7: Return summary
         summary_data = {
-            'Filename': [d1_data_file, d2_data_file, d3_data_file, d1_target_file, d2_target_file, d3_target_file],
-            'Rows': [d1_data.shape[0], d2_data.shape[0], d3_data.shape[0], d1_target.shape[0], d2_target.shape[0], d3_target.shape[0]],
-            'Columns': [d1_data.shape[1], d2_data.shape[1], d3_data.shape[1], d1_target.shape[1], d2_target.shape[1], d3_target.shape[1]]
+            'Filename': [f"{dataset_prefix}d1.csv", f"{dataset_prefix}d2.csv", f"{dataset_prefix}d3.csv",
+                        f"{target_prefix}d1.csv", f"{target_prefix}d2.csv", f"{target_prefix}d3.csv"],
+            'Rows': [d1_data.shape[0], d2_data.shape[0], d3_data.shape[0],
+                    normalized_d1.shape[0], normalized_d2.shape[0], normalized_d3.shape[0]],
+            'Columns': [d1_data.shape[1], d2_data.shape[1], d3_data.shape[1],
+                        normalized_d1.shape[1], normalized_d2.shape[1], normalized_d3.shape[1]]
         }
         summary_df = pd.DataFrame(summary_data)
+        print("[DEBUG] Processing complete. Summary of saved files:")
+        print(summary_df)
 
         return summary_df
 
