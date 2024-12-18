@@ -120,27 +120,29 @@ class Plugin:
         d3_data.to_csv(f"{dataset_prefix}d3.csv", index=False, header=False)
         print(f"[DEBUG] Saved base_d1.csv, base_d2.csv, base_d3.csv")
 
-        # Step 5: Normalize all numeric columns
+        # Step 5: Normalize all numeric columns in the target datasets
         numeric_columns = data.select_dtypes(include=[np.number]).columns.tolist()
         print(f"[DEBUG] Numeric columns identified for normalization: {numeric_columns}")
 
-        # Fit Min-Max Normalizer on D1
-        normalized_d1 = d1_data.copy()
-        normalized_d2 = d2_data.copy()
-        normalized_d3 = d3_data.copy()
+        # Target datasets: Normalize all numeric columns
+        d1_full = data.iloc[:d1_size].copy()
+        d2_full = data.iloc[d1_size:d1_size + d2_size].copy()
+        d3_full = data.iloc[d1_size + d2_size:].copy()
+
+        normalized_d1 = d1_full.copy()
+        normalized_d2 = d2_full.copy()
+        normalized_d3 = d3_full.copy()
 
         for column in numeric_columns:
-            if column not in ['DATE_TIME']:
-                min_val = d1_data[column].min()
-                max_val = d1_data[column].max()
+            min_val = d1_full[column].min()
+            max_val = d1_full[column].max()
+            print(f"[DEBUG] Normalizing column '{column}': min={min_val}, max={max_val}")
 
-                print(f"[DEBUG] Normalizing column '{column}': min={min_val}, max={max_val}")
+            normalized_d1[column] = (d1_full[column] - min_val) / (max_val - min_val)
+            normalized_d2[column] = (d2_full[column] - min_val) / (max_val - min_val)
+            normalized_d3[column] = (d3_full[column] - min_val) / (max_val - min_val)
 
-                normalized_d1[column] = (d1_data[column] - min_val) / (max_val - min_val)
-                normalized_d2[column] = (d2_data[column] - min_val) / (max_val - min_val)
-                normalized_d3[column] = (d3_data[column] - min_val) / (max_val - min_val)
-
-        # Step 6: Save the normalized datasets
+        # Step 6: Save the normalized target datasets
         target_prefix = self.params['target_prefix']
         normalized_d1.to_csv(f"{target_prefix}d1.csv", index=False, header=False)
         normalized_d2.to_csv(f"{target_prefix}d2.csv", index=False, header=False)
