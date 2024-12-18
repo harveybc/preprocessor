@@ -146,8 +146,8 @@ class Plugin:
         epsilon = 1e-8
         for column in numeric_columns:
             col_data = d1_data[column]
-            # Ensure min-max normalization for 'Close' column in the target files
-            if column == 'Close':
+            # Ensure min-max normalization for 'CLOSE' column in the target files
+            if column == 'CLOSE':
                 method = 'min-max'
             else:
                 method = 'z-score' if abs(skew(col_data)) <= 0.5 and -1.0 <= kurtosis(col_data) <= 6.0 else 'min-max'
@@ -176,7 +176,7 @@ class Plugin:
             reordered_data.rename(columns={'date': 'Date'}, inplace=True)
 
         # Now reorder the columns as per the 'output_column_order'
-        output_order = ['Date', 'Open', 'Low', 'High', 'Close']  # Mapping of 'd', 'o', 'l', 'h', 'c' to column names
+        output_order = ['Date', 'Open', 'Low', 'High', 'CLOSE']  # Mapping of 'd', 'o', 'l', 'h', 'c' to column names
 
         # Rearrange the columns according to the output order
         d1_data_reordered = reordered_data[output_order].iloc[:d1_size]
@@ -207,18 +207,18 @@ class Plugin:
         else:
             columns_to_process = list(numeric_columns)
 
-        # Step 8: Exclude 'Low', 'High', and 'Open' columns for the target file and reorder to have 'Close' as the first column
+        # Step 8: Exclude 'Low', 'High', and 'Open' columns for the target file and reorder to have 'CLOSE' as the first column
         columns_to_exclude = ['Open', 'Low', 'High']  # Exclude Open, Low, High
         columns_to_include_in_target = [col for col in columns_to_process if col not in columns_to_exclude and col != 'd']
 
-        # Ensure 'Close' is the first column
-        if 'Close' in columns_to_include_in_target:
-            columns_to_include_in_target.remove('Close')
-        columns_to_include_in_target = ['Close'] + columns_to_include_in_target
+        # Ensure 'CLOSE' is the first column
+        if 'CLOSE' in columns_to_include_in_target:
+            columns_to_include_in_target.remove('CLOSE')
+        columns_to_include_in_target = ['CLOSE'] + columns_to_include_in_target
 
         print(f"[DEBUG] Columns included in target file: {columns_to_include_in_target}")
 
-        # Create target datasets with 'Close' as the first column
+        # Create target datasets with 'CLOSE' as the first column
         d1_target = d1_data[columns_to_include_in_target]
         d2_target = d2_data[columns_to_include_in_target]
         d3_target = d3_data[columns_to_include_in_target]
