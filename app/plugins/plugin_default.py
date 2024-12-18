@@ -81,13 +81,14 @@ class Plugin:
         print(f"[DEBUG] Loaded data shape: {data.shape}")
         print(f"[DEBUG] First few rows of loaded data:\n{data.head()}")
 
-        # Step 1: Reorder columns based on input and output orders without renaming them
+        # Step 1: Reorder columns based on input and output orders
         input_column_order = self.params['input_column_order']
         output_column_order = self.params['output_column_order']
 
         column_indices = list(range(len(input_column_order)))
-        reordered_indices = [input_column_order.index(col) for col in output_column_order]
+        reordered_indices = [input_column_order.index(col.lower()) for col in output_column_order]
         reordered_data = data.iloc[:, column_indices].copy()
+        reordered_data.columns = input_column_order  # Rename columns to match the defined order
         reordered_data = reordered_data.iloc[:, reordered_indices]
 
         if data.shape[1] > len(input_column_order):
@@ -97,7 +98,7 @@ class Plugin:
         print(f"[DEBUG] Reordered columns: {list(reordered_data.columns)}")
 
         # Step 2: Ensure only numeric columns are converted to numeric
-        non_numeric_columns = ['d']
+        non_numeric_columns = ['DATE_TIME']
         numeric_columns = reordered_data.columns.difference(non_numeric_columns)
         reordered_data[numeric_columns] = reordered_data[numeric_columns].apply(pd.to_numeric, errors='coerce')
         reordered_data = reordered_data.dropna()
@@ -120,22 +121,23 @@ class Plugin:
 
         # Step 4: Normalize the selected columns in D1, D2, and D3
         epsilon = 1e-8
+        target_column = output_column_order[4]  # Target column is 'C'
         for column in numeric_columns:
             col_data = d1_data[column]
-            if column == 'c':  # Ensure the correct target column for normalization
+            if column.upper() == target_column.upper():  # Match dynamically
                 method = 'min-max'
             else:
                 method = 'z-score' if abs(skew(col_data)) <= 0.5 and -1.0 <= kurtosis(col_data) <= 6.0 else 'min-max'
 
             if method == 'z-score':
                 mean = col_data.mean()
-                std_dev = col_data.std()
-                d1_data[column] = (d1_data[column] - mean) / (std_dev + epsilon)
-                d2_data[column] = (d2_data[column] - mean) / (std_dev + epsilon)
-                d3_data[column] = (d3_data[column] - mean) / (std_dev + epsilon)
+                std_dev = col_data.std() or epsilon  # Prevent division by zero
+                d1_data[column] = (d1_data[column] - mean) / std_dev
+                d2_data[column] = (d2_data[column] - mean) / std_dev
+                d3_data[column] = (d3_data[column] - mean) / std_dev
             else:  # min-max normalization
                 min_val = col_data.min()
-                max_val = col_data.max()
+                max_val = col_data.max() or min_val + epsilon  # Prevent division by zero
                 d1_data[column] = (d1_data[column] - min_val) / (max_val - min_val + epsilon)
                 d2_data[column] = (d2_data[column] - min_val) / (max_val - min_val + epsilon)
                 d3_data[column] = (d3_data[column] - min_val) / (max_val - min_val + epsilon)
@@ -155,9 +157,9 @@ class Plugin:
         d1_data.to_csv(d1_data_file, header=False, index=False)
         d2_data.to_csv(d2_data_file, header=False, index=False)
         d3_data.to_csv(d3_data_file, header=False, index=False)
-        d1_data[['c']].to_csv(d1_target_file, header=False, index=False)
-        d2_data[['c']].to_csv(d2_target_file, header=False, index=False)
-        d3_data[['c']].to_csv(d3_target_file, header=False, index=False)
+        d1_data[[target_column]].to_csv(d1_target_file, header=False, index=False)
+        d2_data[[target_column]].to_csv(d2_target_file, header=False, index=False)
+        d3_data[[target_column]].to_csv(d3_target_file, header=False, index=False)
 
         print(f"[DEBUG] Saved D1 to {d1_data_file} and D1 target to {d1_target_file}")
         print(f"[DEBUG] Saved D2 to {d2_data_file} and D2 target to {d2_target_file}")
@@ -172,8 +174,6 @@ class Plugin:
         summary_df = pd.DataFrame(summary_data)
 
         return summary_df
-
-
 
 
 
