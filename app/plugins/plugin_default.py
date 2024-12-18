@@ -20,7 +20,7 @@ class Plugin:
         'range': (-1, 1),
         'd1_proportion': 0.3,
         'd2_proportion': 0.3,
-        'only_low_CV': True  # Parameter to control processing of low CV columns
+        'only_low_CV': False  # Parameter to control processing of low CV columns
     }
 
     # Define the debug variables for this plugin
@@ -139,8 +139,8 @@ class Plugin:
                 low_cv_columns.append((column, cv))
 
         # Print high and low CV columns
-        print(f"[DEBUG] High CV columns: {high_cv_columns}")
-        print(f"[DEBUG] Low CV columns: {low_cv_columns}")
+        print(f"[DEBUG] HIGH CV columns: {high_cv_columns}")
+        print(f"[DEBUG] LOW CV columns: {low_cv_columns}")
 
         # Step 5: Normalize the selected columns in D1, D2, and D3
         epsilon = 1e-8
@@ -176,7 +176,7 @@ class Plugin:
             reordered_data.rename(columns={'date': 'Date'}, inplace=True)
 
         # Now reorder the columns as per the 'output_column_order'
-        output_order = ['Date', 'Open', 'Low', 'High', 'CLOSE']  # Mapping of 'd', 'o', 'l', 'h', 'c' to column names
+        output_order = ['DATE_TIME', 'OPEN', 'LOW', 'HIGH', 'CLOSE']  # Mapping of 'd', 'o', 'l', 'h', 'c' to column names
 
         # Rearrange the columns according to the output order
         d1_data_reordered = reordered_data[output_order].iloc[:d1_size]
@@ -207,8 +207,8 @@ class Plugin:
         else:
             columns_to_process = list(numeric_columns)
 
-        # Step 8: Exclude 'Low', 'High', and 'Open' columns for the target file and reorder to have 'CLOSE' as the first column
-        columns_to_exclude = ['Open', 'Low', 'High']  # Exclude Open, Low, High
+        # Step 8: Exclude 'LOW', 'HIGH', and 'OPEN' columns for the target file and reorder to have 'CLOSE' as the first column
+        columns_to_exclude = ['OPEN', 'LOW', 'HIGH']  # Exclude OPEN, LOW, HIGH
         columns_to_include_in_target = [col for col in columns_to_process if col not in columns_to_exclude and col != 'd']
 
         # Ensure 'CLOSE' is the first column
