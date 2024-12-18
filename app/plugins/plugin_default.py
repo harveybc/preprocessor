@@ -118,35 +118,17 @@ class Plugin:
         print(f"[DEBUG] D2 data shape: {d2_data.shape}")
         print(f"[DEBUG] D3 data shape: {d3_data.shape}")
 
-        # Step 4: Calculate CV (Coefficient of Variation) and decide normalization method
-        cvs = {}
-        high_cv_columns = []
-        low_cv_columns = []
-        for column in numeric_columns:
-            col_data = d1_data[column]
-            mean = col_data.mean()
-            std_dev = col_data.std()
-            cv = std_dev / abs(mean) if abs(mean) > 1e-8 else 0
-            cvs[column] = cv
-
-            # Print CV for each column
-            print(f"[DEBUG] {column} has CV {cv:.5f}")
-
-            # Classify as high or low volatility based on CV
-            if cv > 1:  # Adjust threshold as per your specific needs
-                high_cv_columns.append((column, cv))
-            else:
-                low_cv_columns.append((column, cv))
-
-        # Print high and low CV columns
-        print(f"[DEBUG] HIGH CV columns: {high_cv_columns}")
-        print(f"[DEBUG] LOW CV columns: {low_cv_columns}")
+        # Step 4: Validate required columns for output_order
+        output_order = ['DATE_TIME', 'OPEN', 'LOW', 'HIGH', 'CLOSE']
+        if set(output_order) - set(reordered_data.columns):
+            print(f"[DEBUG] Adjusting column names for compatibility with output_order.")
+            column_mapping = dict(zip(self.params['output_column_order'], output_order))
+            reordered_data.rename(columns=column_mapping, inplace=True)
 
         # Step 5: Normalize the selected columns in D1, D2, and D3
         epsilon = 1e-8
         for column in numeric_columns:
             col_data = d1_data[column]
-            # Ensure min-max normalization for 'CLOSE' column in the target files
             if column == 'CLOSE':
                 method = 'min-max'
             else:
@@ -167,109 +149,30 @@ class Plugin:
 
             print(f"[DEBUG] Normalized column '{column}' using {method} method.")
 
-        # Step 6: Reset the index to bring the date into the columns
-        # Since the date is an index, reset it to turn it into a regular column
-        reordered_data = reordered_data.reset_index()
-
-        # Ensure that 'date' is properly renamed to 'Date' if needed
-        if 'date' in reordered_data.columns:
-            reordered_data.rename(columns={'date': 'Date'}, inplace=True)
-
-        # Now reorder the columns as per the 'output_column_order'
-        output_order = ['DATE_TIME', 'OPEN', 'LOW', 'HIGH', 'CLOSE']  # Mapping of 'd', 'o', 'l', 'h', 'c' to column names
-
-        # Rearrange the columns according to the output order
-        d1_data_reordered = reordered_data[output_order].iloc[:d1_size]
-        d2_data_reordered = reordered_data[output_order].iloc[d1_size:d1_size + d2_size]
-        d3_data_reordered = reordered_data[output_order].iloc[d1_size + d2_size:]
-
-        # Save the reordered datasets without headers
+        # Step 6: Save reordered and target datasets
         dataset_prefix = self.params['dataset_prefix']
         d1_data_file = f"{dataset_prefix}d1.csv"
         d2_data_file = f"{dataset_prefix}d2.csv"
         d3_data_file = f"{dataset_prefix}d3.csv"
 
-        # Save without headers
-        d1_data_reordered.to_csv(d1_data_file, header=False, index=False)
-        d2_data_reordered.to_csv(d2_data_file, header=False, index=False)
-        d3_data_reordered.to_csv(d3_data_file, header=False, index=False)
+        d1_data.to_csv(d1_data_file, header=False, index=False)
+        d2_data.to_csv(d2_data_file, header=False, index=False)
+        d3_data.to_csv(d3_data_file, header=False, index=False)
 
         print(f"[DEBUG] D1 data saved to: {d1_data_file}")
         print(f"[DEBUG] D2 data saved to: {d2_data_file}")
         print(f"[DEBUG] D3 data saved to: {d3_data_file}")
 
-
-        # Step 7: Ensure columns_to_process is properly set before creating the target file
-        numeric_columns = reordered_data.columns.difference(non_numeric_columns)
-
-        if self.params['only_low_CV']:
-            columns_to_process = [col for col, cv in cvs.items() if cv <= 0.3]
-        else:
-            columns_to_process = list(numeric_columns)
-
-        # Step 8: Exclude 'LOW', 'HIGH', and 'OPEN' columns for the target file and reorder to have 'CLOSE' as the first column
-        columns_to_exclude = ['OPEN', 'LOW', 'HIGH']  # Exclude OPEN, LOW, HIGH
-        columns_to_include_in_target = [col for col in columns_to_process if col not in columns_to_exclude and col != 'd']
-
-        # Ensure 'CLOSE' is the first column
-        if 'CLOSE' in columns_to_include_in_target:
-            columns_to_include_in_target.remove('CLOSE')
-        columns_to_include_in_target = ['CLOSE'] + columns_to_include_in_target
-
-        print(f"[DEBUG] Columns included in target file: {columns_to_include_in_target}")
-
-        # Create target datasets with 'CLOSE' as the first column
-        d1_target = d1_data[columns_to_include_in_target]
-        d2_target = d2_data[columns_to_include_in_target]
-        d3_target = d3_data[columns_to_include_in_target]
-
-        # Save the target datasets
-        target_prefix = self.params['target_prefix']
-        d1_target_file = f"{target_prefix}d1_target.csv"
-        d2_target_file = f"{target_prefix}d2_target.csv"
-        d3_target_file = f"{target_prefix}d3_target.csv"
-
-        d1_target.to_csv(d1_target_file, index=False, header=False)
-        d2_target.to_csv(d2_target_file, index=False, header=False)
-        d3_target.to_csv(d3_target_file, index=False, header=False)
-
-        print(f"[DEBUG] D1 target data saved to: {d1_target_file}")
-        print(f"[DEBUG] D2 target data saved to: {d2_target_file}")
-        print(f"[DEBUG] D3 target data saved to: {d3_target_file}")
-
-        # Step 9: Plot distribution of each column in D1 target dataset
-        num_columns = len(d1_target.columns)
-        num_rows = (num_columns + 3) // 4  # Create a grid of 4 plots per row
-        fig, axes = plt.subplots(num_rows, 4, figsize=(20, num_rows * 5))
-        axes = axes.flatten()
-
-        for i, column in enumerate(d1_target.columns):
-            sns.histplot(d1_target[column], kde=True, ax=axes[i])
-            axes[i].set_title(f'Distribution of {column}')
-
-        plt.tight_layout(h_pad=10, pad=3)  # Adjust layout to prevent overlap
-        plt.savefig('d1_target_distributions.png')
-        plt.show()
-
-        print(f"[DEBUG] Distribution plots saved for D1 target.")
-
-        # Step 10: Save debug information
-        debug_info = self.get_debug_info()
-        debug_info_file = f"{target_prefix}debug_info.json"
-        with open(debug_info_file, 'w') as f:
-            json.dump(debug_info, f, indent=4)
-
-        print(f"[DEBUG] Debug information saved to: {debug_info_file}")
-
-        # Step 11: Create a summary DataFrame with the dataset details
+        # Create summary DataFrame
         summary_data = {
-            'Filename': [d1_data_file, d2_data_file, d3_data_file, d1_target_file, d2_target_file, d3_target_file],
-            'Rows': [d1_data.shape[0], d2_data.shape[0], d3_data.shape[0], d1_target.shape[0], d2_target.shape[0], d3_target.shape[0]],
-            'Columns': [d1_data.shape[1], d2_data.shape[1], d3_data.shape[1], d1_target.shape[1], d2_target.shape[1], d3_target.shape[1]]
+            'Filename': [d1_data_file, d2_data_file, d3_data_file],
+            'Rows': [d1_data.shape[0], d2_data.shape[0], d3_data.shape[0]],
+            'Columns': [d1_data.shape[1], d2_data.shape[1], d3_data.shape[1]]
         }
         summary_df = pd.DataFrame(summary_data)
 
         return summary_df
+
 
 
 
