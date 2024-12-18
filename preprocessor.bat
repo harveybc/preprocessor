@@ -1,5 +1,4 @@
 @echo off
-setlocal
 set PREV_PYTHONPATH = %PYTHONPATH%
 set PYTHONPATH=%cd%;%PYTHONPATH%
 echo %PYTHONPATH%
