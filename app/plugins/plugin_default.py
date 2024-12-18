@@ -78,95 +78,88 @@ class Plugin:
         Returns:
             pd.DataFrame: The summary of processed datasets.
         """
-        print("[DEBUG] Starting process...")
         print(f"[DEBUG] Loaded data shape: {data.shape}")
-        print(f"[DEBUG] First few rows of loaded data:\n{data.head()}")
+        print(f"[DEBUG] Columns in the data: {list(data.columns)}")
 
-        # Step 1: Reorder columns based on output_column_order
-        print("[DEBUG] Step 1: Reordering columns...")
-        column_mapping = {'d': 'DATE_TIME', 'o': 'OPEN', 'l': 'LOW', 'h': 'HIGH', 'c': 'CLOSE'}
-        output_column_order = [column_mapping[char] for char in self.params['output_column_order']]
+        # Step 1: Ensure DATE_TIME column is included as a regular column
+        if isinstance(data.index, pd.DatetimeIndex):
+            print("[DEBUG] DATE_TIME is currently the index. Resetting it to a regular column...")
+            data.reset_index(inplace=True)
+        if 'DATE_TIME' not in data.columns:
+            raise ValueError("[ERROR] DATE_TIME column is missing in the input data!")
+
+        # Step 2: Reorder columns based on output order
+        output_column_order = ['DATE_TIME', 'OPEN', 'LOW', 'HIGH', 'CLOSE']
         print(f"[DEBUG] Expected output column order: {output_column_order}")
+        print(f"[DEBUG] Actual columns before reordering: {list(data.columns)}")
 
-        # Check if all required columns exist
+        # Check for missing columns
         missing_columns = set(output_column_order) - set(data.columns)
         if missing_columns:
             raise ValueError(f"[ERROR] Missing columns in input data: {missing_columns}")
 
-        reordered_data = data[output_column_order].copy()
-        print(f"[DEBUG] Actual columns after reordering: {list(reordered_data.columns)}")
-        print(f"[DEBUG] First few rows of reordered data:\n{reordered_data.head()}")
+        base_data = data[output_column_order]
+        print(f"[DEBUG] Reordered data columns: {list(base_data.columns)}")
 
-        # Step 2: Split into three datasets (D1, D2, D3)
-        print("[DEBUG] Step 2: Splitting data into D1, D2, and D3...")
-        total_len = len(reordered_data)
+        # Step 3: Split data into D1, D2, and D3
+        total_len = len(base_data)
         d1_size = int(total_len * self.params['d1_proportion'])
         d2_size = int(total_len * self.params['d2_proportion'])
+
+        d1_data = base_data.iloc[:d1_size].copy()
+        d2_data = base_data.iloc[d1_size:d1_size + d2_size].copy()
+        d3_data = base_data.iloc[d1_size + d2_size:].copy()
+
         print(f"[DEBUG] Total rows: {total_len}, D1 size: {d1_size}, D2 size: {d2_size}, D3 size: {total_len - d1_size - d2_size}")
+        print(f"[DEBUG] D1 shape: {d1_data.shape}, D2 shape: {d2_data.shape}, D3 shape: {d3_data.shape}")
 
-        d1_data = reordered_data.iloc[:d1_size].copy()
-        d2_data = reordered_data.iloc[d1_size:d1_size + d2_size].copy()
-        d3_data = reordered_data.iloc[d1_size + d2_size:].copy()
-
-        print(f"[DEBUG] D1 shape: {d1_data.shape}")
-        print(f"[DEBUG] D2 shape: {d2_data.shape}")
-        print(f"[DEBUG] D3 shape: {d3_data.shape}")
-
-        # Step 3: Save dataset prefix files (NOT normalized)
-        print("[DEBUG] Step 3: Saving dataset prefix files (base_)...")
+        # Step 4: Save the base datasets
         dataset_prefix = self.params['dataset_prefix']
-        d1_data.to_csv(f"{dataset_prefix}d1.csv", header=False, index=False)
-        d2_data.to_csv(f"{dataset_prefix}d2.csv", header=False, index=False)
-        d3_data.to_csv(f"{dataset_prefix}d3.csv", header=False, index=False)
+        d1_data.to_csv(f"{dataset_prefix}d1.csv", index=False, header=False)
+        d2_data.to_csv(f"{dataset_prefix}d2.csv", index=False, header=False)
+        d3_data.to_csv(f"{dataset_prefix}d3.csv", index=False, header=False)
         print(f"[DEBUG] Saved base_d1.csv, base_d2.csv, base_d3.csv")
 
-        # Step 4: Normalize all numeric columns using Min-Max Normalization
-        print("[DEBUG] Step 4: Normalizing all numeric columns using Min-Max Normalization...")
-        numeric_columns = data.columns.difference(['DATE_TIME'])  # Exclude non-numeric DATE_TIME
-        print(f"[DEBUG] Numeric columns to normalize: {list(numeric_columns)}")
+        # Step 5: Normalize all numeric columns
+        numeric_columns = data.select_dtypes(include=[np.number]).columns.tolist()
+        print(f"[DEBUG] Numeric columns identified for normalization: {numeric_columns}")
 
-        epsilon = 1e-8
-        normalization_params = {}  # Store min-max params for each column
+        # Fit Min-Max Normalizer on D1
+        normalized_d1 = d1_data.copy()
+        normalized_d2 = d2_data.copy()
+        normalized_d3 = d3_data.copy()
 
-        # Fit normalization on D1
         for column in numeric_columns:
-            min_val = d1_data[column].min()
-            max_val = d1_data[column].max()
-            normalization_params[column] = (min_val, max_val)
+            if column not in ['DATE_TIME']:
+                min_val = d1_data[column].min()
+                max_val = d1_data[column].max()
 
-            d1_data[column] = (d1_data[column] - min_val) / (max_val - min_val + epsilon)
-            d2_data[column] = (d2_data[column] - min_val) / (max_val - min_val + epsilon)
-            d3_data[column] = (d3_data[column] - min_val) / (max_val - min_val + epsilon)
+                print(f"[DEBUG] Normalizing column '{column}': min={min_val}, max={max_val}")
 
-            print(f"[DEBUG] Column '{column}': min={min_val}, max={max_val}")
+                normalized_d1[column] = (d1_data[column] - min_val) / (max_val - min_val)
+                normalized_d2[column] = (d2_data[column] - min_val) / (max_val - min_val)
+                normalized_d3[column] = (d3_data[column] - min_val) / (max_val - min_val)
 
-        # Step 5: Save target prefix files (normalized)
-        print("[DEBUG] Step 5: Saving target prefix files (normalized_)...")
+        # Step 6: Save the normalized datasets
         target_prefix = self.params['target_prefix']
-        d1_data.to_csv(f"{target_prefix}d1_target.csv", header=False, index=False)
-        d2_data.to_csv(f"{target_prefix}d2_target.csv", header=False, index=False)
-        d3_data.to_csv(f"{target_prefix}d3_target.csv", header=False, index=False)
-        print(f"[DEBUG] Saved normalized_d1_target.csv, normalized_d2_target.csv, normalized_d3_target.csv")
+        normalized_d1.to_csv(f"{target_prefix}d1.csv", index=False, header=False)
+        normalized_d2.to_csv(f"{target_prefix}d2.csv", index=False, header=False)
+        normalized_d3.to_csv(f"{target_prefix}d3.csv", index=False, header=False)
+        print(f"[DEBUG] Saved normalized_d1.csv, normalized_d2.csv, normalized_d3.csv")
 
-        # Step 6: Summary
-        print("[DEBUG] Step 6: Creating summary DataFrame...")
+        # Step 7: Return summary
         summary_data = {
-            'Filename': [
-                f"{dataset_prefix}d1.csv", f"{dataset_prefix}d2.csv", f"{dataset_prefix}d3.csv",
-                f"{target_prefix}d1_target.csv", f"{target_prefix}d2_target.csv", f"{target_prefix}d3_target.csv"
-            ],
-            'Rows': [
-                d1_data.shape[0], d2_data.shape[0], d3_data.shape[0],
-                d1_data.shape[0], d2_data.shape[0], d3_data.shape[0]
-            ],
-            'Columns': [
-                len(output_column_order), len(output_column_order), len(output_column_order),
-                len(numeric_columns), len(numeric_columns), len(numeric_columns)
-            ]
+            'Filename': [f"{dataset_prefix}d1.csv", f"{dataset_prefix}d2.csv", f"{dataset_prefix}d3.csv",
+                        f"{target_prefix}d1.csv", f"{target_prefix}d2.csv", f"{target_prefix}d3.csv"],
+            'Rows': [d1_data.shape[0], d2_data.shape[0], d3_data.shape[0],
+                    normalized_d1.shape[0], normalized_d2.shape[0], normalized_d3.shape[0]],
+            'Columns': [d1_data.shape[1], d2_data.shape[1], d3_data.shape[1],
+                        normalized_d1.shape[1], normalized_d2.shape[1], normalized_d3.shape[1]]
         }
         summary_df = pd.DataFrame(summary_data)
         print("[DEBUG] Processing complete. Summary of saved files:")
         print(summary_df)
+
         return summary_df
 
 
