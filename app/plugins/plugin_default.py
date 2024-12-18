@@ -84,16 +84,15 @@ class Plugin:
         # Step 1: Reorder columns based on input and output orders
         input_column_order = self.params['input_column_order']
         output_column_order = self.params['output_column_order']
+        
+        # Map input_column_order to uppercase column names
+        input_column_order_mapped = ["DATE_TIME", "OPEN", "HIGH", "LOW", "CLOSE"]
 
-        column_indices = list(range(len(input_column_order)))
-        reordered_indices = [input_column_order.index(col.lower()) for col in output_column_order]
-        reordered_data = data.iloc[:, column_indices].copy()
-        reordered_data.columns = input_column_order  # Rename columns to match the defined order
+        # Reorder columns based on output_column_order mapping
+        reordered_indices = [input_column_order.index(col) for col in output_column_order]
+        reordered_data = data.iloc[:, :len(input_column_order_mapped)].copy()
+        reordered_data.columns = input_column_order_mapped
         reordered_data = reordered_data.iloc[:, reordered_indices]
-
-        if data.shape[1] > len(input_column_order):
-            additional_columns = data.iloc[:, len(input_column_order):].copy()
-            reordered_data = pd.concat([reordered_data, additional_columns], axis=1)
 
         print(f"[DEBUG] Reordered columns: {list(reordered_data.columns)}")
 
@@ -119,61 +118,45 @@ class Plugin:
         print(f"[DEBUG] D2 data shape: {d2_data.shape}")
         print(f"[DEBUG] D3 data shape: {d3_data.shape}")
 
-        # Step 4: Normalize the selected columns in D1, D2, and D3
-        epsilon = 1e-8
-        target_column = output_column_order[4]  # Target column is 'C'
-        for column in numeric_columns:
-            col_data = d1_data[column]
-            if column.upper() == target_column.upper():  # Match dynamically
-                method = 'min-max'
-            else:
-                method = 'z-score' if abs(skew(col_data)) <= 0.5 and -1.0 <= kurtosis(col_data) <= 6.0 else 'min-max'
-
-            if method == 'z-score':
-                mean = col_data.mean()
-                std_dev = col_data.std() or epsilon  # Prevent division by zero
-                d1_data[column] = (d1_data[column] - mean) / std_dev
-                d2_data[column] = (d2_data[column] - mean) / std_dev
-                d3_data[column] = (d3_data[column] - mean) / std_dev
-            else:  # min-max normalization
-                min_val = col_data.min()
-                max_val = col_data.max() or min_val + epsilon  # Prevent division by zero
-                d1_data[column] = (d1_data[column] - min_val) / (max_val - min_val + epsilon)
-                d2_data[column] = (d2_data[column] - min_val) / (max_val - min_val + epsilon)
-                d3_data[column] = (d3_data[column] - min_val) / (max_val - min_val + epsilon)
-
-            print(f"[DEBUG] Normalized column '{column}' using {method} method.")
-
-        # Step 5: Save the datasets
+        # Save the datasets with dataset_prefix
         dataset_prefix = self.params['dataset_prefix']
-        target_prefix = self.params['target_prefix']
         d1_data_file = f"{dataset_prefix}d1.csv"
         d2_data_file = f"{dataset_prefix}d2.csv"
         d3_data_file = f"{dataset_prefix}d3.csv"
-        d1_target_file = f"{target_prefix}d1_target.csv"
-        d2_target_file = f"{target_prefix}d2_target.csv"
-        d3_target_file = f"{target_prefix}d3_target.csv"
 
         d1_data.to_csv(d1_data_file, header=False, index=False)
         d2_data.to_csv(d2_data_file, header=False, index=False)
         d3_data.to_csv(d3_data_file, header=False, index=False)
-        d1_data[[target_column]].to_csv(d1_target_file, header=False, index=False)
-        d2_data[[target_column]].to_csv(d2_target_file, header=False, index=False)
-        d3_data[[target_column]].to_csv(d3_target_file, header=False, index=False)
 
-        print(f"[DEBUG] Saved D1 to {d1_data_file} and D1 target to {d1_target_file}")
-        print(f"[DEBUG] Saved D2 to {d2_data_file} and D2 target to {d2_target_file}")
-        print(f"[DEBUG] Saved D3 to {d3_data_file} and D3 target to {d3_target_file}")
+        print(f"[DEBUG] D1 data saved to: {d1_data_file}")
+        print(f"[DEBUG] D2 data saved to: {d2_data_file}")
+        print(f"[DEBUG] D3 data saved to: {d3_data_file}")
 
-        # Step 6: Create a summary DataFrame
+        # Save target files with target_prefix
+        target_prefix = self.params['target_prefix']
+        d1_target_file = f"{target_prefix}d1_target.csv"
+        d2_target_file = f"{target_prefix}d2_target.csv"
+        d3_target_file = f"{target_prefix}d3_target.csv"
+
+        d1_data[['CLOSE']].to_csv(d1_target_file, header=False, index=False)
+        d2_data[['CLOSE']].to_csv(d2_target_file, header=False, index=False)
+        d3_data[['CLOSE']].to_csv(d3_target_file, header=False, index=False)
+
+        print(f"[DEBUG] D1 target data saved to: {d1_target_file}")
+        print(f"[DEBUG] D2 target data saved to: {d2_target_file}")
+        print(f"[DEBUG] D3 target data saved to: {d3_target_file}")
+
+        # Step 4: Create a summary DataFrame with the dataset details
         summary_data = {
             'Filename': [d1_data_file, d2_data_file, d3_data_file, d1_target_file, d2_target_file, d3_target_file],
             'Rows': [d1_data.shape[0], d2_data.shape[0], d3_data.shape[0], d1_data.shape[0], d2_data.shape[0], d3_data.shape[0]],
-            'Columns': [d1_data.shape[1], d2_data.shape[1], d3_data.shape[1], 1, 1, 1]
+            'Columns': [d1_data.shape[1], d2_data.shape[1], d3_data.shape[1], 1, 1, 1]  # Target files only have CLOSE
         }
         summary_df = pd.DataFrame(summary_data)
 
         return summary_df
+
+
 
 
 
