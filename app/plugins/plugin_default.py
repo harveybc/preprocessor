@@ -20,7 +20,7 @@ class Plugin:
         'range': (-1, 1),
         'd1_proportion': 0.3,
         'd2_proportion': 0.3,
-        'only_low_CV': False  # Parameter to control processing of low CV columns
+        'only_low_CV': True  # Parameter to control processing of low CV columns
     }
 
     # Define the debug variables for this plugin
@@ -118,18 +118,11 @@ class Plugin:
         print(f"[DEBUG] D2 data shape: {d2_data.shape}")
         print(f"[DEBUG] D3 data shape: {d3_data.shape}")
 
-        # Step 4: Validate required columns for output_order
-        output_order = ['DATE_TIME', 'OPEN', 'LOW', 'HIGH', 'CLOSE']
-        if set(output_order) - set(reordered_data.columns):
-            print(f"[DEBUG] Adjusting column names for compatibility with output_order.")
-            column_mapping = dict(zip(self.params['output_column_order'], output_order))
-            reordered_data.rename(columns=column_mapping, inplace=True)
-
-        # Step 5: Normalize the selected columns in D1, D2, and D3
+        # Step 4: Normalize the selected columns in D1, D2, and D3
         epsilon = 1e-8
         for column in numeric_columns:
             col_data = d1_data[column]
-            if column == 'CLOSE':
+            if column == 'c':  # Ensure the correct target column for normalization
                 method = 'min-max'
             else:
                 method = 'z-score' if abs(skew(col_data)) <= 0.5 and -1.0 <= kurtosis(col_data) <= 6.0 else 'min-max'
@@ -149,25 +142,32 @@ class Plugin:
 
             print(f"[DEBUG] Normalized column '{column}' using {method} method.")
 
-        # Step 6: Save reordered and target datasets
+        # Step 5: Save the datasets
         dataset_prefix = self.params['dataset_prefix']
+        target_prefix = self.params['target_prefix']
         d1_data_file = f"{dataset_prefix}d1.csv"
         d2_data_file = f"{dataset_prefix}d2.csv"
         d3_data_file = f"{dataset_prefix}d3.csv"
+        d1_target_file = f"{target_prefix}d1_target.csv"
+        d2_target_file = f"{target_prefix}d2_target.csv"
+        d3_target_file = f"{target_prefix}d3_target.csv"
 
         d1_data.to_csv(d1_data_file, header=False, index=False)
         d2_data.to_csv(d2_data_file, header=False, index=False)
         d3_data.to_csv(d3_data_file, header=False, index=False)
+        d1_data[['c']].to_csv(d1_target_file, header=False, index=False)
+        d2_data[['c']].to_csv(d2_target_file, header=False, index=False)
+        d3_data[['c']].to_csv(d3_target_file, header=False, index=False)
 
-        print(f"[DEBUG] D1 data saved to: {d1_data_file}")
-        print(f"[DEBUG] D2 data saved to: {d2_data_file}")
-        print(f"[DEBUG] D3 data saved to: {d3_data_file}")
+        print(f"[DEBUG] Saved D1 to {d1_data_file} and D1 target to {d1_target_file}")
+        print(f"[DEBUG] Saved D2 to {d2_data_file} and D2 target to {d2_target_file}")
+        print(f"[DEBUG] Saved D3 to {d3_data_file} and D3 target to {d3_target_file}")
 
-        # Create summary DataFrame
+        # Step 6: Create a summary DataFrame
         summary_data = {
-            'Filename': [d1_data_file, d2_data_file, d3_data_file],
-            'Rows': [d1_data.shape[0], d2_data.shape[0], d3_data.shape[0]],
-            'Columns': [d1_data.shape[1], d2_data.shape[1], d3_data.shape[1]]
+            'Filename': [d1_data_file, d2_data_file, d3_data_file, d1_target_file, d2_target_file, d3_target_file],
+            'Rows': [d1_data.shape[0], d2_data.shape[0], d3_data.shape[0], d1_data.shape[0], d2_data.shape[0], d3_data.shape[0]],
+            'Columns': [d1_data.shape[1], d2_data.shape[1], d3_data.shape[1], 1, 1, 1]
         }
         summary_df = pd.DataFrame(summary_data)
 
