@@ -113,12 +113,12 @@ class Plugin:
         print(f"[DEBUG] Total rows: {total_len}, D1 size: {d1_size}, D2 size: {d2_size}, D3 size: {total_len - d1_size - d2_size}")
         print(f"[DEBUG] D1 shape: {d1_data.shape}, D2 shape: {d2_data.shape}, D3 shape: {d3_data.shape}")
 
-        # Step 4: Save the base datasets (without headers)
+        # Step 4: Save the base datasets (with headers)
         dataset_prefix = self.params['dataset_prefix']
-        d1_data.to_csv(f"{dataset_prefix}d1.csv", index=False, header=False)
-        d2_data.to_csv(f"{dataset_prefix}d2.csv", index=False, header=False)
-        d3_data.to_csv(f"{dataset_prefix}d3.csv", index=False, header=False)
-        print(f"[DEBUG] Saved base_d1.csv, base_d2.csv, base_d3.csv")
+        d1_data.to_csv(f"{dataset_prefix}d1.csv", index=False, header=True)
+        d2_data.to_csv(f"{dataset_prefix}d2.csv", index=False, header=True)
+        d3_data.to_csv(f"{dataset_prefix}d3.csv", index=False, header=True)
+        print(f"[DEBUG] Saved base_d1.csv, base_d2.csv, base_d3.csv with headers and DATE_TIME")
 
         # Step 5: Normalize all numeric columns
         numeric_columns = data.select_dtypes(include=[np.number]).columns.tolist()
@@ -144,23 +144,12 @@ class Plugin:
             normalized_d2[column] = (d2_full[column] - min_val) / (max_val - min_val + 1e-8)
             normalized_d3[column] = (d3_full[column] - min_val) / (max_val - min_val + 1e-8)
 
-        # Step 6: Save the normalized datasets (without headers)
+        # Step 6: Save the normalized datasets (with headers and DATE_TIME)
         target_prefix = self.params['target_prefix']
-        normalized_d1.to_csv(f"{target_prefix}d1.csv", index=False, header=False)
-        normalized_d2.to_csv(f"{target_prefix}d2.csv", index=False, header=False)
-        normalized_d3.to_csv(f"{target_prefix}d3.csv", index=False, header=False)
-        print(f"[DEBUG] Saved normalized_d1.csv, normalized_d2.csv, normalized_d3.csv")
-
-        # Step 6.1: Remove DATE_TIME column from the normalized datasets
-        normalized_d1 = normalized_d1.drop(columns=['DATE_TIME'], errors='ignore')
-        normalized_d2 = normalized_d2.drop(columns=['DATE_TIME'], errors='ignore')
-        normalized_d3 = normalized_d3.drop(columns=['DATE_TIME'], errors='ignore')
-
-        # Resave the normalized datasets without headers and without the DATE_TIME column
-        normalized_d1.to_csv(f"{target_prefix}d1.csv", index=False, header=False)
-        normalized_d2.to_csv(f"{target_prefix}d2.csv", index=False, header=False)
-        normalized_d3.to_csv(f"{target_prefix}d3.csv", index=False, header=False)
-        print(f"[DEBUG] Resaved normalized_d1.csv, normalized_d2.csv, normalized_d3.csv without DATE_TIME column")
+        normalized_d1.to_csv(f"{target_prefix}d1.csv", index=False, header=True)
+        normalized_d2.to_csv(f"{target_prefix}d2.csv", index=False, header=True)
+        normalized_d3.to_csv(f"{target_prefix}d3.csv", index=False, header=True)
+        print(f"[DEBUG] Saved normalized_d1.csv, normalized_d2.csv, normalized_d3.csv with headers and DATE_TIME")
 
         # Step 7: Return summary
         summary_data = {
@@ -176,6 +165,7 @@ class Plugin:
         print(summary_df)
 
         return summary_df
+
 
 
 
