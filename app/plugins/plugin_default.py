@@ -18,8 +18,8 @@ class Plugin:
         'target_column': 4,  # Index in output_column_order (zero-based)
         'pip_value': 0.00001,
         'range': (-1, 1),
-        'd1_proportion': 0.3,
-        'd2_proportion': 0.3,
+        'd1_proportion': 0.2,
+        'd2_proportion': 0.6,
         'only_low_CV': True  # Parameter to control processing of low CV columns
     }
 
