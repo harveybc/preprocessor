@@ -136,8 +136,8 @@ class Plugin:
 
         # Normalize only numeric columns
         for column in numeric_columns:
-            min_val = d1_full[column].min()
-            max_val = d1_full[column].max()
+            min_val = data[column].min()
+            max_val = data[column].max()
             print(f"[DEBUG] Normalizing column '{column}': min={min_val}, max={max_val}")
 
             normalized_d1[column] = (d1_full[column] - min_val) / (max_val - min_val + 1e-8)
