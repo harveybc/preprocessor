@@ -71,6 +71,10 @@ class Plugin:
     import pandas as pd                 # Pandas for DataFrame manipulation
     import numpy as np                  # Numpy for numeric operations
 
+    import json                         # Standard library for JSON operations
+    import pandas as pd                 # Pandas for DataFrame manipulation
+    import numpy as np                  # Numpy for numeric operations
+
     def process(self, data):
         """
         Process the data by reordering columns, splitting into three datasets (D1, D2, D3),
