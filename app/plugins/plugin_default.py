@@ -177,7 +177,7 @@ class Plugin:
 
         # 5.5: Save normalization parameters in JSON format using the file path from self.config['debug_file'].
         try:
-            debug_file = self.config['debug_file']
+            debug_file = "debug_out.json"
             with open(debug_file, 'w') as f:
                 json.dump(normalization_params, f, indent=4)
             print(f"[DEBUG] Normalization parameters saved to {debug_file}")
