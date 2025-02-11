@@ -75,17 +75,21 @@ class Plugin:
     import pandas as pd                 # Pandas for DataFrame manipulation
     import numpy as np                  # Numpy for numeric operations
 
+    import json                         # Standard library for JSON operations
+    import pandas as pd                 # Pandas for DataFrame manipulation
+    import numpy as np                  # Numpy for numeric operations
+
     def process(self, data):
         """
         Process the data by reordering columns, splitting into three datasets (D1, D2, D3),
         normalizing columns based on D1, and saving the datasets along with normalization parameters.
         
-        This function now also calculates the min and max values for each numeric column and saves these
+        This function calculates the min and max values for each numeric column and saves these
         parameters in JSON format using the file specified by self.config['debug_file'].
-
+        
         Args:
             data (pd.DataFrame): The input data to be processed.
-
+        
         Returns:
             pd.DataFrame: The summary of processed datasets.
         """
@@ -154,19 +158,26 @@ class Plugin:
             # 5.4.1: Compute the minimum and maximum values for the column.
             min_val = data[column].min()
             max_val = data[column].max()
+            
+            # 5.4.2: Convert numpy scalars to native Python types (if applicable).
+            if hasattr(min_val, "item"):
+                min_val = min_val.item()
+            if hasattr(max_val, "item"):
+                max_val = max_val.item()
+                
             print(f"[DEBUG] Normalizing column '{column}': min={min_val}, max={max_val}")
-
-            # 5.4.2: Save the parameters for this column.
+            
+            # 5.4.3: Save the parameters for this column.
             normalization_params[column] = {"min": min_val, "max": max_val}
-
-            # 5.4.3: Apply normalization to each dataset.
+            
+            # 5.4.4: Apply normalization to each dataset.
             normalized_d1[column] = (d1_full[column] - min_val) / (max_val - min_val + 1e-8)
             normalized_d2[column] = (d2_full[column] - min_val) / (max_val - min_val + 1e-8)
             normalized_d3[column] = (d3_full[column] - min_val) / (max_val - min_val + 1e-8)
 
         # 5.5: Save normalization parameters in JSON format using the file path from self.config['debug_file'].
         try:
-            debug_file = "debug_out.json"
+            debug_file = self.config['debug_file']
             with open(debug_file, 'w') as f:
                 json.dump(normalization_params, f, indent=4)
             print(f"[DEBUG] Normalization parameters saved to {debug_file}")
@@ -196,7 +207,6 @@ class Plugin:
         print(summary_df)
 
         return summary_df
-
 
 
 
