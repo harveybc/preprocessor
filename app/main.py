@@ -42,6 +42,13 @@ def main():
     print(f"Loading plugin: {plugin_name}")
     plugin_class, _ = load_plugin('preprocessor.plugins', plugin_name)
     plugin = plugin_class()
+    # override plugin parames with already configured params
+    plugin.set_params(**config)
+    plugin_params = getattr(plugin, 'plugin_params', {})
+    
+    print("Merging configuration with plugin_specific arguments...")
+    unknown_args_dict = process_unknown_args(unknown_args)
+    config = merge_config(config, plugin_params, file_config, cli_args, unknown_args_dict)
 
     print("Running the feature engineering pipeline...")
     run_preprocessor_pipeline(config, plugin)
