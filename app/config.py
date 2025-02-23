@@ -16,6 +16,6 @@ DEFAULT_VALUES = {
     'force_date': False,  # Force inclusion of date column in the output
     'debug_file': './debug_out.json',  # Path to save debug information
     'quiet_mode': False,  # Suppress all output except for errors
-    'only_low_CV': False  # Process only low CV columns (False by default)
+    'only_low_CV': True  # Process only low CV columns (False by default)
 }
 
