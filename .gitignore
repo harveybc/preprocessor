@@ -60,5 +60,6 @@ tests/data/test_output.csv
 *.csv
 !tests/data/*.csv
 !examples/*.csv
+!examples/data/*.csv
 *.462506
 .coverage (Carmencita's conflicted copy 2020-04-29)
