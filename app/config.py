@@ -2,7 +2,7 @@
 
 DEFAULT_VALUES = {
     #'input_file': 'tests/data/eurusd_hourly_dataset_aligned_2011_2020.csv',  # Default path for the CSV file
-    'input_file': 'tests/data/indicators_output.csv',  # Default path for the CSV file
+    'input_file': 'examples/data/phase_3_1.csv',  # Default path for the CSV file
     'output_file': './output.csv',  # Default output file for processed data
     'load_config': None,  # Path to load configuration file (if provided)
     'save_config': './output_config.json',  # Path to save the configuration file
