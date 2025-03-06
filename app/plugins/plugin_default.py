@@ -19,7 +19,11 @@ class Plugin:
         'pip_value': 0.00001,
         'range': (0, 1),
         'd1_proportion': 0.2,
-        'd2_proportion': 0.6,
+        'd2_proportion': 0.2,
+        'd3_proportion': 0.2,
+        'd4_proportion': 0.2,
+        'd5_proportion': 0.2,
+        
         'only_low_CV': True  # Parameter to control processing of low CV columns
     }
 
