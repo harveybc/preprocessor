@@ -28,4 +28,5 @@ matplotlib
 pandas
 pillow
 kiwisolver
+seaborn
 #
