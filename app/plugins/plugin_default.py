@@ -18,7 +18,7 @@ class Plugin:
         'target_column': 4,  # Index in output_column_order (zero-based)
         'pip_value': 0.00001,
         'range': (0, 1),
-        'd1_proportion': 0.2,
+        'd1_proportion': 0.6,
         'd2_proportion': 0.2,
         'd3_proportion': 0.2,
         'd4_proportion': 0.2,
