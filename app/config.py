@@ -1,11 +1,11 @@
 # config.py
 
 DEFAULT_VALUES = {
-    'input_file': 'tests/data/eurusd_hour_2005_2020_ohlc.csv',  # Default path for the CSV file
-    #'input_file': 'examples/data/phase_3_1.csv',  # Default path for the CSV file
-    'output_file': './output.csv',  # Default output file for processed data
+    'input_file': 'examples/data/phase_2_1.csv',  # Default path for the CSV file
+    
+    'output_file': 'examples/data/phase_2_1/phase_2_1.csv',  # Default output file for processed data
     'load_config': None,  # Path to load configuration file (if provided)
-    'save_config': './output_config.json',  # Path to save the configuration file
+    'save_config': 'examples/data/phase_2_1/phase_2_1_output_config.json',  # Path to save the configuration file
     'remote_load_config': None,  # URL for remote configuration loading
     'remote_save_config': None,  # URL for remote configuration saving
     'remote_log': None,  # URL for remote logging
@@ -14,7 +14,7 @@ DEFAULT_VALUES = {
     'plugin': 'default_plugin',  # Default plugin to use for feature extraction
     'headers': True,  # Whether the CSV file has headers (True by default)
     'force_date': False,  # Force inclusion of date column in the output
-    'debug_file': './debug_out.json',  # Path to save debug information
+    'debug_file': 'examples/data/phase_2_1/phase_2_1_debug_out.json',  # Path to save debug information
     'quiet_mode': False,  # Suppress all output except for errors
     'only_low_CV': True  # Process only low CV columns (False by default)
 }
