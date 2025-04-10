@@ -5,7 +5,7 @@ DEFAULT_VALUES = {
     
     'output_file': 'examples/data/phase_2_1/phase_2_1.csv',  # Default output file for processed data
     'load_config': None,  # Path to load configuration file (if provided)
-    'save_config': 'examples/data/phase_2_1/phase_2_1_output_config.json',  # Path to save the configuration file
+    'save_config': 'output_config.json',  # Path to save the configuration file
     'remote_load_config': None,  # URL for remote configuration loading
     'remote_save_config': None,  # URL for remote configuration saving
     'remote_log': None,  # URL for remote logging
@@ -16,6 +16,8 @@ DEFAULT_VALUES = {
     'force_date': False,  # Force inclusion of date column in the output
     'debug_file': 'examples/data/phase_2_1/phase_2_1_debug_out.json',  # Path to save debug information
     'quiet_mode': False,  # Suppress all output except for errors
-    'only_low_CV': True  # Process only low CV columns (False by default)
+    'only_low_CV': True,  # Process only low CV columns (False by default),
+    'dataset_prefix': "base_",
+    'target_prefix': "normalized_"
 }
 

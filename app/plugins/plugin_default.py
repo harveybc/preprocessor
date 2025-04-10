@@ -83,7 +83,7 @@ class Plugin:
     import pandas as pd                 # Pandas for DataFrame manipulation
     import numpy as np                  # Numpy for numeric operations
 
-    def process(self, data):
+    def process(self, data ,config):
         """
         Process the data by reordering columns, splitting into three datasets (D1, D2, D3),
         normalizing columns based on D1, and saving the datasets along with normalization parameters.
@@ -181,7 +181,7 @@ class Plugin:
 
         # 5.5: Save normalization parameters in JSON format using the file path from self.config['debug_file'].
         try:
-            debug_file = "debug_out.json"
+            debug_file = config.get("debug_file","debug_out.json")
             with open(debug_file, 'w') as f:
                 json.dump(normalization_params, f, indent=4)
             print(f"[DEBUG] Normalization parameters saved to {debug_file}")
