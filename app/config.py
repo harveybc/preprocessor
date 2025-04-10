@@ -17,7 +17,7 @@ DEFAULT_VALUES = {
     'debug_file': 'examples/data/phase_2_1/phase_2_1_debug_out.json',  # Path to save debug information
     'quiet_mode': False,  # Suppress all output except for errors
     'only_low_CV': True,  # Process only low CV columns (False by default),
-    'dataset_prefix': "base_",
-    'target_prefix': "normalized_"
+    'dataset_prefix': "examples/data/phase_2_1/base_",
+    'target_prefix': "examples/data/phase_2_1/normalized_"
 }
 
