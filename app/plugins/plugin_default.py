@@ -18,11 +18,12 @@ class Plugin:
         'target_column': 4,  # Index in output_column_order (zero-based)
         'pip_value': 0.00001,
         'range': (0, 1),
-        'd1_proportion': 0.6,
-        'd2_proportion': 0.2,
-        'd3_proportion': 0.2,
-        'd4_proportion': 0.2,
-        'd5_proportion': 0.2,
+        'd1_proportion': 0.33, # 4/12 = 0.083 = 4 years on the 92.3k rows phase_3 dataset
+        'd2_proportion': 0.083, # 1/12 = 0.083 = 1 year
+        'd3_proportion': 0.083,
+        'd4_proportion': 0.33,
+        'd5_proportion': 0.083,
+        'd6_proportion': 0.083,
         
         'only_low_CV': True  # Parameter to control processing of low CV columns
     }
@@ -121,24 +122,34 @@ class Plugin:
         base_data = data[output_column_order]
         print(f"[DEBUG] Reordered data columns: {list(base_data.columns)}")
 
-        # 3.0: Split data into D1, D2, and D3.
+        # 3.0: Split data into D1, D2, D3, D4, D5, and D6.
         total_len = len(base_data)
         d1_size = int(total_len * self.params['d1_proportion'])
         d2_size = int(total_len * self.params['d2_proportion'])
+        d3_size = int(total_len * self.params['d3_proportion'])
+        d4_size = int(total_len * self.params['d4_proportion'])
+        d5_size = int(total_len * self.params['d5_proportion'])
+        d6_size = total_len - (d1_size + d2_size + d3_size + d4_size + d5_size)
 
         d1_data = base_data.iloc[:d1_size].copy()
         d2_data = base_data.iloc[d1_size:d1_size + d2_size].copy()
-        d3_data = base_data.iloc[d1_size + d2_size:].copy()
+        d3_data = base_data.iloc[d1_size + d2_size:d1_size + d2_size + d3_size].copy()
+        d4_data = base_data.iloc[d1_size + d2_size + d3_size:d1_size + d2_size + d3_size + d4_size].copy()
+        d5_data = base_data.iloc[d1_size + d2_size + d3_size + d4_size:d1_size + d2_size + d3_size + d4_size + d5_size].copy()
+        d6_data = base_data.iloc[d1_size + d2_size + d3_size + d4_size + d5_size:].copy()
 
-        print(f"[DEBUG] Total rows: {total_len}, D1 size: {d1_size}, D2 size: {d2_size}, D3 size: {total_len - d1_size - d2_size}")
-        print(f"[DEBUG] D1 shape: {d1_data.shape}, D2 shape: {d2_data.shape}, D3 shape: {d3_data.shape}")
+        print(f"[DEBUG] Total rows: {total_len}, D1 size: {d1_size}, D2 size: {d2_size}, D3 size: {d3_size}, D4 size: {d4_size}, D5 size: {d5_size}, D6 size: {d6_size}")
+        print(f"[DEBUG] D1 shape: {d1_data.shape}, D2 shape: {d2_data.shape}, D3 shape: {d3_data.shape}, D4 shape: {d4_data.shape}, D5 shape: {d5_data.shape}, D6 shape: {d6_data.shape}")
 
         # 4.0: Save the base datasets (with headers).
         dataset_prefix = self.params['dataset_prefix']
         d1_data.to_csv(f"{dataset_prefix}d1.csv", index=False, header=True)
         d2_data.to_csv(f"{dataset_prefix}d2.csv", index=False, header=True)
         d3_data.to_csv(f"{dataset_prefix}d3.csv", index=False, header=True)
-        print(f"[DEBUG] Saved base_d1.csv, base_d2.csv, base_d3.csv with headers and DATE_TIME")
+        d4_data.to_csv(f"{dataset_prefix}d4.csv", index=False, header=True)
+        d5_data.to_csv(f"{dataset_prefix}d5.csv", index=False, header=True)
+        d6_data.to_csv(f"{dataset_prefix}d6.csv", index=False, header=True)
+        print(f"[DEBUG] Saved base_d1.csv, base_d2.csv, base_d3.csv, base_d4.csv, base_d5.csv, base_d6.csv with headers and DATE_TIME")
 
         # 5.0: Normalize all numeric columns.
         numeric_columns = data.select_dtypes(include=[np.number]).columns.tolist()
