@@ -158,12 +158,20 @@ class Plugin:
         # 5.1: Initialize full target datasets.
         d1_full = data.iloc[:d1_size].copy()
         d2_full = data.iloc[d1_size:d1_size + d2_size].copy()
-        d3_full = data.iloc[d1_size + d2_size:].copy()
+        d3_full = data.iloc[d1_size + d2_size:d1_size + d2_size + d3_size].copy()
+        d4_full = data.iloc[d1_size + d2_size + d3_size:d1_size + d2_size + d3_size + d4_size].copy()
+        d5_full = data.iloc[d1_size + d2_size + d3_size + d4_size:d1_size + d2_size + d3_size + d4_size + d5_size].copy()
+        d6_full = data.iloc[d1_size + d2_size + d3_size + d4_size + d5_size:].copy()
+
 
         # 5.2: Initialize normalized DataFrames with all columns (including DATE_TIME).
         normalized_d1 = d1_full.copy()
         normalized_d2 = d2_full.copy()
         normalized_d3 = d3_full.copy()
+        normalized_d4 = d4_full.copy()
+        normalized_d5 = d5_full.copy()
+        normalized_d6 = d6_full.copy()
+
 
         # 5.3: Dictionary to hold normalization parameters (min and max values for each numeric column).
         normalization_params = {}
@@ -189,6 +197,10 @@ class Plugin:
             normalized_d1[column] = (d1_full[column] - min_val) / (max_val - min_val + 1e-8)
             normalized_d2[column] = (d2_full[column] - min_val) / (max_val - min_val + 1e-8)
             normalized_d3[column] = (d3_full[column] - min_val) / (max_val - min_val + 1e-8)
+            normalized_d4[column] = (d4_full[column] - min_val) / (max_val - min_val + 1e-8)
+            normalized_d5[column] = (d5_full[column] - min_val) / (max_val - min_val + 1e-8)
+            normalized_d6[column] = (d6_full[column] - min_val) / (max_val - min_val + 1e-8)
+
 
         # 5.5: Save normalization parameters in JSON format using the file path from self.config['debug_file'].
         try:
@@ -206,20 +218,32 @@ class Plugin:
         normalized_d1.to_csv(f"{target_prefix}d1.csv", index=False, header=True)
         normalized_d2.to_csv(f"{target_prefix}d2.csv", index=False, header=True)
         normalized_d3.to_csv(f"{target_prefix}d3.csv", index=False, header=True)
-        print(f"[DEBUG] Saved normalized_d1.csv, normalized_d2.csv, normalized_d3.csv with headers and DATE_TIME")
+        normalized_d4.to_csv(f"{target_prefix}d4.csv", index=False, header=True)
+        normalized_d5.to_csv(f"{target_prefix}d5.csv", index=False, header=True)
+        normalized_d6.to_csv(f"{target_prefix}d6.csv", index=False, header=True)
+        print(f"[DEBUG] Saved normalized_d1.csv, normalized_d2.csv, normalized_d3.csv, normalized_d4.csv, normalized_d5.csv, normalized_d6.csv with headers and DATE_TIME")
 
-        # 7.0: Return summary of processed files.
+
+                # 7.0: Return summary of processed files.
         summary_data = {
-            'Filename': [f"{dataset_prefix}d1.csv", f"{dataset_prefix}d2.csv", f"{dataset_prefix}d3.csv",
-                        f"{target_prefix}d1.csv", f"{target_prefix}d2.csv", f"{target_prefix}d3.csv"],
-            'Rows': [d1_data.shape[0], d2_data.shape[0], d3_data.shape[0],
-                    normalized_d1.shape[0], normalized_d2.shape[0], normalized_d3.shape[0]],
-            'Columns': [d1_data.shape[1], d2_data.shape[1], d3_data.shape[1],
-                        normalized_d1.shape[1], normalized_d2.shape[1], normalized_d3.shape[1]]
+            'Filename': [
+                f"{dataset_prefix}d1.csv", f"{dataset_prefix}d2.csv", f"{dataset_prefix}d3.csv", f"{dataset_prefix}d4.csv", f"{dataset_prefix}d5.csv", f"{dataset_prefix}d6.csv",
+                f"{target_prefix}d1.csv", f"{target_prefix}d2.csv", f"{target_prefix}d3.csv", f"{target_prefix}d4.csv", f"{target_prefix}d5.csv", f"{target_prefix}d6.csv"
+            ],
+            'Rows': [
+                d1_data.shape[0], d2_data.shape[0], d3_data.shape[0], d4_data.shape[0], d5_data.shape[0], d6_data.shape[0],
+                normalized_d1.shape[0], normalized_d2.shape[0], normalized_d3.shape[0], normalized_d4.shape[0], normalized_d5.shape[0], normalized_d6.shape[0]
+            ],
+            'Columns': [
+                d1_data.shape[1], d2_data.shape[1], d3_data.shape[1], d4_data.shape[1], d5_data.shape[1], d6_data.shape[1],
+                normalized_d1.shape[1], normalized_d2.shape[1], normalized_d3.shape[1], normalized_d4.shape[1], normalized_d5.shape[1], normalized_d6.shape[1]
+            ]
         }
         summary_df = pd.DataFrame(summary_data)
         print("[DEBUG] Processing complete. Summary of saved files:")
         print(summary_df)
+        # 8.0: Return summary DataFrame.
+
 
         return summary_df
 
