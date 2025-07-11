@@ -5,20 +5,20 @@ import seaborn as sns
 from scipy.stats import skew, kurtosis
 import json
 import sys
+import os
 import importlib.util
 from pathlib import Path
 
 class Plugin:
     """
-    Plugin to preprocess the dataset for feature extraction with external feature engineering support.
+    Default preprocessing plugin for dataset normalization and splitting.
     
-    This plugin performs:
-    1. Optional external feature engineering (technical indicators, decomposition)
-    2. Dataset splitting into 6 sets (D1-D6) for autoencoder and predictor training
-    3. Correct normalization: parameters fitted on training sets (D1, D4) only
-    4. Application of fitted normalizers to all datasets
+    This plugin:
+    1. Optionally applies feature engineering from external plugins
+    2. Splits data into 6 datasets (D1-D6) for training autoencoder and predictor
+    3. Normalizes data using training sets (D1, D4) parameters
+    4. Applies fitted normalizers to validation/test sets (D2, D3, D5, D6)
     """
-    
     # Define the parameters for this plugin and their default values
     plugin_params = {
         'input_column_order': ["d", "o", "h", "l", "c"],
@@ -28,59 +28,67 @@ class Plugin:
         'target_column': 4,  # Index in output_column_order (zero-based)
         'pip_value': 0.00001,
         'range': (0, 1),
-        'd1_proportion': 0.33,  # Autoencoder training
-        'd2_proportion': 0.083, # Autoencoder validation  
-        'd3_proportion': 0.083, # Autoencoder test
-        'd4_proportion': 0.33,  # Predictor training
-        'd5_proportion': 0.083, # Predictor validation
-        'd6_proportion': 0.083, # Predictor test
-        'only_low_CV': True,
         
-        # External feature engineering
+        # Dataset split proportions
+        'd1_proportion': 0.33,   # Training set for autoencoder
+        'd2_proportion': 0.083,  # Validation set for autoencoder 
+        'd3_proportion': 0.083,  # Test set for autoencoder
+        'd4_proportion': 0.33,   # Training set for predictor
+        'd5_proportion': 0.083,  # Validation set for predictor
+        'd6_proportion': 0.083,  # Test set for predictor
+        
+        # External feature engineering options
         'use_external_feature_eng': False,
         'feature_eng_plugin_path': '/home/harveybc/Documents/GitHub/feature-eng/app/plugins',
-        
-        # Technical indicators
-        'technical_indicators': False,
-        'short_window': 14,
-        'medium_window': 50,
-        'long_window': 200,
-        'indicators': ['rsi', 'macd', 'ema', 'sma', 'bollinger_bands'],
-        
-        # Decomposition
+        'technical_indicators': True,
         'decomposition_enabled': False,
         'decomp_features': [],
         'decomp_methods': {},
+        
+        # Technical indicator configuration
+        'short_window': 14,
+        'medium_window': 50, 
+        'long_window': 200,
+        'indicators': ['rsi', 'macd', 'ema', 'sma', 'bollinger_bands'],
+        
+        # Decomposition configuration
         'stl_period': 12,
         'stl_robust': True,
         'wavelet_name': 'db4',
         'wavelet_levels': 3,
-        'mtm_bandwidth': 2.5,
-        'mtm_n_tapers': 4,
         
-        # Normalization
-        'normalization_method': 'min_max',
-        'normalization_range': (0, 1),
-        'fit_on_training_only': True
+        'only_low_CV': True  # Parameter to control processing of low CV columns
     }
 
     # Define the debug variables for this plugin
     plugin_debug_vars = ['column_metrics', 'normalization_params']
 
     def __init__(self):
-        """Initialize the Plugin with default parameters."""
+        """
+        Initialize the Plugin with default parameters.
+        """
         self.params = self.plugin_params.copy()
         self.normalization_params = {}  # To store normalization parameters for each column
         self.column_metrics = {}  # To store metrics for each column
 
     def set_params(self, **kwargs):
-        """Set the parameters for the plugin."""
+        """
+        Set the parameters for the plugin.
+
+        Args:
+            **kwargs: Arbitrary keyword arguments for plugin parameters.
+        """
         for key, value in kwargs.items():
             if key in self.params:
                 self.params[key] = value
 
     def get_debug_info(self):
-        """Get debug information for the plugin."""
+        """
+        Get debug information for the plugin.
+
+        Returns:
+            dict: Debug information including column metrics and normalization parameters.
+        """
         debug_info = {
             'column_metrics': self.column_metrics,
             'normalization_params': self.normalization_params
@@ -88,18 +96,27 @@ class Plugin:
         return debug_info
 
     def add_debug_info(self, debug_info):
-        """Add debug information to the given dictionary."""
+        """
+        Add debug information to the given dictionary.
+
+        Args:
+            debug_info (dict): The dictionary to add debug information to.
+        """
         debug_info.update(self.get_debug_info())
 
     def _load_external_plugin(self, plugin_path: str, plugin_name: str):
-        """Load an external feature engineering plugin."""
-        plugin_file = Path(plugin_path) / f"{plugin_name}.py"
-        
-        if not plugin_file.exists():
-            print(f"[WARNING] Plugin file not found: {plugin_file}")
-            return None
-            
+        """Load external plugin from specified path."""
         try:
+            plugin_file = Path(plugin_path) / f"{plugin_name}.py"
+            if not plugin_file.exists():
+                print(f"[WARNING] External plugin not found: {plugin_file}")
+                return None
+                
+            # Add plugin path to sys.path temporarily
+            if str(plugin_path) not in sys.path:
+                sys.path.insert(0, str(plugin_path))
+            
+            # Import plugin module
             spec = importlib.util.spec_from_file_location(plugin_name, plugin_file)
             if spec is None or spec.loader is None:
                 print(f"[WARNING] Cannot load external plugin: {plugin_file}")
@@ -169,9 +186,7 @@ class Plugin:
                         'stl_period': self.params.get('stl_period', 12),
                         'stl_robust': self.params.get('stl_robust', True),
                         'wavelet_name': self.params.get('wavelet_name', 'db4'),
-                        'wavelet_levels': self.params.get('wavelet_levels', 3),
-                        'mtm_bandwidth': self.params.get('mtm_bandwidth', 2.5),
-                        'mtm_n_tapers': self.params.get('mtm_n_tapers', 4)
+                        'wavelet_levels': self.params.get('wavelet_levels', 3)
                     }
                     
                     decomp_plugin.set_params(**decomp_config)
@@ -258,7 +273,7 @@ class Plugin:
         numeric_columns = base_data.select_dtypes(include=[np.number]).columns.tolist()
         print(f"[DEBUG] Numeric columns for normalization: {numeric_columns}")
 
-        # 5.1: Calculate normalization parameters from TRAINING sets (D1 and D4) ONLY
+        # 5.1: Calculate normalization parameters from TRAINING sets (D1 and D4)
         # Combine D1 and D4 to calculate global normalization parameters
         training_data = pd.concat([d1_data[numeric_columns], d4_data[numeric_columns]], ignore_index=True)
         
@@ -275,9 +290,6 @@ class Plugin:
                 
             print(f"[DEBUG] Normalization params for '{column}': min={min_val}, max={max_val}")
             normalization_params[column] = {"min": min_val, "max": max_val}
-
-        # Store normalization params for debug
-        self.normalization_params = normalization_params
 
         # 5.2: Apply normalization to ALL datasets using the training-derived parameters
         datasets = {
@@ -308,24 +320,24 @@ class Plugin:
             
             normalized_datasets[dataset_name] = normalized_dataset
 
-        # 5.3: Save normalization parameters in JSON format
+        # 5.3: Save normalization parameters
         try:
             debug_file = config.get("debug_file", "debug_out.json")
             with open(debug_file, 'w') as f:
                 json.dump(normalization_params, f, indent=4)
             print(f"[DEBUG] Normalization parameters saved to {debug_file}")
         except Exception as e:
-            print(f"[ERROR] Failed to save normalization parameters to JSON: {e}")
+            print(f"[ERROR] Failed to save normalization parameters: {e}")
             raise
 
-        # 6.0: Save the normalized datasets (with headers and DATE_TIME).
+        # 6.0: Save the normalized datasets
         target_prefix = self.params['target_prefix']
         for dataset_name, normalized_dataset in normalized_datasets.items():
             filename = f"{target_prefix}{dataset_name}.csv"
             normalized_dataset.to_csv(filename, index=False, header=True)
-            print(f"[DEBUG] Saved {filename}")
+        print(f"[DEBUG] Saved all normalized datasets with prefix '{target_prefix}'")
 
-        # 7.0: Return summary of processed files.
+        # 7.0: Return summary of processed files
         summary_data = {
             'Filename': [
                 f"{dataset_prefix}d1.csv", f"{dataset_prefix}d2.csv", f"{dataset_prefix}d3.csv", 
@@ -336,21 +348,29 @@ class Plugin:
             'Rows': [
                 d1_data.shape[0], d2_data.shape[0], d3_data.shape[0], 
                 d4_data.shape[0], d5_data.shape[0], d6_data.shape[0],
-                normalized_datasets['d1'].shape[0], normalized_datasets['d2'].shape[0], normalized_datasets['d3'].shape[0],
+                normalized_datasets['d1'].shape[0], normalized_datasets['d2'].shape[0], normalized_datasets['d3'].shape[0], 
                 normalized_datasets['d4'].shape[0], normalized_datasets['d5'].shape[0], normalized_datasets['d6'].shape[0]
             ],
             'Columns': [
                 d1_data.shape[1], d2_data.shape[1], d3_data.shape[1], 
                 d4_data.shape[1], d5_data.shape[1], d6_data.shape[1],
-                normalized_datasets['d1'].shape[1], normalized_datasets['d2'].shape[1], normalized_datasets['d3'].shape[1],
+                normalized_datasets['d1'].shape[1], normalized_datasets['d2'].shape[1], normalized_datasets['d3'].shape[1], 
                 normalized_datasets['d4'].shape[1], normalized_datasets['d5'].shape[1], normalized_datasets['d6'].shape[1]
             ]
         }
+        
         summary_df = pd.DataFrame(summary_data)
-        print("[DEBUG] Processing complete. Summary of saved files:")
+        print("[DEBUG] Processing complete. Summary:")
         print(summary_df)
         
+        # Store normalization parameters for debug info
+        self.normalization_params = normalization_params
+        
         return summary_df
+
+
+
+
 
 
 # Example usage
@@ -358,6 +378,5 @@ if __name__ == "__main__":
     plugin = Plugin()
     data = pd.read_csv('tests/data/EURUSD_5m_2010_2015.csv', header=None)
     print(f"Loaded data shape: {data.shape}")
-    config = {'debug_file': 'debug_out.json'}
-    processed_data = plugin.process(data, config)
+    processed_data = plugin.process(data)
     print(processed_data)
