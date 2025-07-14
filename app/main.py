@@ -1,22 +1,18 @@
+"""Main entry point for the Preprocessor System
+
+This module provides the main entry point for command-line execution
+of the preprocessor system.
+"""
+
 import sys
-##print(sys.path)  # Print the current Python path for debugging
-import json
-from app.config_handler import load_config, save_config, remote_load_config, remote_save_config, remote_log
-from app.cli import parse_args
-from app.data_processor import run_preprocessor_pipeline
-from app.data_handler import load_csv
-from app.config import DEFAULT_VALUES
-from app.plugin_loader import load_plugin
-from config_merger import merge_config, process_unknown_args
+from app.cli import main as cli_main
 
 def main():
-    print("Parsing initial arguments...")
-    args, unknown_args = parse_args()
+    """Main entry point"""
+    return cli_main()
 
-    cli_args = vars(args)
-
-    print("Loading default configuration...")
-    config = DEFAULT_VALUES.copy()
+if __name__ == '__main__':
+    sys.exit(main())
 
     file_config = {}
     # remote config file load

@@ -9,7 +9,8 @@ The preprocessor system is a modular data transformation pipeline that processes
 ## Stakeholders
 - **Data Scientists**: Require consistent, high-quality preprocessed datasets
 - **ML Engineers**: Need reliable data pipelines with predictable performance
-- **System Administrators**: Require maintainable, configurable systems
+- **System Administrators**: Require maintainable, 
+configurable systems
 - **Plugin Developers**: Need clear interfaces for extending functionality
 
 ## Acceptance Criteria

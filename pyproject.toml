@@ -1,3 +1,28 @@
 [build-system]
 requires = ["setuptools>=42", "wheel", "setuptools_scm"]
 build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--tb=short",
+    "--strict-markers"
+]
+norecursedirs = ["legacy", "*.egg", ".git", "build", "dist"]
+markers = [
+    "unit: Unit tests for individual components",
+    "integration: Integration tests for component interaction", 
+    "system: System-level tests for CLI and full workflows",
+    "acceptance: Acceptance tests for business requirements",
+    "temporal_splitting: Tests for six-dataset temporal splitting functionality",
+    "normalization: Tests for dual z-score normalization",
+    "plugin_integration: Tests for plugin system integration",
+    "configuration: Tests for configuration management",
+    "backward_compatibility: Tests for legacy compatibility",
+    "slow: Tests that take significant time to run",
+    "performance: Performance and scalability tests"
+]

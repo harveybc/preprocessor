@@ -21,7 +21,7 @@ from unittest.mock import patch, MagicMock
 from app.core.plugin_loader import PluginLoader, BasePlugin, PluginMetadata, PluginState
 
 
-class TestPlugin(BasePlugin):
+class MockPlugin(BasePlugin):
     """Test plugin for unit testing"""
     
     def get_metadata(self) -> PluginMetadata:
@@ -37,7 +37,7 @@ class TestPlugin(BasePlugin):
         return f"processed_{data}"
 
 
-class TestPluginWithDependencies(BasePlugin):
+class MockPluginWithDependencies(BasePlugin):
     """Test plugin with dependencies"""
     
     def get_metadata(self) -> PluginMetadata:
@@ -54,7 +54,7 @@ class TestPluginWithDependencies(BasePlugin):
         return f"dependent_processed_{data}"
 
 
-class TestFailingPlugin(BasePlugin):
+class MockFailingPlugin(BasePlugin):
     """Test plugin that fails during execution"""
     
     def get_metadata(self) -> PluginMetadata:
@@ -239,7 +239,7 @@ class TestPluginLoaderLoading(unittest.TestCase):
             plugin_type="test"
         )
         test_metadata.file_path = "dummy_path"
-        test_metadata.class_name = "TestPlugin"
+        test_metadata.class_name = "MockPlugin"
         
         self.plugin_loader.discovered_plugins["test_plugin"] = test_metadata
     
@@ -252,7 +252,7 @@ class TestPluginLoaderLoading(unittest.TestCase):
         """
         # Mock the plugin class loading
         with patch.object(self.plugin_loader, '_load_plugin_class') as mock_load:
-            mock_load.return_value = TestPlugin
+            mock_load.return_value = MockPlugin
             
             # Validate plugin interface
             result = self.plugin_loader.validate_plugin_interface("test_plugin")
@@ -269,7 +269,7 @@ class TestPluginLoaderLoading(unittest.TestCase):
         """
         # Mock the plugin class loading
         with patch.object(self.plugin_loader, '_load_plugin_class') as mock_load:
-            mock_load.return_value = TestPlugin
+            mock_load.return_value = MockPlugin
             
             # Load plugin
             result = self.plugin_loader.load_plugin("test_plugin")
@@ -277,10 +277,9 @@ class TestPluginLoaderLoading(unittest.TestCase):
             # Verify loading succeeded
             self.assertTrue(result)
             self.assertIn("test_plugin", self.plugin_loader.loaded_plugins)
-            
-            # Verify plugin instance
-            plugin_instance = self.plugin_loader.get_plugin("test_plugin")
-            self.assertIsInstance(plugin_instance, TestPlugin)
+                 # Verify plugin instance
+        plugin_instance = self.plugin_loader.get_plugin("test_plugin")
+        self.assertIsInstance(plugin_instance, MockPlugin)
     
     def test_plugin_loading_failure(self):
         """
@@ -313,7 +312,7 @@ class TestPluginLoaderLoading(unittest.TestCase):
         """
         # Mock and load plugin
         with patch.object(self.plugin_loader, '_load_plugin_class') as mock_load:
-            mock_load.return_value = TestPlugin
+            mock_load.return_value = MockPlugin
             
             # Load plugin
             self.plugin_loader.load_plugin("test_plugin")
@@ -503,8 +502,8 @@ class TestPluginLoaderIntegration(unittest.TestCase):
             with patch.object(self.plugin_loader, 'discovered_plugins') as mock_discovered:
                 
                 # Setup mock plugins
-                plugin1 = TestPlugin()
-                plugin2 = TestPlugin()
+                plugin1 = MockPlugin()
+                plugin2 = MockPlugin()
                 
                 mock_loaded.items.return_value = [
                     ("plugin1", plugin1),
@@ -580,7 +579,7 @@ class TestPluginLoaderIntegration(unittest.TestCase):
             "plugin2": metadata2,
             "plugin3": metadata3
         }
-        self.plugin_loader.loaded_plugins = {"plugin1": TestPlugin(), "plugin3": TestPlugin()}
+        self.plugin_loader.loaded_plugins = {"plugin1": MockPlugin(), "plugin3": MockPlugin()}
         self.plugin_loader.loading_errors = ["Error 1", "Error 2"]
         
         # Generate summary
@@ -601,7 +600,7 @@ class TestBasePluginBehavior(unittest.TestCase):
     
     def setUp(self):
         """Set up test fixtures"""
-        self.plugin = TestPlugin()
+        self.plugin = MockPlugin()
     
     def test_plugin_configuration(self):
         """
