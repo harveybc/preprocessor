@@ -68,7 +68,7 @@ class PreprocessorCore:
         
         Args:
             config_files: List of configuration file paths
-            cli_args: Command-line arguments
+            cli_args: Command-line arguments (can be dict or None)
             
         Returns:
             True if initialization successful, False otherwise
@@ -81,8 +81,16 @@ class PreprocessorCore:
                 for config_file in config_files:
                     self.config_manager.load_from_file(config_file)
             
+            # Handle cli_args - if it's a dict, treat it as direct config
             if cli_args:
-                self.config_manager.load_from_cli_args(cli_args)
+                if isinstance(cli_args, dict):
+                    # Direct configuration dict
+                    for key, value in cli_args.items():
+                        self.config_manager.set_config_value(key, value)
+                else:
+                    # CLI arguments (if method exists)
+                    if hasattr(self.config_manager, 'load_from_cli_args'):
+                        self.config_manager.load_from_cli_args(cli_args)
             
             # Validate configuration
             if not self.config_manager.validate():
