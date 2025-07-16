@@ -9,6 +9,7 @@ from typing import Dict, Any, List, Optional, Tuple
 import pandas as pd
 from datetime import datetime
 from pathlib import Path
+import json
 
 from app.core.configuration_manager import ConfigurationManager
 from app.core.plugin_loader import PluginLoader
@@ -189,6 +190,18 @@ class PreprocessorCore:
             },
             'current_metadata': self.current_metadata.copy()
         }
+    
+    @property
+    def config(self) -> Dict[str, Any]:
+        """
+        Get the current merged configuration.
+        
+        Returns:
+            Dictionary containing the merged configuration
+        """
+        if self.config_manager and hasattr(self.config_manager, 'merged_config'):
+            return self.config_manager.merged_config or {}
+        return {}
     
     def get_processing_history(self) -> List[Dict[str, Any]]:
         """Get processing history."""
@@ -413,7 +426,11 @@ class PreprocessorCore:
         """Compute normalization parameters and normalize datasets."""
         try:
             # Get training datasets configuration
-            norm_config = self.config_manager.get_section('normalization')
+            try:
+                norm_config = self.config_manager.get_section('normalization')
+            except (KeyError, ValueError, AttributeError):
+                norm_config = {}
+            
             if not norm_config:
                 norm_config = {}
             training_keys = norm_config.get('training_datasets', ['d1', 'd2'])
@@ -494,19 +511,22 @@ class PreprocessorCore:
             self.logger.error(f"Postprocessing failed: {e}")
             return False
     
-    def _export_results(self, output_path: str) -> bool:
+    def _export_results(self, output_path: str, format_type: str = 'csv') -> bool:
         """Export final results."""
         try:
-            # Export split datasets
+            # Export current datasets (after all processing including postprocessing)
             export_config = self.config_manager.get_section('export')
             if not export_config:
                 export_config = {}
-            format_type = export_config.get('format', 'csv')
             
-            success = self.data_processor.export_split_datasets(output_path, format_type)
+            # Use provided format_type or fall back to config
+            final_format = format_type or export_config.get('format', 'csv')
+            
+            # Export the current datasets instead of the original split datasets
+            success = self._export_current_datasets(output_path, final_format)
             
             if not success:
-                self.logger.error("Failed to export split datasets")
+                self.logger.error("Failed to export processed datasets")
                 return False
             
             # Export normalization parameters if configured
@@ -572,6 +592,99 @@ class PreprocessorCore:
         
         self.processing_history.append(history_entry)
     
+    def _export_current_datasets(self, output_path: str, format_type: str = 'csv') -> bool:
+        """
+        Export current datasets (after all processing including postprocessing).
+        
+        Args:
+            output_path: Directory to save datasets
+            format_type: Export format ('csv', 'parquet', 'json')
+            
+        Returns:
+            True if export successful, False otherwise
+        """
+        try:
+            output_dir = Path(output_path)
+            output_dir.mkdir(parents=True, exist_ok=True)
+            
+            if not self.current_datasets:
+                self.logger.error("No current datasets available for export")
+                return False
+            
+            # Export each current dataset
+            for dataset_key, dataset in self.current_datasets.items():
+                if dataset.empty:
+                    self.logger.warning(f"Dataset {dataset_key} is empty, skipping export")
+                    continue
+                
+                filename = f"{dataset_key}.{format_type}"
+                file_path = output_dir / filename
+                
+                if format_type.lower() == 'csv':
+                    dataset.to_csv(file_path, index=False)
+                elif format_type.lower() == 'parquet':
+                    dataset.to_parquet(file_path, index=False)
+                elif format_type.lower() == 'json':
+                    dataset.to_json(file_path, orient='records', date_format='iso')
+                else:
+                    self.logger.error(f"Unsupported export format: {format_type}")
+                    return False
+                
+                self.logger.debug(f"Exported dataset {dataset_key} to {file_path}")
+            
+            self.logger.info(f"Successfully exported {len(self.current_datasets)} processed datasets to {output_path}")
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Failed to export current datasets: {e}")
+            return False
+    
+    def _export_metadata(self, output_path: str) -> bool:
+        """
+        Export processing metadata including configuration and split information.
+        
+        Args:
+            output_path: Directory to save metadata files
+            
+        Returns:
+            True if export successful, False otherwise
+        """
+        try:
+            output_dir = Path(output_path)
+            output_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Create comprehensive metadata
+            metadata = {
+                'configuration': self.config_manager.merged_config if self.config_manager else {},
+                'processing_metadata': self.current_metadata,
+                'datasets_info': {},
+                'processing_history': self.processing_history,
+                'timestamp': datetime.now().isoformat()
+            }
+            
+            # Add dataset information
+            if self.current_datasets:
+                for name, dataset in self.current_datasets.items():
+                    metadata['datasets_info'][name] = {
+                        'rows': len(dataset),
+                        'columns': list(dataset.columns),
+                        'memory_usage': dataset.memory_usage(deep=True).sum(),
+                        'dtypes': {col: str(dtype) for col, dtype in dataset.dtypes.items()}
+                    }
+            
+            # Export main metadata file
+            metadata_file = output_dir / 'split_metadata.json'
+            with open(metadata_file, 'w') as f:
+                json.dump(metadata, f, indent=2, default=str)
+            
+            self.logger.info(f"Exported metadata to {metadata_file}")
+            
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Failed to export metadata: {e}")
+            return False
+
     # CLI-compatible interface methods
     
     def load_data(self, input_path: str) -> bool:
@@ -633,13 +746,13 @@ class PreprocessorCore:
             self.logger.error(f"Processing failed: {e}")
             return False
     
-    def export_results(self, output_path: str, format: str = 'csv', 
+    def export_results(self, output_path: str = None, format: str = 'csv', 
                       include_metadata: bool = False) -> bool:
         """
         Export the processed results to the specified output path.
         
         Args:
-            output_path: Directory path for output files
+            output_path: Directory path for output files (optional, defaults to './output')
             format: Output format ('csv', 'json', 'parquet')
             include_metadata: Whether to include processing metadata
             
@@ -647,8 +760,21 @@ class PreprocessorCore:
             bool: True if export completed successfully, False otherwise
         """
         try:
-            # Export the results using the internal method
-            return self._export_results(output_path)
+            # Use default output path if none provided
+            if output_path is None:
+                output_path = './output'
+            
+            # Export the results using the internal method with format
+            success = self._export_results(output_path, format)
+            
+            if not success:
+                return False
+            
+            # Export metadata if requested
+            if include_metadata:
+                success = self._export_metadata(output_path)
+            
+            return success
             
         except Exception as e:
             self.logger.error(f"Export failed: {e}")

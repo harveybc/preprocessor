@@ -18,6 +18,17 @@ from app.core.configuration_manager import ConfigurationManager
 from app.core.preprocessor_core import PreprocessorCore
 
 
+def create_parser() -> argparse.ArgumentParser:
+    """
+    Create argument parser for backward compatibility.
+    
+    Returns:
+        Configured argument parser
+    """
+    cli = CLIInterface()
+    return cli.create_argument_parser()
+
+
 class CLIInterface:
     """Command Line Interface for the preprocessor system"""
     
@@ -175,6 +186,67 @@ Examples:
             '--quiet', '-q',
             action='store_true',
             help='Suppress non-error output'
+        )
+        
+        # Legacy compatibility arguments
+        parser.add_argument(
+            '--plugin',
+            type=str,
+            help='Legacy: Single plugin name (maps to feature-plugins or postprocessing-plugins)'
+        )
+        
+        parser.add_argument(
+            '--method',
+            type=str,
+            help='Legacy: Method specification (maps to normalization-method)'
+        )
+        
+        parser.add_argument(
+            '--range',
+            type=str,
+            help='Legacy: Range specification for normalization'
+        )
+        
+        parser.add_argument(
+            '--single',
+            type=str,
+            help='Legacy: Single feature selection parameter'
+        )
+        
+        parser.add_argument(
+            '--window_size',
+            type=str,
+            help='Legacy: Window size parameter for plugins'
+        )
+        
+        parser.add_argument(
+            '--remote_save_config',
+            type=str,
+            help='Legacy: Remote save configuration URL'
+        )
+        
+        parser.add_argument(
+            '--remote_load_config',
+            type=str,
+            help='Legacy: Remote load configuration URL'
+        )
+        
+        parser.add_argument(
+            '--remote_log',
+            type=str,
+            help='Legacy: Remote logging URL'
+        )
+        
+        parser.add_argument(
+            '--remote_username',
+            type=str,
+            help='Legacy: Remote username'
+        )
+        
+        parser.add_argument(
+            '--remote_password',
+            type=str,
+            help='Legacy: Remote password'
         )
         
         return parser

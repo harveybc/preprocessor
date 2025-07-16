@@ -786,9 +786,10 @@ class DataHandler:
                 # Update other metadata fields as needed
                 
                 # Re-run validation on new data
-                validation_result = self._validate_data(data)
-                self.metadata.validation_status = "valid" if validation_result[0] else "invalid"
-                self.metadata.validation_errors = validation_result[1]
+                is_valid = self._validate_data(data, self.metadata)
+                self.metadata.validation_status = "valid" if is_valid else "invalid"
+                if not is_valid:
+                    self.metadata.validation_errors = ["Data validation failed"]
             
             self.logger.info(f"Data updated successfully. New shape: {data.shape}")
             return True

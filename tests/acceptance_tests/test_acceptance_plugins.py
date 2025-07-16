@@ -68,7 +68,8 @@ class MockPostprocessingPlugin(PostprocessingPlugin):
     """Mock postprocessing plugin for testing."""
     
     def __init__(self, name="MockPostprocessingPlugin"):
-        super().__init__(name)
+        super().__init__()  # Base class doesn't take name parameter
+        self.plugin_name = name
         self.execution_count = 0
     
     def get_plugin_info(self):
@@ -367,32 +368,22 @@ class TestFeatureEngineeringPluginIntegration(AcceptanceTestBase):
                 preprocessor.load_data(input_file)
             
                 # Add plugins directly to the pipeline after preprocessor creation
+                working_plugin.initialize()  # Initialize the plugins
+                failing_plugin.initialize()
                 preprocessor.feature_engineering_pipeline.plugins = [working_plugin, failing_plugin]
                 
                 # Mock plugin execution with error handling
-                with patch.object(preprocessor.feature_engineering_pipeline, 'process') as mock_process:
-                    # Simulate successful processing that handles plugin failures gracefully
-                    def mock_process_func(data):
-                        # Call working plugin
-                        working_plugin.process(data)
-                        # Failing plugin would fail here but pipeline handles it
-                        try:
-                            failing_plugin.process(data)
-                        except:
-                            pass  # Pipeline handles the failure
-                        return data
-                    
-                    mock_process.side_effect = mock_process_func
-                    
-                    # Should not raise exception, should handle gracefully
-                    try:
-                        preprocessor.process_data()
-                        preprocessor.export_results(self.temp_dir)
-                        pipeline_completed = True
-                    except Exception as e:
-                        # If system has robust error handling, this should not happen
-                        pipeline_completed = False
-                        pytest.fail(f"Pipeline failed to handle plugin error: {e}")
+                # Don't mock the process method, let it run but handle plugin failures
+                
+                # Should not raise exception, should handle gracefully
+                try:
+                    preprocessor.process_data()
+                    preprocessor.export_results(self.temp_dir)
+                    pipeline_completed = True
+                except Exception as e:
+                    # If system has robust error handling, this should not happen
+                    pipeline_completed = False
+                    pytest.fail(f"Pipeline failed to handle plugin error: {e}")
         
         # Then: Pipeline completes despite plugin failure
         assert pipeline_completed, "Pipeline should complete despite plugin failure"
@@ -493,6 +484,7 @@ class TestFeatureEngineeringPluginIntegration(AcceptanceTestBase):
                 preprocessor.load_data(input_file)
             
                 # Add plugin directly to the pipeline and configure it
+                configurable_plugin.initialize()  # Initialize first
                 preprocessor.feature_engineering_pipeline.plugins = [configurable_plugin]
                 
                 # Configure the plugin with expected parameters
@@ -502,16 +494,9 @@ class TestFeatureEngineeringPluginIntegration(AcceptanceTestBase):
                 }
                 configurable_plugin.configure(plugin_config)
                 
-                with patch.object(preprocessor.feature_engineering_pipeline, 'process') as mock_process:
-                    # Simulate plugin execution
-                    def mock_process_func(data):
-                        configurable_plugin.process(data)
-                        return data
-                    
-                    mock_process.side_effect = mock_process_func
-                    
-                    preprocessor.process_data()
-                    preprocessor.export_results(self.temp_dir)
+                # Let the real pipeline run
+                preprocessor.process_data()
+                preprocessor.export_results(self.temp_dir)
         
         # Then: Plugin received correct configuration
         expected_config = {
@@ -606,30 +591,18 @@ class TestPostprocessingPluginSupport(AcceptanceTestBase):
             OrderTrackingPlugin('PostPlugin3')
         ]
         
-        # When: Execute pipeline
-        with patch('app.core.plugin_loader.PluginLoader.load_all_plugins') as mock_load:
-            mock_load.return_value = (3, 0)  # (loaded_count, failed_count)
-            
-            with patch('app.core.plugin_loader.PluginLoader.get_plugins_by_type') as mock_get_plugins:
-                mock_get_plugins.return_value = plugins
-            
-                preprocessor = self.create_preprocessor_with_config(config)
-                preprocessor.load_data(input_file)
-            
-                # Add plugins directly to the postprocessing pipeline
-                preprocessor.postprocessing_pipeline.plugins = plugins
-                
-                with patch.object(preprocessor.postprocessing_pipeline, 'process') as mock_process:
-                    # Simulate postprocessing execution that calls plugins in order
-                    def mock_process_func(data):
-                        for plugin in plugins:
-                            data = plugin.postprocess(data)
-                        return data
-                    
-                    mock_process.side_effect = mock_process_func
-                    
-                    preprocessor.process_data()
-                    preprocessor.export_results(self.temp_dir)
+        # When: Execute pipeline without mocking
+        preprocessor = self.create_preprocessor_with_config(config)
+        preprocessor.load_data(input_file)
+        
+        # Add plugins directly to the postprocessing pipeline and initialize them
+        for plugin in plugins:
+            plugin.initialize()
+        preprocessor.postprocessing_pipeline.plugins = plugins
+        
+        # Let the real pipeline run
+        preprocessor.process_data()
+        preprocessor.export_results(self.temp_dir)
         
         # Then: Plugins executed in configured order
         expected_order = ['PostPlugin1', 'PostPlugin2', 'PostPlugin3']
@@ -671,59 +644,30 @@ class TestPostprocessingPluginSupport(AcceptanceTestBase):
         # Test with normal data (should not execute)
         normal_file = self.save_test_data(normal_data, 'normal.csv')
         
-        with patch('app.core.plugin_loader.PluginLoader.load_all_plugins') as mock_load:
-            mock_load.return_value = (1, 0)  # (loaded_count, failed_count)
-            
-            with patch('app.core.plugin_loader.PluginLoader.get_plugins_by_type') as mock_get_plugins:
-                mock_get_plugins.return_value = [conditional_plugin]
-            
-                config['data']['input_file'] = normal_file
-                preprocessor = self.create_preprocessor_with_config(config)
-                preprocessor.load_data(normal_file)
-            
-                # Add plugin directly to the pipeline
-                preprocessor.postprocessing_pipeline.plugins = [conditional_plugin]
-                
-                with patch.object(preprocessor.postprocessing_pipeline, 'process') as mock_process:
-                    # For normal data, plugin should not execute (no outliers)
-                    def mock_process_func(data):
-                        # Plugin checks data and decides not to execute
-                        return data
-                    
-                    mock_process.side_effect = mock_process_func
-                    
-                    initial_count = conditional_plugin.execution_count
-                    preprocessor.process_data()
-                    
-                    # Plugin should not execute (no outliers)
-                    # Note: This depends on implementation - may execute with different logic
-                
+        config['data']['input_file'] = normal_file
+        preprocessor = self.create_preprocessor_with_config(config)
+        preprocessor.load_data(normal_file)
+        
+        # Add plugin directly to the pipeline
+        conditional_plugin.initialize()
+        preprocessor.postprocessing_pipeline.plugins = [conditional_plugin]
+        
+        initial_count = conditional_plugin.execution_count
+        preprocessor.process_data()
+        
         # Test with outlier data (should execute)
         outlier_file = self.save_test_data(outlier_data, 'outlier.csv')
         
-        with patch('app.core.plugin_loader.PluginLoader.load_all_plugins') as mock_load:
-            mock_load.return_value = (1, 0)  # (loaded_count, failed_count)
-            
-            with patch('app.core.plugin_loader.PluginLoader.get_plugins_by_type') as mock_get_plugins:
-                mock_get_plugins.return_value = [conditional_plugin]
-            
-                config['data']['input_file'] = outlier_file
-                preprocessor2 = self.create_preprocessor_with_config(config)
-                preprocessor2.load_data(outlier_file)
-            
-                # Add plugin directly to the pipeline
-                preprocessor2.postprocessing_pipeline.plugins = [conditional_plugin]
-                
-                with patch.object(preprocessor2.postprocessing_pipeline, 'process') as mock_process:
-                    # For outlier data, plugin should execute
-                    def mock_process_func(data):
-                        conditional_plugin.postprocess(data)
-                        return data
-                    
-                    mock_process.side_effect = mock_process_func
-                    
-                    preprocessor2.process_data()
-                    preprocessor2.export_results(self.temp_dir)
+        config['data']['input_file'] = outlier_file
+        preprocessor2 = self.create_preprocessor_with_config(config)
+        preprocessor2.load_data(outlier_file)
+        
+        # Add plugin directly to the pipeline
+        conditional_plugin.initialize()
+        preprocessor2.postprocessing_pipeline.plugins = [conditional_plugin]
+        
+        preprocessor2.process_data()
+        preprocessor2.export_results(self.temp_dir)
         
         # Then: Plugin executed for outlier data
         assert conditional_plugin.execution_count > 0, "Plugin should execute when outliers present"
@@ -761,21 +705,15 @@ class TestPostprocessingPluginSupport(AcceptanceTestBase):
         integrity_plugin = MockPostprocessingPlugin("IntegrityPlugin")
         
         # When: Execute postprocessing
-        with patch('app.core.plugin_loader.PluginLoader.load_all_plugins') as mock_load:
-            mock_load.return_value = (1, 0)  # (loaded_count, failed_count)
-            
-            with patch('app.core.plugin_loader.PluginLoader.get_plugins_by_type') as mock_get_plugins:
-                mock_get_plugins.return_value = [integrity_plugin]
-            
-                preprocessor = self.create_preprocessor_with_config(config)
-                preprocessor.load_data(input_file)
-            
-                with patch.object(preprocessor, 'postprocessing_pipeline') as mock_pipeline:
-                    mock_pipeline.plugins = [integrity_plugin]
-                    mock_pipeline.execute.return_value = True
-                    
-                    preprocessor.process_data()
-                    preprocessor.export_results(self.temp_dir)
+        preprocessor = self.create_preprocessor_with_config(config)
+        preprocessor.load_data(input_file)
+        
+        # Add plugin directly to the pipeline and initialize it
+        integrity_plugin.initialize()
+        preprocessor.postprocessing_pipeline.plugins = [integrity_plugin]
+        
+        preprocessor.process_data()
+        preprocessor.export_results(self.temp_dir)
         
         # Then: Data integrity preserved
         datasets = self.load_result_datasets()
