@@ -10,13 +10,15 @@ import os
 # Default configuration values
 DEFAULT_VALUES = {
     # Core file paths
-    'input_file': 'examples/data/phase_3.csv',
-    'output_file': 'output_phase_3.csv',
-    'debug_file': 'examples/data/phase_3/phase_3_debug_out.json',
+    'input_file': 'examples/data/feature_eng_output.csv',
+    'output_file': 'output_phase_2_6.csv',
+    'debug_file': 'examples/data/phase_2_6/phase_2_6_debug_out.json',
     
     # Configuration management
     'load_config': None,
-    'save_config': 'output_config.json',
+    'save_config': 'examples/data/phase_2_6/preprocessor_config.json',
+    'normalization_config_a': 'examples/data/phase_2_6/normalization_config_a.json',
+    'normalization_config_b': 'examples/data/phase_2_6/normalization_config_b.json',
     'remote_load_config': None,
     'remote_save_config': None,
     'remote_log': None,
@@ -31,8 +33,9 @@ DEFAULT_VALUES = {
     'only_low_CV': True,
     
     # Dataset generation
-    'dataset_prefix': "examples/data/phase_3/base_",
-    'target_prefix': "examples/data/phase_3/normalized_",
+    'dataset_prefix': "examples/data/phase_2_6/base_",
+    'target_prefix': "examples/data/phase_2_6/normalized_",
+    'trim_start_rows': 168,  # Trim start rows to remove initial values affected by largest decomposition window
     
     # Dataset split proportions (for autoencoder and predictor training)
     'd1_proportion': 0.33,   # Training set for autoencoder
@@ -98,7 +101,8 @@ PARAMETER_VALIDATION = {
     'long_window': {'type': int, 'min': 1, 'max': 1000},
     'stl_period': {'type': int, 'min': 2, 'max': 365},
     'wavelet_levels': {'type': int, 'min': 1, 'max': 10},
-    'min_split_size': {'type': int, 'min': 1, 'max': 10000}
+    'min_split_size': {'type': int, 'min': 1, 'max': 10000},
+    'trim_start_rows': {'type': int, 'min': 0, 'max': 1000}
 }
 
 # Feature engineering plugin integration settings

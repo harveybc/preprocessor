@@ -14,9 +14,11 @@ class Plugin:
     
     This plugin performs:
     1. Optional external feature engineering (technical indicators, decomposition)
-    2. Dataset splitting into 6 sets (D1-D6) for autoencoder and predictor training
-    3. Correct normalization: parameters fitted on training sets (D1, D4) only
-    4. Application of fitted normalizers to all datasets
+    2. Trimming of initial rows to remove values affected by decomposition windows
+    3. Dataset splitting into 6 sets (D1-D6) for autoencoder and predictor training
+    4. Z-score normalization with separate normalizers:
+       - Normalizer A: fit on D1, apply to D1, D2, D3 → save to normalization_config_a.json
+       - Normalizer B: fit on D4, apply to D4, D5, D6 → save to normalization_config_b.json
     """
     
     # Define the parameters for this plugin and their default values
@@ -25,6 +27,7 @@ class Plugin:
         'output_column_order': ["d", "o", "l", "h", "c"],
         'dataset_prefix': "base_",
         'target_prefix': "normalized_",
+        'trim_start_rows': 168,  # Trim start rows to remove initial values affected by largest decomposition window
         'target_column': 4,  # Index in output_column_order (zero-based)
         'pip_value': 0.00001,
         'range': (0, 1),
@@ -59,9 +62,10 @@ class Plugin:
         'mtm_n_tapers': 4,
         
         # Normalization
-        'normalization_method': 'min_max',
-        'normalization_range': (0, 1),
-        'fit_on_training_only': True
+        'normalization_method': 'z_score',
+        'fit_on_training_only': True,
+        'normalization_config_a': 'normalization_config_a.json',
+        'normalization_config_b': 'normalization_config_b.json'
     }
 
     # Define the debug variables for this plugin
@@ -211,7 +215,16 @@ class Plugin:
         processed_data = self._apply_feature_engineering(data, config)
         print(f"[DEBUG] After feature engineering shape: {processed_data.shape}")
 
-        # 2.1: Reorder columns based on output order.
+        # 2.1: Trim starting rows to remove initial values affected by decomposition windows
+        trim_rows = self.params.get('trim_start_rows', 0)
+        if trim_rows > 0:
+            if len(processed_data) > trim_rows:
+                processed_data = processed_data.iloc[trim_rows:].copy()
+                print(f"[DEBUG] Trimmed {trim_rows} starting rows. New shape: {processed_data.shape}")
+            else:
+                print(f"[WARNING] Cannot trim {trim_rows} rows from dataset with only {len(processed_data)} rows")
+
+        # 2.2: Reorder columns based on output order.
         output_column_order = ['DATE_TIME', 'OPEN', 'LOW', 'HIGH', 'CLOSE']
         
         # Update column order to include any new features from feature engineering
@@ -253,33 +266,50 @@ class Plugin:
         d6_data.to_csv(f"{dataset_prefix}d6.csv", index=False, header=True)
         print(f"[DEBUG] Saved base datasets with headers")
 
-        # 5.0: CORRECTED NORMALIZATION LOGIC
+        # 5.0: Z-SCORE NORMALIZATION WITH SEPARATE NORMALIZERS FOR A AND B GROUPS
         # Identify numeric columns for normalization
         numeric_columns = base_data.select_dtypes(include=[np.number]).columns.tolist()
         print(f"[DEBUG] Numeric columns for normalization: {numeric_columns}")
 
-        # 5.1: Calculate normalization parameters from TRAINING sets (D1 and D4) ONLY
-        # Combine D1 and D4 to calculate global normalization parameters
-        training_data = pd.concat([d1_data[numeric_columns], d4_data[numeric_columns]], ignore_index=True)
-        
-        normalization_params = {}
+        # 5.1: FIT NORMALIZER A on D1 and apply to D2, D3
+        print("[DEBUG] Fitting normalizer A on D1...")
+        normalization_params_a = {}
         for column in numeric_columns:
-            min_val = training_data[column].min()
-            max_val = training_data[column].max()
+            mean_val = d1_data[column].mean()
+            std_val = d1_data[column].std()
             
             # Convert numpy scalars to native Python types
-            if hasattr(min_val, "item"):
-                min_val = min_val.item()
-            if hasattr(max_val, "item"):
-                max_val = max_val.item()
+            if hasattr(mean_val, "item"):
+                mean_val = mean_val.item()
+            if hasattr(std_val, "item"):
+                std_val = std_val.item()
                 
-            print(f"[DEBUG] Normalization params for '{column}': min={min_val}, max={max_val}")
-            normalization_params[column] = {"min": min_val, "max": max_val}
+            print(f"[DEBUG] Normalizer A params for '{column}': mean={mean_val}, std={std_val}")
+            normalization_params_a[column] = {"mean": mean_val, "std": std_val}
+
+        # 5.2: FIT NORMALIZER B on D4 and apply to D5, D6
+        print("[DEBUG] Fitting normalizer B on D4...")
+        normalization_params_b = {}
+        for column in numeric_columns:
+            mean_val = d4_data[column].mean()
+            std_val = d4_data[column].std()
+            
+            # Convert numpy scalars to native Python types
+            if hasattr(mean_val, "item"):
+                mean_val = mean_val.item()
+            if hasattr(std_val, "item"):
+                std_val = std_val.item()
+                
+            print(f"[DEBUG] Normalizer B params for '{column}': mean={mean_val}, std={std_val}")
+            normalization_params_b[column] = {"mean": mean_val, "std": std_val}
 
         # Store normalization params for debug
-        self.normalization_params = normalization_params
+        self.normalization_params = {
+            'normalizer_a': normalization_params_a,
+            'normalizer_b': normalization_params_b
+        }
 
-        # 5.2: Apply normalization to ALL datasets using the training-derived parameters
+        # 5.3: Apply z-score normalization to datasets
         datasets = {
             'd1': d1_data.copy(),
             'd2': d2_data.copy(), 
@@ -290,30 +320,59 @@ class Plugin:
         }
         
         normalized_datasets = {}
-        for dataset_name, dataset in datasets.items():
+        
+        # Group A: D1 (fit), D2, D3 (apply) using normalizer A
+        for dataset_name in ['d1', 'd2', 'd3']:
+            dataset = datasets[dataset_name]
             normalized_dataset = dataset.copy()
             
-            # Apply normalization to numeric columns only
+            print(f"[DEBUG] Applying normalizer A to {dataset_name}")
             for column in numeric_columns:
-                min_val = normalization_params[column]["min"]
-                max_val = normalization_params[column]["max"]
+                mean_val = normalization_params_a[column]["mean"]
+                std_val = normalization_params_a[column]["std"]
                 
                 # Avoid division by zero
-                range_val = max_val - min_val
-                if range_val == 0:
-                    print(f"[WARNING] Zero range for column '{column}', setting to 0.5")
-                    normalized_dataset[column] = 0.5
+                if std_val == 0:
+                    print(f"[WARNING] Zero std for column '{column}' in normalizer A, setting to 0")
+                    normalized_dataset[column] = 0.0
                 else:
-                    normalized_dataset[column] = (dataset[column] - min_val) / range_val
+                    normalized_dataset[column] = (dataset[column] - mean_val) / std_val
             
             normalized_datasets[dataset_name] = normalized_dataset
 
-        # 5.3: Save normalization parameters in JSON format
+        # Group B: D4 (fit), D5, D6 (apply) using normalizer B  
+        for dataset_name in ['d4', 'd5', 'd6']:
+            dataset = datasets[dataset_name]
+            normalized_dataset = dataset.copy()
+            
+            print(f"[DEBUG] Applying normalizer B to {dataset_name}")
+            for column in numeric_columns:
+                mean_val = normalization_params_b[column]["mean"]
+                std_val = normalization_params_b[column]["std"]
+                
+                # Avoid division by zero
+                if std_val == 0:
+                    print(f"[WARNING] Zero std for column '{column}' in normalizer B, setting to 0")
+                    normalized_dataset[column] = 0.0
+                else:
+                    normalized_dataset[column] = (dataset[column] - mean_val) / std_val
+            
+            normalized_datasets[dataset_name] = normalized_dataset
+
+        # 5.4: Save normalization parameters in separate JSON files
         try:
-            debug_file = config.get("debug_file", "debug_out.json")
-            with open(debug_file, 'w') as f:
-                json.dump(normalization_params, f, indent=4)
-            print(f"[DEBUG] Normalization parameters saved to {debug_file}")
+            # Save normalizer A parameters
+            config_file_a = config.get('normalization_config_a', 'normalization_config_a.json')
+            with open(config_file_a, 'w') as f:
+                json.dump(normalization_params_a, f, indent=4)
+            print(f"[DEBUG] Normalizer A parameters saved to {config_file_a}")
+            
+            # Save normalizer B parameters
+            config_file_b = config.get('normalization_config_b', 'normalization_config_b.json')
+            with open(config_file_b, 'w') as f:
+                json.dump(normalization_params_b, f, indent=4)
+            print(f"[DEBUG] Normalizer B parameters saved to {config_file_b}")
+            
         except Exception as e:
             print(f"[ERROR] Failed to save normalization parameters to JSON: {e}")
             raise

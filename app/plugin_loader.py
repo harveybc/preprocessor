@@ -455,3 +455,80 @@ class PluginLoader:
             info['parameters'] = plugin_instance.plugin_params
         
         return info
+
+
+def load_plugin(plugin_group: str, plugin_name: str):
+    """
+    Load a plugin from the specified plugin directory.
+    
+    Args:
+        plugin_group: Plugin group/directory name (e.g., 'preprocessor.plugins')
+        plugin_name: Plugin name (e.g., 'plugin_default')
+        
+    Returns:
+        tuple: (plugin_class, required_params)
+        
+    Raises:
+        ImportError: If plugin cannot be loaded
+    """
+    print(f"[DEBUG] Attempting to load plugin: {plugin_name} from group: {plugin_group}")
+    
+    try:
+        # Convert group to file path (e.g., 'preprocessor.plugins' -> 'app/plugins')
+        if plugin_group == 'preprocessor.plugins':
+            plugin_dir = Path(__file__).parent / 'plugins'
+        else:
+            # For other groups, use as relative path
+            plugin_dir = Path(plugin_group.replace('.', '/'))
+        
+        plugin_file = plugin_dir / f"{plugin_name}.py"
+        
+        if not plugin_file.exists():
+            raise ImportError(f"Plugin file not found: {plugin_file}")
+        
+        # Load the plugin module
+        spec = importlib.util.spec_from_file_location(plugin_name, plugin_file)
+        if spec is None or spec.loader is None:
+            raise ImportError(f"Cannot create module spec for {plugin_file}")
+        
+        plugin_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(plugin_module)
+        
+        # Get the Plugin class
+        if not hasattr(plugin_module, 'Plugin'):
+            raise ImportError(f"No Plugin class found in {plugin_file}")
+        
+        plugin_class = plugin_module.Plugin
+        
+        # Get required parameters
+        required_params = []
+        if hasattr(plugin_class, 'plugin_params'):
+            required_params = list(plugin_class.plugin_params.keys())
+        
+        print(f"[DEBUG] Successfully loaded plugin: {plugin_name} with {len(required_params)} parameters")
+        return plugin_class, required_params
+        
+    except Exception as e:
+        print(f"[ERROR] Failed to load plugin {plugin_name} from group {plugin_group}: {e}")
+        raise ImportError(f"Plugin {plugin_name} not found in group {plugin_group}: {e}")
+
+
+def get_plugin_params(plugin_group: str, plugin_name: str):
+    """
+    Get plugin parameters without loading the full plugin.
+    
+    Args:
+        plugin_group: Plugin group name
+        plugin_name: Plugin name
+        
+    Returns:
+        dict: Plugin parameters
+    """
+    try:
+        plugin_class, _ = load_plugin(plugin_group, plugin_name)
+        if hasattr(plugin_class, 'plugin_params'):
+            return plugin_class.plugin_params
+        return {}
+    except Exception as e:
+        print(f"[ERROR] Failed to get parameters for plugin {plugin_name}: {e}")
+        return {}
