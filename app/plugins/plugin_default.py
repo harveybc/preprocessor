@@ -63,9 +63,7 @@ class Plugin:
         
         # Normalization
         'normalization_method': 'z_score',
-        'fit_on_training_only': True,
-        'normalization_config_a': 'normalization_config_a.json',
-        'normalization_config_b': 'normalization_config_b.json'
+        'fit_on_training_only': True
     }
 
     # Define the debug variables for this plugin
@@ -363,12 +361,23 @@ class Plugin:
         try:
             # Save normalizer A parameters
             config_file_a = config.get('normalization_config_a', 'normalization_config_a.json')
+            
+            # Create directory if it doesn't exist
+            import os
+            if os.path.dirname(config_file_a):
+                os.makedirs(os.path.dirname(config_file_a), exist_ok=True)
+            
             with open(config_file_a, 'w') as f:
                 json.dump(normalization_params_a, f, indent=4)
             print(f"[DEBUG] Normalizer A parameters saved to {config_file_a}")
             
             # Save normalizer B parameters
             config_file_b = config.get('normalization_config_b', 'normalization_config_b.json')
+            
+            # Create directory if it doesn't exist
+            if os.path.dirname(config_file_b):
+                os.makedirs(os.path.dirname(config_file_b), exist_ok=True)
+            
             with open(config_file_b, 'w') as f:
                 json.dump(normalization_params_b, f, indent=4)
             print(f"[DEBUG] Normalizer B parameters saved to {config_file_b}")
