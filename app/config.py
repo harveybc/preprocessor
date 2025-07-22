@@ -10,7 +10,7 @@ import os
 # Default configuration values
 DEFAULT_VALUES = {
     # Core file paths
-    'input_file': 'examples/data/feature_eng_output.csv',
+    'input_file': 'examples/data/indicators_output.csv',
     'output_file': 'output_phase_2_6.csv',
     'debug_file': 'examples/data/phase_2_6/phase_2_6_debug_out.json',
     
