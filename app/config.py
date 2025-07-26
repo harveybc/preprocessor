@@ -69,8 +69,8 @@ DEFAULT_VALUES = {
     'mtm_n_tapers': 4,
     
     # Normalization configuration
-    'normalization_method': 'min_max',
-    'normalization_range': (0, 1),
+    'normalization_method': 'z-score',
+    'normalization_range': (-1, 1),
     'fit_on_training_only': True,  # Use only training sets (D1, D4) to fit normalizer
     
     # Validation and quality control
