@@ -82,7 +82,37 @@ DEFAULT_VALUES = {
     'performance_monitoring': False,
     'log_level': 'INFO',
     'log_to_file': True,
-    'log_to_console': True
+    'log_to_console': True,
+    
+    # Anti-naive-lock preprocessing configuration
+    'anti_naive_lock_enabled': True,
+    'use_cyclic_encoding': True,  # For temporal features (day_of_week, hour_of_day, day_of_month)
+    'use_log_returns': True,      # For raw price features (OPEN, LOW, HIGH, CLOSE)
+    'use_first_differences': True, # For trend-like features (stl_trend)
+    'preserve_stationary_indicators': True,  # Keep technical indicators as-is
+    'handle_constant_daily_features': True,  # Special handling for S&P500, VIX
+    'feature_preprocessing_strategy': 'selective',  # 'selective', 'uniform_log_returns', 'none'
+    'normalize_after_preprocessing': True,  # Apply z-score normalization after transformations
+    
+    # Feature categorization for selective preprocessing
+    'price_features': ['OPEN', 'LOW', 'HIGH', 'CLOSE'],
+    'temporal_features': ['day_of_week', 'hour_of_day', 'day_of_month'],
+    'trend_features': ['stl_trend'],
+    'stationary_indicators': ['RSI', 'MACD', 'MACD_Histogram', 'MACD_Signal', 'EMA', 
+                              'Stochastic_%K', 'Stochastic_%D', 'ADX', 'DI+', 'DI-', 
+                              'ATR', 'CCI', 'WilliamsR', 'Momentum', 'ROC'],
+    'candlestick_patterns': ['BC-BO', 'BH-BL', 'BH-BO', 'BO-BL'],
+    'constant_daily_features': ['S&P500_Close', 'vix_close'],
+    'decomposed_features': ['stl_seasonal', 'stl_residual'],
+    'wavelet_features': ['CLOSE_wav_detail_L1', 'CLOSE_wav_detail_L2', 'CLOSE_wav_approx_L2'],
+    'mtm_features': ['CLOSE_mtm_band_1_0.000_0.010', 'CLOSE_mtm_band_2_0.010_0.060', 
+                     'CLOSE_mtm_band_3_0.060_0.200', 'CLOSE_mtm_band_4_0.200_0.500'],
+    'subperiodicity_features': ['CLOSE_15m_tick_1', 'CLOSE_15m_tick_2', 'CLOSE_15m_tick_3', 
+                                'CLOSE_15m_tick_4', 'CLOSE_15m_tick_5', 'CLOSE_15m_tick_6',
+                                'CLOSE_15m_tick_7', 'CLOSE_15m_tick_8', 'CLOSE_30m_tick_1',
+                                'CLOSE_30m_tick_2', 'CLOSE_30m_tick_3', 'CLOSE_30m_tick_4',
+                                'CLOSE_30m_tick_5', 'CLOSE_30m_tick_6', 'CLOSE_30m_tick_7',
+                                'CLOSE_30m_tick_8']
 }
 
 # Parameter validation rules
