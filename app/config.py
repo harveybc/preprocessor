@@ -11,14 +11,14 @@ import os
 DEFAULT_VALUES = {
     # Core file paths
     'input_file': 'examples/data/feature_eng_output.csv',
-    'output_file': 'output_phase_6.csv',
-    'debug_file': 'examples/data/phase_6/phase_6_debug_out.json',
+    'output_file': 'output_phase_1b.csv',
+    'debug_file': 'examples/data/phase_1b/phase_1b_debug_out.json',
     
     # Configuration management
     'load_config': None,
-    'save_config': 'examples/data/phase_6/preprocessor_config.json',
-    'normalization_config_a': 'examples/data/phase_6/normalization_config_a.json',
-    'normalization_config_b': 'examples/data/phase_6/normalization_config_b.json',
+    'save_config': 'examples/data/phase_1b/preprocessor_config.json',
+    'normalization_config_a': 'examples/data/phase_1b/normalization_config_a.json',
+    'normalization_config_b': 'examples/data/phase_1b/normalization_config_b.json',
     'remote_load_config': None,
     'remote_save_config': None,
     'remote_log': None,
@@ -33,8 +33,8 @@ DEFAULT_VALUES = {
     'only_low_CV': True,
     
     # Dataset generation
-    'dataset_prefix': "examples/data/phase_6/base_",
-    'target_prefix': "examples/data/phase_6/normalized_",
+    'dataset_prefix': "examples/data/phase_1b/base_",
+    'target_prefix': "examples/data/phase_1b/normalized_",
     'trim_start_rows': 168,  # Trim start rows to remove initial values affected by largest decomposition window
     
     # Dataset split proportions (for autoencoder and predictor training)
