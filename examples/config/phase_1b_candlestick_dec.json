@@ -1,5 +1,5 @@
 {
-    "input_file": "examples/data/feature_eng_output.csv",
+    "input_file": "examples/data/phase_1b_candlestick_dec.csv",
     "output_file": "output_phase_1b_candlestick_dec.csv",
     "debug_file": "examples/data/phase_1b_candlestick_dec/phase_1b_candlestick_dec_debug_out.json",
     
