@@ -1,12 +1,12 @@
 {
-    "input_file": "examples/data/phase_1b_candlestick_dec.csv",
-    "output_file": "output_phase_1b_candlestick_dec.csv",
-    "debug_file": "examples/data/phase_1b_candlestick_dec/phase_1b_candlestick_dec_debug_out.json",
+    "input_file": "examples/data/phase_1_dec.csv",
+    "output_file": "output_phase_1_dec.csv",
+    "debug_file": "examples/data/phase_1_dec/phase_1_dec_debug_out.json",
     
     "load_config": null,
-    "save_config": "examples/data/phase_1b_candlestick_dec/preprocessor_config.json",
-    "normalization_config_a": "examples/data/phase_1b_candlestick_dec/normalization_config_a.json",
-    "normalization_config_b": "examples/data/phase_1b_candlestick_dec/normalization_config_b.json",
+    "save_config": "examples/data/phase_1_dec/preprocessor_config.json",
+    "normalization_config_a": "examples/data/phase_1_dec/normalization_config_a.json",
+    "normalization_config_b": "examples/data/phase_1_dec/normalization_config_b.json",
     "remote_load_config": null,
     "remote_save_config": null,
     "remote_log": null,
@@ -20,8 +20,8 @@
     "quiet_mode": false,
     "only_low_CV": true,
     
-    "dataset_prefix": "examples/data/phase_1b_candlestick_dec/base_",
-    "target_prefix": "examples/data/phase_1b_candlestick_dec/normalized_",
+    "dataset_prefix": "examples/data/phase_1_dec/base_",
+    "target_prefix": "examples/data/phase_1_dec/normalized_",
     "trim_start_rows": 168,  
     
     "d1_proportion": 0.33,   
