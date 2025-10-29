@@ -86,9 +86,17 @@ def parse_args() -> argparse.Namespace:
              "Use '--holiday-cal none' to disable holiday exclusion.",
     )
     p.add_argument(
-        "--holidays-file",
-        default=None,
-        help="Path to a file with one YYYY-MM-DD per line to exclude as holidays.",
+        "--lenient-yearend",
+        dest="lenient_yearend",
+        action="store_true",
+        default=True,
+        help="Treat common FX year-end special hours as closed (Dec 24/31 early close, Dec 26 late open, Jan 1 late open). Default: on.",
+    )
+    p.add_argument(
+        "--no-lenient-yearend",
+        dest="lenient_yearend",
+        action="store_false",
+        help="Disable year-end special-hours handling.",
     )
     p.add_argument(
         "--strict",
@@ -139,6 +147,7 @@ def build_expected_index(
     data_tz: str = "UTC",
     holiday_cal: Optional[str] = "NYSE",
     holidays_file: Optional[str] = None,
+    lenient_yearend: bool = True,
 ) -> pd.DatetimeIndex:
     # Align boundaries
     try:
@@ -203,10 +212,24 @@ def build_expected_index(
         ts_local = ts_data_tz.tz_convert(sess_zone)
         wd = ts_local.weekday()  # Mon=0..Sun=6
         hour = ts_local.hour
+        m = ts_local.month
+        d = ts_local.day
 
         # Exclude full holiday days by session local date
         if holiday_dates and ts_local.date() in holiday_dates:
             return False
+
+        # Year-end special hours (broker conventions; DST-safe via session tz)
+        if lenient_yearend:
+            # Early close on Christmas Eve and New Year's Eve (≈14:00 NY)
+            if (m, d) in ((12, 24), (12, 31)) and hour >= 14:
+                return False
+            # Late open on Boxing Day (Dec 26) (≈07:00 NY)
+            if (m, d) == (12, 26) and hour < 7:
+                return False
+            # Late open on New Year's Day (Jan 1) (≈17:00 NY)
+            if (m, d) == (1, 1) and hour < 17:
+                return False
 
         # Sunday: open at 17:00 local (first hourly bar opens 17:00)
         if wd == 6:
@@ -330,6 +353,7 @@ def main():
         data_tz=args.data_tz,
         holiday_cal=args.holiday_cal,
         holidays_file=args.holidays_file,
+        lenient_yearend=args.lenient_yearend,
     )
 
     missing, dup_count = find_missing_and_duplicates(pd.DatetimeIndex(s), expected)
@@ -372,6 +396,8 @@ def main():
             print(f"  - Weekends excluded, but including Sunday hours >= {args.sunday_open_hour}:00.")
     else:
         print("  - Weekends included in expected timeline.")
+    print(f"  - Holiday calendar: {args.holiday_cal}")
+    print(f"  - Year-end special hours: {'ON' if args.lenient_yearend else 'OFF'}")
 
     if args.strict and len(missing) > 0:
         sys.exit(1)
