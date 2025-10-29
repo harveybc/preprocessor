@@ -86,6 +86,11 @@ def parse_args() -> argparse.Namespace:
              "Use '--holiday-cal none' to disable holiday exclusion.",
     )
     p.add_argument(
+        "--holidays-file",
+        default=None,
+        help="Optional file with one YYYY-MM-DD per line to exclude as holidays.",
+    )
+    p.add_argument(
         "--lenient-yearend",
         dest="lenient_yearend",
         action="store_true",
@@ -177,13 +182,12 @@ def build_expected_index(
                 years = []
             try:
                 hol = None
-                # Prefer financial calendars when requested
                 if holiday_cal in _FINANCIAL_CALS:
                     hol = _FINANCIAL_CALS[holiday_cal](years=years)
                 else:
-                    # Fallback to country holidays (e.g., 'US')
                     hol = pyholidays.CountryHoliday(holiday_cal, years=years)
-                holiday_dates |= set(getattr(hol, "keys")())
+                # use dict-like keys directly
+                holiday_dates |= set(hol.keys())
             except Exception as e:
                 print(f"WARNING: Could not load holiday cal '{holiday_cal}': {e}", file=sys.stderr)
     if holidays_file:
@@ -365,6 +369,11 @@ def main():
     print(f"Datetime column: {args.datetime_col}")
     print(f"Frequency: {args.freq}")
     print(f"Observed range: {fmt_ts(inferred_start)} -> {fmt_ts(inferred_end)}")
+    if len(expected) == 0:
+        print("Validated range: (no expected timestamps after filters). Check trading profile/holidays settings.", file=sys.stderr)
+        if args.strict:
+            sys.exit(1)
+        return
     print(f"Validated range: {fmt_ts(expected[0])} -> {fmt_ts(expected[-1])} (n_expected={len(expected)})")
     print(f"Total rows: {len(s)} (unique timestamps: {len(pd.unique(s))})")
     print(f"Duplicates: {dup_count}")
