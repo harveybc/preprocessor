@@ -1,10 +1,28 @@
-
 #!/usr/bin/env python3
 import argparse
 import sys
 from typing import List, Tuple, Optional
 
 import pandas as pd
+from zoneinfo import ZoneInfo
+
+try:
+    import holidays as pyholidays  # optional
+except Exception:
+    pyholidays = None
+
+# Try to import financial market calendars (NYSE, etc.)
+try:
+    # holidays>=0.31 provides financial calendars here
+    from holidays.financial import NYSE as _NYSECal, NASDAQ as _NASDAQCal, USStockMarket as _USSMCal
+    _FINANCIAL_CALS = {
+        "NYSE": _NYSECal,
+        "NASDAQ": _NASDAQCal,
+        "USStockMarket": _USSMCal,
+        "US_STOCK": _USSMCal,
+    }
+except Exception:
+    _FINANCIAL_CALS = {}
 
 
 def parse_args() -> argparse.Namespace:
@@ -43,6 +61,34 @@ def parse_args() -> argparse.Namespace:
         type=int,
         default=None,
         help="If set (e.g., 22), includes Sunday hours >= this hour as trading hours. Only applied when weekends are skipped.",
+    )
+    p.add_argument(
+        "--trading-profile",
+        choices=["24x5", "forex-ny"],
+        default="forex-ny",
+        help="Trading-hours model. 'forex-ny' = Sun 17:00 NY to Fri 17:00 NY (DST-aware). '24x5' = Mon–Fri all hours.",
+    )
+    p.add_argument(
+        "--session-tz",
+        default="America/New_York",
+        help="Session reference timezone (IANA name). Default: America/New_York",
+    )
+    p.add_argument(
+        "--data-tz",
+        default="UTC",
+        help="Timezone of the CSV timestamps (assumed naive). Default: UTC",
+    )
+    p.add_argument(
+        "--holiday-cal",
+        default="NYSE",
+        help="Holiday calendar code. Supports financial calendars: NYSE, NASDAQ, USStockMarket; "
+             "or country codes for federal holidays (e.g., US). Default: NYSE. "
+             "Use '--holiday-cal none' to disable holiday exclusion.",
+    )
+    p.add_argument(
+        "--holidays-file",
+        default=None,
+        help="Path to a file with one YYYY-MM-DD per line to exclude as holidays.",
     )
     p.add_argument(
         "--strict",
@@ -88,33 +134,102 @@ def build_expected_index(
     freq: str,
     include_weekends: bool,
     sunday_open_hour: Optional[int],
+    trading_profile: str = "forex-ny",
+    session_tz: str = "America/New_York",
+    data_tz: str = "UTC",
+    holiday_cal: Optional[str] = "NYSE",
+    holidays_file: Optional[str] = None,
 ) -> pd.DatetimeIndex:
-    # Normalize start/end to the frequency grid
+    # Align boundaries
     try:
-        # floor/ceil to frequency
         start_aligned = start.floor(freq)
         end_aligned = end.floor(freq)
     except Exception:
-        # If freq not floor-able, fall back to hourly floor when possible
-        start_aligned = start.floor("S")  # second floor
+        start_aligned = start.floor("S")
         end_aligned = end.floor("S")
 
-    rng = pd.date_range(start=start_aligned, end=end_aligned, freq=freq)
+    # Build base range in data timezone as tz-aware
+    rng_naive = pd.date_range(start=start_aligned, end=end_aligned, freq=freq)
+    data_zone = ZoneInfo(data_tz)
+    sess_zone = ZoneInfo(session_tz)
+    rng = rng_naive.tz_localize(data_zone)
 
-    if include_weekends:
-        return rng
+    # Holiday set (by session local date)
+    holiday_dates = set()
+    # Allow disabling via 'none'
+    if holiday_cal and holiday_cal.lower() != "none":
+        if pyholidays is None:
+            print("WARNING: --holiday-cal set but 'holidays' package not installed. Run: pip install holidays", file=sys.stderr)
+        else:
+            # Determine years in session local time
+            if len(rng) > 0:
+                years = list(range(rng[0].tz_convert(sess_zone).year, rng[-1].tz_convert(sess_zone).year + 1))
+            else:
+                years = []
+            try:
+                hol = None
+                # Prefer financial calendars when requested
+                if holiday_cal in _FINANCIAL_CALS:
+                    hol = _FINANCIAL_CALS[holiday_cal](years=years)
+                else:
+                    # Fallback to country holidays (e.g., 'US')
+                    hol = pyholidays.CountryHoliday(holiday_cal, years=years)
+                holiday_dates |= set(getattr(hol, "keys")())
+            except Exception as e:
+                print(f"WARNING: Could not load holiday cal '{holiday_cal}': {e}", file=sys.stderr)
+    if holidays_file:
+        try:
+            with open(holidays_file, "r") as fh:
+                for line in fh:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    holiday_dates.add(pd.to_datetime(line).date())
+        except Exception as e:
+            print(f"WARNING: Could not read holidays file: {e}", file=sys.stderr)
 
-    # Forex available hours (default): Monday–Friday only. Optionally allow Sunday evening open.
-    def is_trading(ts: pd.Timestamp) -> bool:
-        wd = ts.weekday()  # Monday=0 ... Sunday=6
+    def is_trading_24x5(ts_data_tz) -> bool:
+        # Simple Mon–Fri filter, optional Sunday evening override
+        ts_utc = ts_data_tz.tz_convert("UTC")
+        wd = ts_utc.weekday()  # Mon=0..Sun=6
         if wd < 5:
             return True
         if wd == 6 and sunday_open_hour is not None:
-            return ts.hour >= sunday_open_hour
+            return ts_utc.hour >= sunday_open_hour
         return False
 
-    mask = [is_trading(ts) for ts in rng]
-    return rng[mask]
+    def is_trading_forex_ny(ts_data_tz) -> bool:
+        # Convert to session local time (NY)
+        ts_local = ts_data_tz.tz_convert(sess_zone)
+        wd = ts_local.weekday()  # Mon=0..Sun=6
+        hour = ts_local.hour
+
+        # Exclude full holiday days by session local date
+        if holiday_dates and ts_local.date() in holiday_dates:
+            return False
+
+        # Sunday: open at 17:00 local (first hourly bar opens 17:00)
+        if wd == 6:
+            return hour >= 17
+        # Monday–Thursday: 24h
+        if 0 <= wd <= 3:
+            return True
+        # Friday: trading until 17:00 local; last hourly bar opens at 16:00
+        if wd == 4:
+            return hour <= 16
+        # Saturday: closed
+        return False
+
+    if trading_profile == "24x5":
+        mask = [is_trading_24x5(ts) for ts in rng]
+    else:
+        # forex-ny (default)
+        mask = [is_trading_forex_ny(ts) for ts in rng]
+
+    expected = rng[mask]
+
+    # Return naive timestamps back in data tz for comparison with CSV
+    return expected.tz_convert(data_zone).tz_localize(None)
 
 
 def find_missing_and_duplicates(
@@ -188,7 +303,7 @@ def main():
         try:
             start = pd.to_datetime(args.start, format=args.dt_format)
         except Exception:
-            start = pd.to_datetime(args.start)  # try flexible parse
+            start = pd.to_datetime(args.start)
     else:
         start = inferred_start
 
@@ -210,6 +325,11 @@ def main():
         freq=args.freq,
         include_weekends=args.include_weekends,
         sunday_open_hour=args.sunday_open_hour,
+        trading_profile=args.trading_profile,
+        session_tz=args.session_tz,
+        data_tz=args.data_tz,
+        holiday_cal=args.holiday_cal,
+        holidays_file=args.holidays_file,
     )
 
     missing, dup_count = find_missing_and_duplicates(pd.DatetimeIndex(s), expected)
