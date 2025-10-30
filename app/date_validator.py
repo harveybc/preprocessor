@@ -65,8 +65,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument(
         "--trading-profile",
         choices=["24x5", "forex-ny"],
-        default="forex-ny",
-        help="Trading-hours model. 'forex-ny' = Sun 17:00 NY to Fri 17:00 NY (DST-aware). '24x5' = Mon–Fri all hours.",
+        default="24x5",
+        help="Trading-hours model. Default: 24x5 (Mon–Fri all hours). Use 'forex-ny' for Sun 17:00 NY to Fri 17:00 NY (DST-aware).",
     )
     p.add_argument(
         "--session-tz",
@@ -80,10 +80,10 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--holiday-cal",
-        default="NYSE",
+        default="none",
         help="Holiday calendar code. Supports financial calendars: NYSE, NASDAQ, USStockMarket; "
-             "or country codes for federal holidays (e.g., US). Default: NYSE. "
-             "Use '--holiday-cal none' to disable holiday exclusion.",
+             "or country codes for federal holidays (e.g., US). Default: none (no holiday exclusion). "
+             "Set to NYSE to exclude full holiday dates.",
     )
     p.add_argument(
         "--holidays-file",
