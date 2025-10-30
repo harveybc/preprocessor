@@ -65,8 +65,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument(
         "--trading-profile",
         choices=["24x5", "forex-ny"],
-        default="24x5",
-        help="Trading-hours model. Default: 24x5 (Mon–Fri all hours). Use 'forex-ny' for Sun 17:00 NY to Fri 17:00 NY (DST-aware).",
+        default="forex-ny",
+        help="Trading-hours model. Default: forex-ny (Sun 17:00 NY to Fri 17:00 NY, DST-aware). Use '24x5' for Mon–Fri all hours.",
     )
     p.add_argument(
         "--session-tz",
@@ -80,10 +80,16 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--holiday-cal",
-        default="none",
+        default="USStockMarket",
         help="Holiday calendar code. Supports financial calendars: NYSE, NASDAQ, USStockMarket; "
-             "or country codes for federal holidays (e.g., US). Default: none (no holiday exclusion). "
-             "Set to NYSE to exclude full holiday dates.",
+             "or country codes for federal holidays (e.g., US). Default: USStockMarket (exclude full holiday dates). "
+             "Use '--holiday-cal none' to disable holiday exclusion.",
+    )
+    p.add_argument(
+        "--no-sunday-evening",
+        action="store_true",
+        default=True,
+        help="When using 'forex-ny', do not expect Sunday evening session (treat Sunday as closed). Default: on.",
     )
     p.add_argument(
         "--holidays-file",
@@ -153,6 +159,7 @@ def build_expected_index(
     holiday_cal: Optional[str] = "NYSE",
     holidays_file: Optional[str] = None,
     lenient_yearend: bool = True,
+    no_sunday_evening: bool = True,
 ) -> pd.DatetimeIndex:
     # Align boundaries
     try:
@@ -235,8 +242,11 @@ def build_expected_index(
             if (m, d) == (1, 1) and hour < 17:
                 return False
 
-        # Sunday: open at 17:00 local (first hourly bar opens 17:00)
+        # Sunday handling: optionally treat Sunday as fully closed
         if wd == 6:
+            if no_sunday_evening:
+                return False
+            # Otherwise, open at 17:00 local (first hourly bar opens 17:00)
             return hour >= 17
         # Monday–Thursday: 24h
         if 0 <= wd <= 3:
@@ -358,6 +368,7 @@ def main():
         holiday_cal=args.holiday_cal,
         holidays_file=args.holidays_file,
         lenient_yearend=args.lenient_yearend,
+        no_sunday_evening=args.no_sunday_evening,
     )
 
     missing, dup_count = find_missing_and_duplicates(pd.DatetimeIndex(s), expected)
