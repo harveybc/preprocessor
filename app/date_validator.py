@@ -160,7 +160,7 @@ def build_expected_index(
     holidays_file: Optional[str] = None,
     lenient_yearend: bool = True,
     no_sunday_evening: bool = True,
-) -> pd.DatetimeIndex:
+) -> Tuple[pd.DatetimeIndex, dict]:
     # Align boundaries
     try:
         start_aligned = start.floor(freq)
@@ -265,8 +265,19 @@ def build_expected_index(
 
     expected = rng[mask]
 
-    # Return naive timestamps back in data tz for comparison with CSV
-    return expected.tz_convert(data_zone).tz_localize(None)
+    # Return naive timestamps back in data tz for comparison with CSV and include diagnostics
+    expected_naive = expected.tz_convert(data_zone).tz_localize(None)
+    debug_info = {
+        "trading_profile": trading_profile,
+        "session_tz": session_tz,
+        "data_tz": data_tz,
+        "no_sunday_evening": no_sunday_evening,
+        "holiday_cal": holiday_cal,
+        "holiday_count": len(holiday_dates),
+        "holiday_sample": sorted(list(holiday_dates))[:10],
+        "holiday_dates_list": [str(d) for d in sorted(list(holiday_dates))],
+    }
+    return expected_naive, debug_info
 
 
 def find_missing_and_duplicates(
@@ -356,7 +367,7 @@ def main():
         print(f"ERROR: end < start ({fmt_ts(end)} < {fmt_ts(start)}).", file=sys.stderr)
         sys.exit(2)
 
-    expected = build_expected_index(
+    expected, debug_info = build_expected_index(
         start=start,
         end=end,
         freq=args.freq,
@@ -373,6 +384,46 @@ def main():
 
     missing, dup_count = find_missing_and_duplicates(pd.DatetimeIndex(s), expected)
     groups = group_consecutive_missing(missing, args.freq)
+
+    # Diagnostics: help trace whether ranges are outside trading hours or holiday-related
+    try:
+        data_zone = ZoneInfo(args.data_tz)
+        sess_zone = ZoneInfo(args.session_tz)
+        print("\n==== Diagnostics (trading-hours expectations) ====")
+        print(f"profile={debug_info.get('trading_profile')}  data_tz={args.data_tz}  session_tz={args.session_tz}  no_sunday_evening={args.no_sunday_evening}")
+        print(f"holiday_cal={args.holiday_cal}  holidays_loaded={debug_info.get('holiday_count',0)>0}  holiday_count={debug_info.get('holiday_count')}")
+        if debug_info.get('holiday_count', 0) > 0:
+            print(f"holiday_sample (session local dates): {debug_info.get('holiday_sample')}")
+
+        # Evaluate the first N groups in detail
+        N = min(30, len(groups))
+        if N > 0:
+            print(f"\nFirst {N} missing ranges diagnostics:")
+        for i, (gs, ge, cnt) in enumerate(groups[:N], start=1):
+            # UTC naive -> tz-aware in data tz -> convert to session tz
+            gs_data = pd.Timestamp(gs).tz_localize(data_zone)
+            ge_data = pd.Timestamp(ge).tz_localize(data_zone)
+            gs_sess = gs_data.tz_convert(sess_zone)
+            ge_sess = ge_data.tz_convert(sess_zone)
+
+            # Determine unique local dates in session tz covered by range
+            dates_local = pd.date_range(start=gs_sess.floor('D'), end=ge_sess.floor('D'), freq='D').date
+            # Count how many expected hours fall in the range
+            expected_in_range = expected[(expected >= gs) & (expected <= ge)]
+            exp_count = len(expected_in_range)
+
+            # Holiday flags (by session local date)
+            # We can't directly access holiday_dates here; rely on debug_info sample/count and label "unknown" if not loaded
+            holiday_flag = "unknown"
+            if debug_info.get('holiday_count', 0) > 0:
+                hol_set = set(debug_info.get('holiday_dates_list', []))
+                holiday_flag = any(d.isoformat() in hol_set for d in dates_local)
+
+            print(f"  [{i}] UTC {gs} -> {ge} ({cnt} hrs)")
+            print(f"      session_local {gs_sess.strftime('%Y-%m-%d %H:%M')} -> {ge_sess.strftime('%Y-%m-%d %H:%M')}  weekdays=({gs_sess.strftime('%a')},{ge_sess.strftime('%a')})  holiday_in_range={holiday_flag}")
+            print(f"      expected_by_profile_hours_in_range={exp_count}")
+    except Exception as _e_diag:
+        print(f"[WARN] Diagnostics generation failed: {_e_diag}")
 
     # Summary
     print("==== Time Completeness Report ====")
