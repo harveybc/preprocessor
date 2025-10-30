@@ -1,5 +1,5 @@
 {
-    "input_file": "examples/data/phase_2b_1.csv",
+    "input_file": "examples/data/phase_3b.csv",
     "output_file": "output_phase_2b_1.csv",
     "debug_file": "examples/data/phase_2b_1/phase_2b_1_debug_out.json",
     
