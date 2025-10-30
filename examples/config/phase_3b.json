@@ -2,6 +2,7 @@
     "input_file": "examples/data/phase_3b.csv",
     "output_file": "output_phase_3b.csv",
     "debug_file": "examples/data/phase_3b/phase_3b_debug_out.json",
+    "features_included": ["base_features", "technical_features", "fundamental_features", "seasonal_features", "high_frequency_features"],
     
     "load_config": null,
     "save_config": "examples/data/phase_3b/preprocessor_config.json",

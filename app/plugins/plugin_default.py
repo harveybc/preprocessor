@@ -254,14 +254,85 @@ class Plugin:
 
         print(f"[DEBUG] Dataset splits - D1: {d1_size}, D2: {d2_size}, D3: {d3_size}, D4: {d4_size}, D5: {d5_size}, D6: {d6_size}")
 
+        # -- NEW: Feature filtering exactly before saving outputs --
+        # Build selected feature list from config without altering existing processing flow.
+        # This affects only what is written to disk, not normalization logic or metrics.
+        def _build_selected_columns(cfg: dict, available_cols: list) -> list:
+            # Accept both 'features_included' and legacy 'features included'
+            groups = cfg.get('features_included')
+            if groups is None:
+                groups = cfg.get('features included')
+            if not groups:
+                return None  # No filtering requested
+
+            feature_groups = {
+                'base_features': [
+                    'OPEN','HIGH','LOW','CLOSE','BC-BO','BH-BL','BH-BO','BO-BL'
+                ],
+                'technical_features': [
+                    'RSI','MACD','MACD_Signal','MACD_Histogram','EMA','Stochastic_%K','Stochastic_%D',
+                    'ADX','DI+','DI-','ATR','CCI','BB_MID_20_2','BB_UP_20_2','BB_LOW_20_2','BB_WIDTH_20_2',
+                    'WilliamsR','Momentum','ROC'
+                ],
+                'fundamental_features': [
+                    'S&P500_Close','vix_close'
+                ],
+                'seasonal_features': [
+                    'day_of_week','day_of_month','hour_of_day','dow_sin','dow_cos','dom_sin','dom_cos','hod_sin','hod_cos'
+                ],
+                'high_frequency_features': [
+                    'CLOSE_15m_tick_1','CLOSE_15m_tick_2','CLOSE_15m_tick_3','CLOSE_15m_tick_4',
+                    'CLOSE_15m_tick_5','CLOSE_15m_tick_6','CLOSE_15m_tick_7','CLOSE_15m_tick_8',
+                    'CLOSE_30m_tick_1','CLOSE_30m_tick_2','CLOSE_30m_tick_3','CLOSE_30m_tick_4',
+                    'CLOSE_30m_tick_5','CLOSE_30m_tick_6','CLOSE_30m_tick_7','CLOSE_30m_tick_8'
+                ],
+            }
+
+            ordered = []
+            # Always ensure DATE_TIME is first if present
+            if 'DATE_TIME' in available_cols:
+                ordered.append('DATE_TIME')
+
+            # Add groups in the provided order; dedupe while preserving order
+            seen = set(ordered)
+            for grp in groups:
+                cols = feature_groups.get(grp, [])
+                for c in cols:
+                    if c in available_cols and c not in seen:
+                        ordered.append(c)
+                        seen.add(c)
+
+            # If nothing matched besides DATE_TIME, fall back to no filtering
+            return ordered if len(ordered) > (1 if 'DATE_TIME' in available_cols else 0) else None
+
+        # Compute selected columns list against the current columns of each dataset
+        # We base it on base_data columns to keep consistency across splits.
+        selected_columns = _build_selected_columns(config, list(base_data.columns))
+
+        # Prepare filtered views for saving base datasets without mutating originals
+        if selected_columns is not None:
+            def _filtered(df: pd.DataFrame) -> pd.DataFrame:
+                present = [c for c in selected_columns if c in df.columns]
+                return df.loc[:, present]
+
+            d1_save = _filtered(d1_data)
+            d2_save = _filtered(d2_data)
+            d3_save = _filtered(d3_data)
+            d4_save = _filtered(d4_data)
+            d5_save = _filtered(d5_data)
+            d6_save = _filtered(d6_data)
+        else:
+            # No filtering requested; use datasets as-is for saving
+            d1_save, d2_save, d3_save, d4_save, d5_save, d6_save = d1_data, d2_data, d3_data, d4_data, d5_data, d6_data
+
         # 4.0: Save the base datasets (with headers).
         dataset_prefix = self.params['dataset_prefix']
-        d1_data.to_csv(f"{dataset_prefix}d1.csv", index=False, header=True)
-        d2_data.to_csv(f"{dataset_prefix}d2.csv", index=False, header=True)
-        d3_data.to_csv(f"{dataset_prefix}d3.csv", index=False, header=True)
-        d4_data.to_csv(f"{dataset_prefix}d4.csv", index=False, header=True)
-        d5_data.to_csv(f"{dataset_prefix}d5.csv", index=False, header=True)
-        d6_data.to_csv(f"{dataset_prefix}d6.csv", index=False, header=True)
+        d1_save.to_csv(f"{dataset_prefix}d1.csv", index=False, header=True)
+        d2_save.to_csv(f"{dataset_prefix}d2.csv", index=False, header=True)
+        d3_save.to_csv(f"{dataset_prefix}d3.csv", index=False, header=True)
+        d4_save.to_csv(f"{dataset_prefix}d4.csv", index=False, header=True)
+        d5_save.to_csv(f"{dataset_prefix}d5.csv", index=False, header=True)
+        d6_save.to_csv(f"{dataset_prefix}d6.csv", index=False, header=True)
         print(f"[DEBUG] Saved base datasets with headers")
 
         # 5.0: Z-SCORE NORMALIZATION WITH SEPARATE NORMALIZERS FOR A AND B GROUPS
@@ -390,7 +461,11 @@ class Plugin:
         target_prefix = self.params['target_prefix']
         for dataset_name, normalized_dataset in normalized_datasets.items():
             filename = f"{target_prefix}{dataset_name}.csv"
-            normalized_dataset.to_csv(filename, index=False, header=True)
+            if selected_columns is not None:
+                present = [c for c in selected_columns if c in normalized_dataset.columns]
+                normalized_dataset.loc[:, present].to_csv(filename, index=False, header=True)
+            else:
+                normalized_dataset.to_csv(filename, index=False, header=True)
             print(f"[DEBUG] Saved {filename}")
 
         # 7.0: Return summary of processed files.
