@@ -74,7 +74,7 @@
     "feature_preprocessing_strategy": "selective",  
     "normalize_after_preprocessing": true,  
     
-    "price_features": ["OPEN", "LOW", "HIGH", "CLOSE"],
+    "price_features": ["OPEN", "LOW", "HIGH", "CLOSE", "typical_price", "typical_sd"],
     "temporal_features": ["day_of_week", "hour_of_day", "day_of_month"],
     "trend_features": ["stl_trend"],
     "stationary_indicators": ["RSI", "MACD", "MACD_Histogram", "MACD_Signal", "EMA", 

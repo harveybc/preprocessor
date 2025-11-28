@@ -265,11 +265,15 @@ class Plugin:
             if not groups:
                 return None  # No filtering requested
 
+            base_feats = [
+                'OPEN','HIGH','LOW','CLOSE','BC-BO','BH-BL','BH-BO','BO-BL',
+                'typical_price'
+            ]
+            if cfg.get('use_typical_sd', False):
+                base_feats.append('typical_sd')
+
             feature_groups = {
-                'base_features': [
-                    'OPEN','HIGH','LOW','CLOSE','BC-BO','BH-BL','BH-BO','BO-BL',
-                    'typical_price', 'typical_sd'
-                ],
+                'base_features': base_feats,
                 'technical_features': [
                     'RSI','MACD','MACD_Signal','MACD_Histogram','EMA','Stochastic_%K','Stochastic_%D',
                     'ADX','DI+','DI-','ATR','CCI','BB_MID_20_2','BB_UP_20_2','BB_LOW_20_2','BB_WIDTH_20_2',
