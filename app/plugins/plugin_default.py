@@ -267,7 +267,8 @@ class Plugin:
 
             feature_groups = {
                 'base_features': [
-                    'OPEN','HIGH','LOW','CLOSE','BC-BO','BH-BL','BH-BO','BO-BL'
+                    'OPEN','HIGH','LOW','CLOSE','BC-BO','BH-BL','BH-BO','BO-BL',
+                    'typical_price', 'typical_sd'
                 ],
                 'technical_features': [
                     'RSI','MACD','MACD_Signal','MACD_Histogram','EMA','Stochastic_%K','Stochastic_%D',
