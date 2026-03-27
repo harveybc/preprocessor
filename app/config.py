@@ -37,6 +37,9 @@ DEFAULT_VALUES = {
     'target_prefix': "examples/data/phase_1b/normalized_",
     'trim_start_rows': 168,  # Trim start rows to remove initial values affected by largest decomposition window
     
+    # Market margin filtering
+    'market_close_margin_ticks': 2,  # Number of ticks to remove before Friday close and after Monday open
+    
     # Dataset split proportions (for autoencoder and predictor training)
     'd1_proportion': 0.33,   # Training set for autoencoder
     'd2_proportion': 0.083,  # Validation set for autoencoder 

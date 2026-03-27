@@ -39,6 +39,9 @@ class Plugin:
         'd6_proportion': 0.083, # Predictor test
         'only_low_CV': True,
         
+        # Market margin filtering
+        'market_close_margin_ticks': 2,  # Number of ticks to remove before Friday close and after Monday open
+        
         # External feature engineering
         'use_external_feature_eng': False,
         'feature_eng_plugin_path': '/home/harveybc/Documents/GitHub/feature-eng/app/plugins',
@@ -222,7 +225,42 @@ class Plugin:
             else:
                 print(f"[WARNING] Cannot trim {trim_rows} rows from dataset with only {len(processed_data)} rows")
 
-        # 2.2: Reorder columns based on output order.
+        # 2.2: Remove ticks near market gaps (weekends, holidays, etc.) to avoid volatility from discontinuities
+        market_margin = self.params.get('market_close_margin_ticks', 0)
+        if market_margin > 0:
+            dt_col = pd.to_datetime(processed_data['DATE_TIME'])
+            rows_to_drop = set()
+            
+            # Detect gaps by looking at consecutive date differences
+            # A "gap" is any place where the time jump between consecutive ticks
+            # is larger than the normal tick interval (detected as the mode of diffs)
+            time_diffs = dt_col.diff()
+            normal_interval = time_diffs.mode()[0]
+            
+            # Find indices where a gap occurs (time diff > normal interval)
+            gap_mask = time_diffs > normal_interval
+            gap_indices = processed_data.index[gap_mask].tolist()
+            
+            print(f"[DEBUG] Detected {len(gap_indices)} date gaps (normal interval: {normal_interval})")
+            
+            for gap_idx in gap_indices:
+                # gap_idx is the first tick AFTER the gap — remove first N ticks after gap
+                pos = processed_data.index.get_loc(gap_idx)
+                after_indices = processed_data.index[pos:pos + market_margin]
+                rows_to_drop.update(after_indices)
+                
+                # Remove last N ticks BEFORE the gap
+                before_start = max(0, pos - market_margin)
+                before_indices = processed_data.index[before_start:pos]
+                rows_to_drop.update(before_indices)
+            
+            if rows_to_drop:
+                processed_data = processed_data.drop(index=rows_to_drop).reset_index(drop=True)
+                print(f"[DEBUG] Removed {len(rows_to_drop)} ticks near market gaps (margin={market_margin}). New shape: {processed_data.shape}")
+            else:
+                print(f"[DEBUG] Market margin filtering: no ticks to remove")
+
+        # 2.3: Reorder columns based on output order.
         output_column_order = ['DATE_TIME', 'OPEN', 'LOW', 'HIGH', 'CLOSE']
         
         # Update column order to include any new features from feature engineering

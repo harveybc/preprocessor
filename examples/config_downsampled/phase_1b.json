@@ -24,6 +24,7 @@
     "dataset_prefix": "examples/data_downsampled/phase_1b/base_",
     "target_prefix": "examples/data_downsampled/phase_1b/normalized_",
     "trim_start_rows": 168,  
+    "market_close_margin_ticks": 2,
     
     "d1_proportion": 0.33,   
     "d2_proportion": 0.083,  

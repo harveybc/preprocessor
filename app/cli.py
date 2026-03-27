@@ -83,6 +83,11 @@ Examples:
     parser.add_argument('--target_prefix', 
                        help='Prefix for normalized dataset files')
     
+    # Market margin filtering
+    parser.add_argument('--market_close_margin_ticks', 
+                       type=int, 
+                       help='Number of ticks to remove before Friday market close and after Monday market open (default: 2)')
+    
     # Dataset split proportions
     parser.add_argument('--d1_proportion', 
                        type=float, 
