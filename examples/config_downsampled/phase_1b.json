@@ -2,7 +2,7 @@
     "input_file": "examples/data/phase_3b_downsampled.csv",
     "output_file": "output_phase_1b.csv",
     "debug_file": "examples/data_downsampled/phase_1b/phase_1b_debug_out.json",
-    "features_included": ["base_features"],
+    "features_included": ["typical_price_only", "cyclic_features", "rolling_features"],
     
     "load_config": null,
     "save_config": "examples/data_downsampled/phase_1b/preprocessor_config.json",
@@ -25,6 +25,10 @@
     "target_prefix": "examples/data_downsampled/phase_1b/normalized_",
     "trim_start_rows": 168,  
     "market_close_margin_ticks": 2,
+    
+    "use_rolling_features": true,
+    "rolling_window": 24,
+    "rolling_price_column": "typical_price",
     
     "d1_proportion": 0.33,   
     "d2_proportion": 0.083,  

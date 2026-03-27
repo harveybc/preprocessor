@@ -86,7 +86,17 @@ Examples:
     # Market margin filtering
     parser.add_argument('--market_close_margin_ticks', 
                        type=int, 
-                       help='Number of ticks to remove before Friday market close and after Monday market open (default: 2)')
+                       help='Number of ticks to remove before/after market gaps (default: 2)')
+    
+    # Rolling features
+    parser.add_argument('--use_rolling_features', 
+                       action='store_true',
+                       help='Enable rolling feature generation (rolling_std, rolling_ema, price_minus_ema)')
+    parser.add_argument('--rolling_window', 
+                       type=int, 
+                       help='Window size in ticks for rolling features (default: 24)')
+    parser.add_argument('--rolling_price_column', 
+                       help='Price column to compute rolling features from (default: typical_price)')
     
     # Dataset split proportions
     parser.add_argument('--d1_proportion', 

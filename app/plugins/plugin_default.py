@@ -40,7 +40,15 @@ class Plugin:
         'only_low_CV': True,
         
         # Market margin filtering
-        'market_close_margin_ticks': 2,  # Number of ticks to remove before Friday close and after Monday open
+        'market_close_margin_ticks': 2,  # Number of ticks to remove before/after market gaps
+        
+        # Cyclic sinusoidal encoding (computed from DATE_TIME)
+        'use_cyclic_encoding': True,
+        
+        # Rolling features
+        'use_rolling_features': False,
+        'rolling_window': 24,
+        'rolling_price_column': 'typical_price',
         
         # External feature engineering
         'use_external_feature_eng': False,
@@ -216,6 +224,32 @@ class Plugin:
         processed_data = self._apply_feature_engineering(data, config)
         print(f"[DEBUG] After feature engineering shape: {processed_data.shape}")
 
+        # 2.0.5: Generate derived features (cyclic sinusoidal encoding + rolling features)
+        # Cyclic sinusoidal encoding computed directly from DATE_TIME timestamps
+        if self.params.get('use_cyclic_encoding', False):
+            dt_enc = pd.to_datetime(processed_data['DATE_TIME'])
+            processed_data['hod_sin'] = np.sin(2 * np.pi * dt_enc.dt.hour / 24)
+            processed_data['hod_cos'] = np.cos(2 * np.pi * dt_enc.dt.hour / 24)
+            processed_data['dow_sin'] = np.sin(2 * np.pi * dt_enc.dt.dayofweek / 7)
+            processed_data['dow_cos'] = np.cos(2 * np.pi * dt_enc.dt.dayofweek / 7)
+            processed_data['dom_sin'] = np.sin(2 * np.pi * (dt_enc.dt.day - 1) / 31)
+            processed_data['dom_cos'] = np.cos(2 * np.pi * (dt_enc.dt.day - 1) / 31)
+            processed_data['moy_sin'] = np.sin(2 * np.pi * (dt_enc.dt.month - 1) / 12)
+            processed_data['moy_cos'] = np.cos(2 * np.pi * (dt_enc.dt.month - 1) / 12)
+            print(f"[DEBUG] Generated cyclic sinusoidal features from DATE_TIME. Columns: hod_sin/cos, dow_sin/cos, dom_sin/cos, moy_sin/cos")
+
+        # Rolling features from price column (computed before trim so NaN rows get trimmed)
+        if self.params.get('use_rolling_features', False):
+            price_col = self.params.get('rolling_price_column', 'typical_price')
+            window = self.params.get('rolling_window', 24)
+            if price_col in processed_data.columns:
+                processed_data[f'rolling_std_{window}'] = processed_data[price_col].rolling(window=window).std()
+                processed_data[f'rolling_ema_{window}'] = processed_data[price_col].ewm(span=window, adjust=False).mean()
+                processed_data['price_minus_ema'] = processed_data[price_col] - processed_data[f'rolling_ema_{window}']
+                print(f"[DEBUG] Generated rolling features (window={window}) from '{price_col}': rolling_std_{window}, rolling_ema_{window}, price_minus_ema")
+            else:
+                print(f"[WARNING] Rolling price column '{price_col}' not found in data. Skipping rolling features.")
+
         # 2.1: Trim starting rows to remove initial values affected by decomposition windows
         trim_rows = self.params.get('trim_start_rows', 0)
         if trim_rows > 0:
@@ -312,6 +346,13 @@ class Plugin:
 
             feature_groups = {
                 'base_features': base_feats,
+                'typical_price_only': ['typical_price'],
+                'cyclic_features': [
+                    'hod_sin','hod_cos','dow_sin','dow_cos',
+                    'dom_sin','dom_cos','moy_sin','moy_cos'
+                ],
+                'rolling_features': [c for c in available_cols
+                                     if c.startswith('rolling_') or c == 'price_minus_ema'],
                 'technical_features': [
                     'RSI','MACD','MACD_Signal','MACD_Histogram','EMA','Stochastic_%K','Stochastic_%D',
                     'ADX','DI+','DI-','ATR','CCI','BB_MID_20_2','BB_UP_20_2','BB_LOW_20_2','BB_WIDTH_20_2',
@@ -321,7 +362,8 @@ class Plugin:
                     'S&P500_Close','vix_close'
                 ],
                 'seasonal_features': [
-                    'day_of_week','day_of_month','hour_of_day','dow_sin','dow_cos','dom_sin','dom_cos','hod_sin','hod_cos'
+                    'day_of_week','day_of_month','hour_of_day','dow_sin','dow_cos','dom_sin','dom_cos','hod_sin','hod_cos',
+                    'moy_sin','moy_cos'
                 ],
                 'high_frequency_features': [
                     'CLOSE_15m_tick_1','CLOSE_15m_tick_2','CLOSE_15m_tick_3','CLOSE_15m_tick_4',

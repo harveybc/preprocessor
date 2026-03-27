@@ -38,7 +38,12 @@ DEFAULT_VALUES = {
     'trim_start_rows': 168,  # Trim start rows to remove initial values affected by largest decomposition window
     
     # Market margin filtering
-    'market_close_margin_ticks': 2,  # Number of ticks to remove before Friday close and after Monday open
+    'market_close_margin_ticks': 2,  # Number of ticks to remove before/after market gaps
+    
+    # Rolling features
+    'use_rolling_features': False,
+    'rolling_window': 24,
+    'rolling_price_column': 'typical_price',
     
     # Dataset split proportions (for autoencoder and predictor training)
     'd1_proportion': 0.33,   # Training set for autoencoder
