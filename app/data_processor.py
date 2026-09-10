@@ -67,11 +67,10 @@ def run_preprocessor_pipeline(config: Dict[str, Any], plugin) -> pd.DataFrame:
         # operator is eligible for the declared scope; with none
         # configured the output is stamped LEGACY_NON_AUTHORITATIVE
         # and is experimental, not licensed.
-        from app.eligibility_adapter import describe, gate_subjects
+        from app.eligibility_adapter import describe, gate_run
 
-        eligibility_stamp = gate_subjects(
-            config, consumer="preprocessor.pipeline",
-            subject_ids=config.get("eligibility_subjects"))
+        eligibility_stamp = gate_run(
+            config, consumer="preprocessor.pipeline")
         config["eligibility_stamp"] = eligibility_stamp
         print(f"[INFO] {describe(eligibility_stamp)}")
 
