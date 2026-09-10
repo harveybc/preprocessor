@@ -61,7 +61,21 @@ def run_preprocessor_pipeline(config: Dict[str, Any], plugin) -> pd.DataFrame:
         print(f"[DEBUG] Loaded data shape: {data.shape}")
         print(f"[DEBUG] Columns: {list(data.columns)}")
         
-        # 2. Execute preprocessing with plugin
+        # 2. Eligibility gate (work-plan P3): asked BEFORE an
+        # experimental transformation is materialized. With a
+        # reviewed manifest configured this refuses unless the
+        # operator is eligible for the declared scope; with none
+        # configured the output is stamped LEGACY_NON_AUTHORITATIVE
+        # and is experimental, not licensed.
+        from app.eligibility_adapter import describe, gate_subjects
+
+        eligibility_stamp = gate_subjects(
+            config, consumer="preprocessor.pipeline",
+            subject_ids=config.get("eligibility_subjects"))
+        config["eligibility_stamp"] = eligibility_stamp
+        print(f"[INFO] {describe(eligibility_stamp)}")
+
+        # 3. Execute preprocessing with plugin
         print("[INFO] Starting preprocessing pipeline...")
         processed_data = plugin.process(data, config)
         
