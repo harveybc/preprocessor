@@ -36,9 +36,28 @@ class Plugin:
             if key in self.params:
                 self.params[key] = value
 
+    # Work-plan P4 audit. This selector receives ONE frame and no
+    # split boundary: `_acf_feature_selection` and
+    # `_pacf_feature_selection` compute their statistics over every
+    # row they are given. When the frame contains validation or
+    # test rows — which is the case wherever this plugin runs
+    # before splitting — the SELECTION is fitted outside training.
+    # The behaviour is preserved for archival replay and labelled
+    # here, so it cannot be cited as a boundary-clean selection.
+    SELECTION_AUTHORITY = "LEGACY_NON_AUTHORITATIVE"
+    SELECTION_AUTHORITY_REASON = (
+        "ACF/PACF relevance is computed over the whole frame with "
+        "no split boundary; a selection fitted outside training is "
+        "not authoritative evidence"
+    )
+
     def process(self, data):
         """
         Perform feature selection on the dataset using the specified method.
+
+        NOTE (work-plan P4): this selector has no split boundary. Its
+        result is labelled LEGACY_NON_AUTHORITATIVE — see
+        SELECTION_AUTHORITY_REASON.
 
         Args:
             data (pd.DataFrame): The input data to be processed.
@@ -46,6 +65,9 @@ class Plugin:
         Returns:
             pd.DataFrame: The dataset with only the selected features.
         """
+        print(f"[WARNING] feature_selector_pre: "
+              f"{self.SELECTION_AUTHORITY} — "
+              f"{self.SELECTION_AUTHORITY_REASON}")
         method = self.params['method']
         save_params = self.params['save_params']
         load_params = self.params['load_params']

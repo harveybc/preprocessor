@@ -11,9 +11,34 @@ class Plugin:
         # Initialize the feature selection parameters to None
         self.feature_selection_params = None
 
+    # Work-plan P4 audit. Like the pre-selector, this plugin
+    # receives ONE frame plus a target and no split boundary:
+    # lasso, elastic-net, mutual-information and Boruta are all
+    # fitted on every row handed to it. Wherever that frame carries
+    # validation or test rows, the SELECTION is fitted outside
+    # training. Labelled rather than silently changed, so archival
+    # replay stays possible and nothing here can be cited as a
+    # boundary-clean selection.
+    #
+    # Also recorded: the docstring below advertises a 'cross_val'
+    # method that this class does not implement — a documented
+    # capability that does not exist is itself a finding.
+    SELECTION_AUTHORITY = "LEGACY_NON_AUTHORITATIVE"
+    SELECTION_AUTHORITY_REASON = (
+        "embedded and filter selection runs on the frame it is given, "
+        "with no split boundary; a selection fitted outside training "
+        "is not authoritative evidence"
+    )
+    UNIMPLEMENTED_DOCUMENTED_METHODS = ("cross_val",)
+
     def process(self, data, target, method='lasso', save_params=None, load_params=None, **kwargs):
         """
         Perform feature selection on the dataset using the specified method.
+
+        NOTE (work-plan P4): this selector has no split boundary. Its
+        result is labelled LEGACY_NON_AUTHORITATIVE — see
+        SELECTION_AUTHORITY_REASON. The 'cross_val' method named below
+        is documented but not implemented.
 
         Args:
             data (pd.DataFrame): The input data to be processed.
@@ -25,6 +50,14 @@ class Plugin:
         Returns:
             pd.DataFrame: The dataset with only the selected features.
         """
+        print(f"[WARNING] feature_selector_post: "
+              f"{self.SELECTION_AUTHORITY} — "
+              f"{self.SELECTION_AUTHORITY_REASON}")
+        if method in self.UNIMPLEMENTED_DOCUMENTED_METHODS:
+            raise NotImplementedError(
+                f"method {method!r} is documented but not "
+                "implemented in this selector")
+
         # Load parameters if load_params path is provided
         if load_params and os.path.exists(load_params):
             with open(load_params, 'r') as f:
