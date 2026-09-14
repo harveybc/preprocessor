@@ -28,6 +28,16 @@ own held-out comparisons, with the untransformed input retained as a control.
 0.1.1). This `master` branch is the packaged default branch; development also
 continues on feature branches (e.g. `phase_6`).
 
+## Use with a coding agent
+
+> Read the configuration and plugin definitions for this exact revision.
+> Use a separate environment and tiny synthetic data. Verify train-only fit,
+> prefix invariance, future-perturbation behavior and batch/incremental parity
+> for any operator advertised as causal. Report the transformation config,
+> input/output identities, costs and unsupported cases. Never promote a
+> centered/offline control to a real-time feature. Follow data-gov for actual
+> experiment inputs and outcomes; do not replace the stored raw data.
+
 ## Role and non-responsibilities
 
 `preprocessor` prepares already-engineered datasets for model training:
