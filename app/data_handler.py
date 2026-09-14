@@ -1,7 +1,8 @@
 import pandas as pd
 
 
-def load_csv(file_path):
+def load_csv(file_path, config=None):
+    """`config` carries the column-role contract when the caller has one (order P1)."""
     """
     Load a CSV file assuming it has headers and a 'DATE_TIME' column at the beginning.
     The 'DATE_TIME' column remains as a regular column.
@@ -19,6 +20,17 @@ def load_csv(file_path):
         for col in data.columns:
             if col != 'DATE_TIME':
                 data[col] = pd.to_numeric(data[col], errors='coerce')
+
+        if config is not None:
+            # declared roles, or an explicit migration: never a heuristic selection
+            from app.column_roles import resolve as resolve_roles
+
+            plan = resolve_roles(config, list(data.columns))
+            if plan.migration is None:
+                keep = [name for name in (([plan.time] if plan.time else []) + list(plan.features))
+                        if name in data.columns]
+                data = data.loc[:, keep]
+                config.setdefault("column_roles_applied", {})["input_file"] = plan.as_record()
 
         print(f"[DEBUG] First 5 rows of the data:\n{data.head()}")
 
