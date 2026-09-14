@@ -11,6 +11,19 @@ value space.
 
 ## Status
 
+**Current research (2026-09-14):** causal transforms, per-variable diagnostics
+and governed preprocessing are being developed in the
+[published research snapshot](https://github.com/harveybc/preprocessor/tree/20db3fb3c91d54968fdc148827531a0cdc17b11f).
+Its APIs and tests are not interchangeable with the packaged implementation on
+this `master` branch. See the [repository map](https://github.com/harveybc/predictor/blob/master/docs/RESEARCH_STACK.md)
+and [doctoral proposal](https://github.com/harveybc/predictor/blob/master/docs/propuesta_doctoral_representaciones_temporales_modulares.pdf)
+for the research context.
+
+An available transform is not automatically suitable for forecasting. Fitting
+must use training data only; centered smoothing and future-derived quantities
+must not become online features. Feature selection and denoising require their
+own held-out comparisons, with the untransformed input retained as a control.
+
 **Active component** of the harveybc trading stack (package `preprocessor`
 0.1.1). This `master` branch is the packaged default branch; development also
 continues on feature branches (e.g. `phase_6`).
