@@ -9,7 +9,8 @@ import importlib.util
 from pathlib import Path
 
 class Plugin:
-    """
+    """Trims, splits into D1-D6 and normalizes the dataset.
+
     Plugin to preprocess the dataset for feature extraction with external feature engineering support.
     
     This plugin performs:

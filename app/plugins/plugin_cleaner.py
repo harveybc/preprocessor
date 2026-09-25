@@ -1,9 +1,17 @@
+"""Cleaner plugin: repairs missing rows/values or outliers in the dataset."""
+
 import pandas as pd
 import numpy as np
 import json
 import os
 
 class Plugin:
+    """Cleans the dataset: missing rows and values, or outliers.
+
+    `method="missing_values"` checks continuity against the expected period and optionally interpolates the
+    missing rows; `method="outlier"` acts on values beyond the given threshold.
+    """
+
     def __init__(self):
         self.params = None
 

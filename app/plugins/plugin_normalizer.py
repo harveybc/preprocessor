@@ -1,12 +1,15 @@
+"""Normalizer plugin: min-max or z-score scaling of the dataset columns."""
+
 import pandas as pd
 import json
 import os
 import numpy as np
 
 class Plugin:
-    """1.60139	1.16481
+    """Normalizes the dataset columns by min-max or z-score.
 
-    Default Plugin to normalize the dataset using various methods.
+    The fitted parameters are written to `save_params` and can be re-applied to another dataset with
+    `load_params`, so training and evaluation sets share one value space.
     """
     # Define the parameters for this plugin and their default values
     plugin_params = {

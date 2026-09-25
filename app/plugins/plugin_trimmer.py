@@ -1,8 +1,16 @@
+"""Trimmer plugin: drops the columns and rows named in its parameters."""
+
 import pandas as pd
 import json
 import os
 
 class Plugin:
+    """Removes the listed columns and rows from the dataset.
+
+    The indices removed are taken from the call or from a saved parameter file, and can be written back to
+    one, so the same trim is reproducible on another dataset.
+    """
+
     def __init__(self):
         # Initialize the trimmer parameters to None
         self.trimmer_params = None

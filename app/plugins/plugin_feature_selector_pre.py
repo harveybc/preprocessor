@@ -4,7 +4,8 @@ import json
 import os
 
 class Plugin:
-    """
+    """Selects features from the dataset by the chosen method.
+
     Feature Selector Plugin to perform feature selection on the dataset using various methods.
     """
 
